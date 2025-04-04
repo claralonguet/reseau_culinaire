@@ -1,4 +1,4 @@
-# reseau_culinaire
+# reseau_culinaire vendredi 13h15
 
   - tableau croisés utlisateurs/ cas d'utilisations -> Clara
   - diagramme cas d'utilisation -> Esteban
