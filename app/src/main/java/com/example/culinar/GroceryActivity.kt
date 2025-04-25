@@ -114,7 +114,7 @@ fun HomeTemplate(modifier: Modifier = Modifier, subscreen: @Composable ((Int) ->
 @Composable
 fun GroceryList(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) -> Unit) {
 
-    var groceryItemsToDisplay by remember { mutableStateOf(groceryItems.filter{ it.contains("1") }) }
+    var groceryItemsToDisplay by remember { mutableStateOf(groceryItems) }
 
     // Screen content
     Column (verticalArrangement = Arrangement.SpaceEvenly, horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier.fillMaxSize()) {
@@ -553,7 +553,7 @@ fun GroceryAddItem(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) 
                 var value by remember { mutableStateOf(toModify) }
                 TextField(
                     value = value,
-                    onValueChange = { if(it.isDigitsOnly()) nameText = it },
+                    onValueChange = { if(it.isDigitsOnly()) value = it },
                     placeholder = { Text("Quantité de l'aliment") },
                     modifier = modifier
                         .width(220.dp)
