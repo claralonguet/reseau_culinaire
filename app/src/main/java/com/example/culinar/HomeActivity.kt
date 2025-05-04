@@ -33,6 +33,7 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,6 +50,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.culinar.ui.theme.CulinarTheme
+import com.example.culinar.ui.theme.Typography
+import com.example.culinar.ui.theme.darkGreen
+import com.example.culinar.ui.theme.grey
+import com.example.culinar.ui.theme.mediumGreen
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,7 +83,7 @@ fun Header(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .height(30.dp)
                 .fillMaxWidth()
-                .background(color = Color(0xFF3CB460))
+                .background(color = mediumGreen)
         ){}
 
 
@@ -86,18 +91,16 @@ fun Header(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .height(60.dp)
                 .fillMaxWidth()
-                .background(color = Color(0xFF3CB460)),
+                .background(color = mediumGreen),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
             // App title
             Text(
                 text = "Culinary",
-                fontSize = 45.sp,
-                fontFamily = FontFamily.Cursive,
+                style = Typography.headlineLarge,
                 textAlign = TextAlign.Center,
                 color = Color.White,
-                fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 5.dp)
             )
 
@@ -116,12 +119,12 @@ fun Header(modifier: Modifier = Modifier) {
             */
             //Spacer(modifier = Modifier.weight(1f))
             // Profile picture
-            Button(
+            TextButton(
                 onClick = {menuClicked = !menuClicked},
                 modifier = Modifier.width(85.dp).height(85.dp).padding(0.dp),
                 shape = CutCornerShape(3.dp),
                 colors = ButtonColors(
-                    containerColor = if (menuClicked) Color(0xFF1C6231) else Color(0xFF3CB460),
+                    containerColor = if (menuClicked) darkGreen else mediumGreen,
                     contentColor = Color.White,
                     disabledContainerColor = Color(0xFF3CB460),
                     disabledContentColor = Color.White
@@ -136,11 +139,11 @@ fun Header(modifier: Modifier = Modifier) {
             }
         }
 
-        // Side bar
+        // Action bar with profile and settings options
         if (menuClicked) {
             Column(
                 modifier = Modifier
-                    .background(color = Color(0xFFFFFCF0))
+                    .background(color = grey)
                     .fillMaxWidth()
                     .height(180.dp),
                 verticalArrangement = Arrangement.SpaceEvenly,
@@ -149,7 +152,7 @@ fun Header(modifier: Modifier = Modifier) {
                 ) {
 
                 // Profile settings button
-                Button(
+                TextButton(
                     onClick = { menuClicked = !menuClicked },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -176,12 +179,12 @@ fun Header(modifier: Modifier = Modifier) {
                                 .width(30.dp)
                                 .height(30.dp)
                         )
-                        Text("Compte", fontSize = 15.sp, color = Color(0xFF0A0A0A), modifier = Modifier.padding(horizontal = 10.dp))
+                        Text("Compte", style = Typography.bodyMedium, color = Color(0xFF0A0A0A), modifier = Modifier.padding(horizontal = 10.dp))
                     }
                 }
 
                 // Settings button
-                Button(
+                TextButton(
                     onClick = { menuClicked = !menuClicked },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -208,12 +211,12 @@ fun Header(modifier: Modifier = Modifier) {
                                 .width(30.dp)
                                 .height(30.dp)
                         )
-                        Text("Paramètres", fontSize = 15.sp, color = Color(0xFF0A0A0A), modifier = Modifier.padding(horizontal = 10.dp))
+                        Text("Paramètres", style = Typography.bodyMedium, color = Color(0xFF0A0A0A), modifier = Modifier.padding(horizontal = 10.dp))
                     }
                 }
 
                 // Log out button
-                Button(
+                TextButton (
                     onClick = { menuClicked = !menuClicked },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -243,7 +246,7 @@ fun Header(modifier: Modifier = Modifier) {
                                     rotationZ = 180f
                                 }
                         )
-                        Text("Déconnexion", fontSize = 15.sp, color = Color(0xFF0A0A0A), modifier = Modifier.padding(horizontal = 10.dp))
+                        Text("Déconnexion", style = Typography.bodyMedium, color = Color(0xFF0A0A0A), modifier = Modifier.padding(horizontal = 10.dp))
                     }
                 }
             }
@@ -262,7 +265,7 @@ fun Footer(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .height(90.dp)
                 .fillMaxWidth()
-                .background(color = Color(0xFF3CB460)),
+                .background(color = mediumGreen),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
@@ -272,7 +275,7 @@ fun Footer(modifier: Modifier = Modifier) {
                 modifier = Modifier.weight(1f).height(72.dp).padding(0.dp),
                 shape = CutCornerShape(1.dp),
                 colors = ButtonColors(
-                    containerColor = Color(0xFF3CB460),
+                    containerColor = mediumGreen,
                     contentColor = Color.White,
                     disabledContainerColor = Color(0xFF3CB460),
                     disabledContentColor = Color.White
@@ -293,7 +296,7 @@ fun Footer(modifier: Modifier = Modifier) {
                 modifier = Modifier.weight(1f).height(72.dp).padding(0.dp),
                 shape = CutCornerShape(1.dp),
                 colors = ButtonColors(
-                    containerColor = Color(0xFF1C6231),
+                    containerColor = darkGreen,
                     contentColor = Color.White,
                     disabledContainerColor = Color(0xFF3CB460),
                     disabledContentColor = Color.White
@@ -313,7 +316,7 @@ fun Footer(modifier: Modifier = Modifier) {
                 modifier = Modifier.weight(1f).height(72.dp).padding(0.dp),
                 shape = CutCornerShape(1.dp),
                 colors = ButtonColors(
-                    containerColor = Color(0xFF3CB460),
+                    containerColor = mediumGreen,
                     contentColor = Color.White,
                     disabledContainerColor = Color(0xFF3CB460),
                     disabledContentColor = Color.White
@@ -333,7 +336,7 @@ fun Footer(modifier: Modifier = Modifier) {
                 modifier = Modifier.weight(1f).height(72.dp).padding(0.dp),
                 shape = CutCornerShape(1.dp),
                 colors = ButtonColors(
-                    containerColor = Color(0xFF3CB460),
+                    containerColor = mediumGreen,
                     contentColor = Color.White,
                     disabledContainerColor = Color(0xFF3CB460),
                     disabledContentColor = Color.White
@@ -353,7 +356,7 @@ fun Footer(modifier: Modifier = Modifier) {
                 modifier = Modifier.weight(1f).height(72.dp).padding(0.dp),
                 shape = CutCornerShape(1.dp),
                 colors = ButtonColors(
-                    containerColor = Color(0xFF3CB460),
+                    containerColor = mediumGreen,
                     contentColor = Color.White,
                     disabledContainerColor = Color(0xFF3CB460),
                     disabledContentColor = Color.White

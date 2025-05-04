@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
 import com.example.culinar.ui.theme.CulinarTheme
+import com.example.culinar.ui.theme.Typography
 
 // Retrieve list of grocery items
 val AllGroceryItems = List(10) { index -> "item ${index + 1}" }
@@ -125,16 +126,11 @@ fun GroceryList(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) -> 
         // Title of the subscreen
         Text(
             text = "Ma liste de courses",
-            fontSize = 28.sp,
-            fontFamily = FontFamily.Serif,
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.Bold,
-            lineHeight = 50.sp,
-            color = Color(0xFF3CB460),
-
+            style = Typography.titleLarge,
+            fontSize = 30.sp,
             modifier = modifier.fillMaxWidth()
-                .height(50.dp)
                 .background(color = Color(0xFFE5E3E3))
+                .height(50.dp)
             )
 
         Spacer(modifier = modifier.height(15.dp))
@@ -143,7 +139,7 @@ fun GroceryList(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) -> 
         var searchText by remember { mutableStateOf("") }
         TextField(
             value = searchText,
-            placeholder = { Text("Rechercher un aliment") },
+            placeholder = { Text("Rechercher un aliment", style = Typography.bodySmall) },
             onValueChange = {
                 searchText = it
                 groceryItemsToDisplay = groceryItems.filter { it.contains(searchText) }
@@ -166,7 +162,7 @@ fun GroceryList(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) -> 
         ) {
             Icon(Icons.Default.AddCircle, contentDescription = "Ajouter", tint = Color.White)
             Spacer(modifier = modifier.width(10.dp))
-            Text(text = "Ajouter", fontSize = 18.sp, letterSpacing = 3.sp)
+            Text(text = "Ajouter", style = Typography.labelSmall)
         }
 
         Spacer(modifier = modifier.height(10.dp))
@@ -212,33 +208,34 @@ fun GroceryItem(modifier: Modifier = Modifier, item : String, changeOnboardingSc
 
         Spacer(modifier = modifier.weight(1f))
         // Details on the item
-        Column {
+        Column (
+            verticalArrangement = Arrangement.SpaceEvenly,
+            modifier = modifier.fillMaxHeight()
+                //.border(color = Color(0xFFAAAAAA), width = 1.dp, shape = CutCornerShape(3.dp))
+        ) {
             // Name of the item
             Text(
                 text = item,
-                fontSize = 24.sp,
-                fontFamily = FontFamily.Serif,
+                style = Typography.titleMedium,
             )
 
             Row {
                 // Unit of the item
                 Text(
                     text = "1 kg",
-                    fontSize = 18.sp,
-                    fontFamily = FontFamily.Serif,
+                    style = Typography.bodySmall,
                 )
 
                 Spacer(modifier = modifier.width(40.dp))
                 // Quantity of the item
                 Text(
                     text = "x 1",
-                    fontSize = 20.sp,
-                    fontFamily = FontFamily.Serif,
+                    style = Typography.bodyLarge,
                 )
             }
 
         }
-        Spacer(modifier = modifier.weight(1f))
+        Spacer(modifier = modifier.weight(2f))
 
         // Modify and delete buttons
         Column (
@@ -250,7 +247,7 @@ fun GroceryItem(modifier: Modifier = Modifier, item : String, changeOnboardingSc
         ) {
 
             // Delete button
-            Button(
+            TextButton(
                 onClick = {
                     deleteItem()
                 },
@@ -274,7 +271,7 @@ fun GroceryItem(modifier: Modifier = Modifier, item : String, changeOnboardingSc
             Spacer(modifier = modifier.height(10.dp))
 
             // Modify button
-            Button(
+            TextButton(
                 onClick = {
                     changeOnboardingScreen(3)
                     toModify = item
@@ -290,7 +287,11 @@ fun GroceryItem(modifier: Modifier = Modifier, item : String, changeOnboardingSc
                 )
 
             ) {
-                Icon(Icons.Default.Edit, contentDescription = "Modifier", tint = Color(0xFF2196F3))
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = "Modifier",
+                    tint = Color(0xFF2196F3),
+                )
             }
         }
     }
