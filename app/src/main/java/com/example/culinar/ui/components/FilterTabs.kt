@@ -52,12 +52,12 @@ fun FilterTabs(
                     containerColor = if (isSelected) {
                         MaterialTheme.colorScheme.primary
                     } else {
-                        MaterialTheme.colorScheme.tertiary
+                        MaterialTheme.colorScheme.secondary
                     },
                     contentColor = if (isSelected) {
                         MaterialTheme.colorScheme.onPrimary
                     } else {
-                        MaterialTheme.colorScheme.onSecondaryContainer
+                        MaterialTheme.colorScheme.onSecondary
                     },
                 )
             ) {

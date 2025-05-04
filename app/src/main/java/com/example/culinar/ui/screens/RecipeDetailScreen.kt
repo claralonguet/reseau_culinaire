@@ -2,6 +2,7 @@ package com.example.culinar.ui.screens
 
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -10,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
@@ -17,6 +19,20 @@ import com.example.culinar.models.Recipe
 
 @Composable
 fun RecipeDetailScreen(recipe: Recipe) {
+
+    // Titre (nom de la recette)
+    Row(modifier = Modifier
+        .background(color = Color.Gray)
+        .fillMaxWidth()
+        .padding(5.dp),
+        horizontalArrangement = Arrangement.Center) {
+        Text(
+            text = recipe.name,
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -24,12 +40,6 @@ fun RecipeDetailScreen(recipe: Recipe) {
             .padding(16.dp),
         horizontalAlignment = Alignment.Start
     ) {
-        // Titre (nom de la recette)
-        Text(
-            text = recipe.name,
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
 
         // Image du plat
         Image(

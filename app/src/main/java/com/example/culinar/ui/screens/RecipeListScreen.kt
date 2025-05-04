@@ -9,14 +9,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
-import com.example.culinar.models.Recipe
 import com.example.culinar.ui.components.FilterTabs
 import com.example.culinar.ui.components.RecipeCard
-import com.example.culinar.ui.components.RecipeItem
-import com.example.culinar.viewmodels.Filter
 import com.example.culinar.viewmodels.RecipeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,11 +28,16 @@ fun RecipeListScreen(navController: NavController, vm: RecipeViewModel) {
     Column(Modifier.fillMaxSize()) {
         // AppBar avec le titre
         TopAppBar(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            title = { Text("Recettes") },
+            title = {
+                Text(
+                    text = "Recettes",
+                    color = Color.White,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.secondary,
-                titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                containerColor = MaterialTheme.colorScheme.secondary
             )
         )
 
