@@ -7,6 +7,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
+import com.example.culinar.ui.theme.CulinarTheme
+import com.example.culinar.ui.theme.GreenPrimary
 
 @Composable
 fun SignupScreen(changeScreen: (String) -> Unit) {
@@ -27,7 +29,8 @@ fun SignupScreen(changeScreen: (String) -> Unit) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = { changeScreen("profile") }) {
+        Button(onClick = { changeScreen("profile") },
+            colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary) ) {
             Text("Créer un profil")
         }
     }
