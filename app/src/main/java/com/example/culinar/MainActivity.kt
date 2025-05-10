@@ -4,9 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.*
-import com.example.culinar.LoginScreen
-import com.example.culinar.SignupScreen
-import com.example.culinar.ProfileScreen
 import com.example.culinar.ui.theme.CulinarTheme
 
 class MainActivity : ComponentActivity() {
