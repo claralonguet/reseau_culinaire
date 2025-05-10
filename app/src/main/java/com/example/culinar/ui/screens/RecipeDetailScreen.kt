@@ -20,66 +20,71 @@ import com.example.culinar.models.Recipe
 @Composable
 fun RecipeDetailScreen(recipe: Recipe) {
 
-    // Titre (nom de la recette)
-    Row(modifier = Modifier
-        .background(color = Color.Gray)
-        .fillMaxWidth()
-        .padding(5.dp),
-        horizontalArrangement = Arrangement.Center) {
-        Text(
-            text = recipe.name,
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-    }
+    Column(modifier = Modifier.padding(bottom = 90.dp)){
+        Spacer(Modifier.height(90.dp))
+        // Titre (nom de la recette)
+        Row(modifier = Modifier
+            .background(color = Color.Gray)
+            .fillMaxWidth()
+            .padding(5.dp),
+            horizontalArrangement = Arrangement.Center) {
+            Text(
+                text = recipe.name,
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        horizontalAlignment = Alignment.Start
-    ) {
-
-        // Image du plat
-        Image(
-            painter = rememberAsyncImagePainter(recipe.imageUrl),
-            contentDescription = recipe.name,
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(250.dp)
-                .padding(bottom = 16.dp)
-        )
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
 
-        // Temps de préparation et difficulté
-        Text(
-            text = "Temps : ${recipe.prepTime} | Difficulté : ${recipe.difficulty}",
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+            // Image du plat
+            Image(
+                painter = rememberAsyncImagePainter(recipe.imageUrl),
+                contentDescription = recipe.name,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(250.dp)
+                    .padding(bottom = 16.dp)
+            )
 
-        // Liste des ingrédients
-        Text(
-            text = "Ingrédients :",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        recipe.ingredients.forEach { ingredient ->
-            Text("- $ingredient")
-        }
+            // Temps de préparation et difficulté
+            Text(
+                text = "Temps : ${recipe.prepTime} | Difficulté : ${recipe.difficulty}",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
-        Spacer(Modifier.height(16.dp))
+            // Liste des ingrédients
+            Text(
+                text = "Ingrédients :",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            recipe.ingredients.forEach { ingredient ->
+                Text("- $ingredient")
+            }
 
-        // Étapes de préparation
-        Text(
-            text = "Préparation :",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        recipe.steps.forEachIndexed { index, step ->
-            Text("${index + 1}. $step")
+            Spacer(Modifier.height(16.dp))
+
+            // Étapes de préparation
+            Text(
+                text = "Préparation :",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            recipe.steps.forEachIndexed { index, step ->
+                Text("${index + 1}. $step")
+            }
         }
     }
+
+
 }
 
 @Preview(showBackground = true)

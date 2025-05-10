@@ -52,20 +52,24 @@ fun RecipeCard(
                 contentDescription = recipe.name,
                 modifier = Modifier.size(80.dp)
             )
-            Spacer(Modifier.width(20.dp))
+            Spacer(Modifier.width(10.dp))
             Column(
                 modifier = Modifier.weight(1f).height(50.dp)
             ) {
-                Text(text = recipe.name, style = MaterialTheme.typography.titleMedium)
+                Text(text = recipe.name, style = MaterialTheme.typography.bodySmall)
             }
+            Spacer(Modifier.width(10.dp))
             Column {
                 Column(
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(text = "${recipe.prepTime} • ${recipe.difficulty}", style = MaterialTheme.typography.bodySmall)
+                    Text(text = "${recipe.prepTime} • ${recipe.difficulty}", style = MaterialTheme.typography.bodyMedium)
 
                 }
-                IconButton(onClick = { onToggleFavorite() }) {
+                Spacer(Modifier.width(5.dp))
+                IconButton(onClick = { onToggleFavorite() },
+                    modifier = Modifier.weight(1f)
+                ) {
                     Icon(
                         imageVector = if (recipe.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = if (recipe.isFavorite) "Retirer des favoris" else "Ajouter aux favoris",

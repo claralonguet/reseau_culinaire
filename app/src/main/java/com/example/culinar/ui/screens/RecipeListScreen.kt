@@ -1,5 +1,7 @@
 package com.example.culinar.ui.screens
 
+import android.inputmethodservice.Keyboard.Row
+import androidx.compose.foundation.background
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.culinar.ui.components.FilterTabs
 import com.example.culinar.ui.components.RecipeCard
@@ -26,20 +29,21 @@ fun RecipeListScreen(navController: NavController, vm: RecipeViewModel) {
 
     // Structure de la page avec un app bar et un lazy column
     Column(Modifier.fillMaxSize()) {
+        Spacer(Modifier.height(90.dp))
         // AppBar avec le titre
-        TopAppBar(
-            title = {
-                Text(
-                    text = "Recettes",
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.secondary
+        Row(
+            modifier = Modifier.background(
+            color = Color.Gray
+            ).height(50.dp)
+        ) {
+            Text(
+                text = "Recettes",
+                color = Color.Black,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.titleLarge
             )
-        )
+        }
 
         // Composant FilterTabs pour changer le filtre
         //FilterTabs(current = filter, onFilterChange ={ vm::setFilter})
@@ -53,7 +57,7 @@ fun RecipeListScreen(navController: NavController, vm: RecipeViewModel) {
     )
 
         // Liste des recettes avec LazyColumn
-        LazyColumn(Modifier.fillMaxSize()) {
+        LazyColumn(Modifier.fillMaxSize().padding(bottom = 90.dp)) {
             items(list.size) { i ->
                 // Carte pour chaque recette avec un événement de clic (ici sans navigation)
                 RecipeCard(recipe = list[i], onToggleFavorite = {
@@ -64,6 +68,7 @@ fun RecipeListScreen(navController: NavController, vm: RecipeViewModel) {
                 }
             }
         }
+
     }
 }
 
