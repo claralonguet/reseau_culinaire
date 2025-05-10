@@ -6,6 +6,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
+import com.example.culinar.ui.theme.CulinarTheme
+import com.example.culinar.ui.theme.GreenPrimary
 
 @Composable
 fun ProfileScreen(changeScreen: (String) -> Unit) {
@@ -22,7 +24,8 @@ fun ProfileScreen(changeScreen: (String) -> Unit) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = { changeScreen("login") }) {
+        Button(onClick = { changeScreen("login") },
+               colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)) {
             Text("Retour à la connexion")
         }
     }
