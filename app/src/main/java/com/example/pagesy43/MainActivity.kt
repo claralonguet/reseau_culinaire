@@ -1,7 +1,6 @@
 package com.example.pagesy43
 
-
-import com.example.pagesy43.ui.theme.PageSY43Theme
+import com.example.culinar.ui.theme.CulinarTheme
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -67,6 +66,9 @@ import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -83,17 +85,23 @@ import java.util.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.filled.Message
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.culinar.ui.theme.CulinarTheme
+import com.example.culinar.ui.theme.Purple80
+import com.example.culinar.ui.theme.PurpleGrey80
+import com.example.culinar.ui.theme.grey
+import com.example.culinar.ui.theme.mediumGreen
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            PageSY43Theme {
+            CulinarTheme {
                 AppNavigation()
             }
         }
@@ -103,27 +111,64 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun BottomNavBar(navController: NavController) {
     BottomNavigation(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().height(60.dp),
         contentColor = Color.White,
-        backgroundColor = Color(0xFF6200EE)  // Couleur de fond de la barre
+        backgroundColor = mediumGreen // Couleur de fond de la barre
     ) {
         BottomNavigationItem(
-            icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
-            label = { Text("Accueil") },
+            icon = { Icon(
+                Icons.Default.DateRange,
+                contentDescription = "Menu",
+                tint = Color.White,
+                modifier = Modifier.width(40.dp).height(40.dp)
+            ) },
+            // label = { Text("Calendar") },
+            selected = false,
+            onClick = { navController.navigate("") }
+        )
+        BottomNavigationItem(
+            icon = { Icon(
+                Icons.Default.ShoppingCart,
+                contentDescription = "Clear",
+                tint = Color.White,
+                modifier = Modifier.width(45.dp).height(45.dp)
+            ) },
+            // label = { Text("Groceries") },
+            selected = false,
+            onClick = { navController.navigate("") }
+        )
+        BottomNavigationItem(
+            icon = { Icon(
+                Icons.Default.CheckCircle,
+                contentDescription = "Clear",
+                tint = Color.White,
+                modifier = Modifier.width(45.dp).height(45.dp)
+            ) },
+            // label = { Text("Recipies") },
+            selected = false,
+            onClick = { navController.navigate("") }
+        )
+        BottomNavigationItem(
+            icon = { Icon(
+                Icons.Default.Home,
+                contentDescription = "Clear",
+                tint = Color.White,
+                modifier = Modifier.width(45.dp).height(45.dp)
+            ) },
+            // label = { Text("Home") },
             selected = false,
             onClick = { navController.navigate("home") }
         )
         BottomNavigationItem(
-            icon = { Icon(Icons.Filled.Message, contentDescription = "Messages") },
-            label = { Text("Messages") },
+            icon = { Icon(
+                Icons.Default.Email,
+                contentDescription = "Clear",
+                tint = Color.White,
+                modifier = Modifier.width(45.dp).height(45.dp)
+            ) },
+            // label = { Text("Community") },
             selected = false,
-            onClick = { navController.navigate("SendMessage") }
-        )
-        BottomNavigationItem(
-            icon = { Icon(Icons.Filled.AddCircle, contentDescription = "Add") },
-            label = { Text("Ajouter") },
-            selected = false,
-            onClick = { navController.navigate("AddFriends") }
+            onClick = { navController.navigate("") }
         )
         // Ajoute ici d'autres boutons pour d'autres pages si nécessaire
     }
@@ -213,7 +258,7 @@ fun Home(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFAFEDB1)), // Couleur de fond personnalisée
+            .background(Color.White), // Couleur de fond personnalisée
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -223,8 +268,8 @@ fun Home(navController: NavController) {
             Button(
                 onClick = { navController.navigate("PostFeed") },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFE37DE1),
-                    contentColor = Color.White
+                    containerColor = grey,
+                    contentColor = Color.Black
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -236,8 +281,8 @@ fun Home(navController: NavController) {
             Button(
                 onClick = { navController.navigate("CheckFeed") },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFE37DE1),
-                    contentColor = Color.White
+                    containerColor = grey,
+                    contentColor = Color.Black
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -249,8 +294,8 @@ fun Home(navController: NavController) {
             Button(
                 onClick = { navController.navigate("SendMessage") },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFE37DE1),
-                    contentColor = Color.White
+                    containerColor = grey,
+                    contentColor = Color.Black
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -262,8 +307,8 @@ fun Home(navController: NavController) {
             Button(
                 onClick = { navController.navigate("AddFriends") },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFE37DE1),
-                    contentColor = Color.White
+                    containerColor = grey,
+                    contentColor = Color.Black
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -369,18 +414,24 @@ fun CameraCaptureScreen(navController: NavController) {
                         }
                     )
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE37DE1))
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = grey,
+                    contentColor = Color.Black
+                )
             ) {
-                Text("Prendre une photo", color = Color.White)
+                Text("Prendre une photo")
             }
 
             Button(
                 onClick = {
                     galleryLauncher.launch("image/*")
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE37DE1))
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = grey,
+                    contentColor = Color.Black
+                )
             ) {
-                Text("Depuis galerie", color = Color.White)
+                Text("Depuis galerie")
             }
         }
     }
@@ -469,7 +520,7 @@ fun SendMessage(navController: NavController, viewModel: FriendViewModel = viewM
 
             Button(
                 onClick = { /* action pour nouvelle conversation */ },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE37DE1))
+                colors = ButtonDefaults.buttonColors(containerColor = grey)
             ) {
                 Text("+", color = Color.White)
             }
@@ -486,7 +537,7 @@ fun SendMessage(navController: NavController, viewModel: FriendViewModel = viewM
                         .clickable {
                             navController.navigate("conversation/${Uri.encode(name)}")
                         },
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF3E5F5))
+                    colors = CardDefaults.cardColors(containerColor = grey)
                 ) {
                     Text(
                         text = name,
@@ -535,7 +586,7 @@ fun ConversationScreen(username: String) {
                     contentAlignment = Alignment.CenterEnd
                 ) {
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFE1BEE7)),
+                        colors = CardDefaults.cardColors(containerColor = grey),
                         modifier = Modifier.widthIn(max = 250.dp)
                     ) {
                         Text(
@@ -571,9 +622,12 @@ fun ConversationScreen(username: String) {
                         messageText = ""
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE37DE1))
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = grey,
+                    contentColor = Color.Black
+                )
             ) {
-                Text("Envoyer", color = Color.White)
+                Text("Envoyer")
             }
         }
     }
@@ -623,9 +677,12 @@ fun AddFriends(viewModel: FriendViewModel = viewModel()) {
                     Text(text = user, style = MaterialTheme.typography.bodyLarge)
                     Button(
                         onClick = { viewModel.addFriend(user) },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE37DE1))
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = grey,
+                            contentColor = Color.Black
+                        )
                     ) {
-                        Text("Ajouter", color = Color.White)
+                        Text("Ajouter")
                     }
                 }
             }
