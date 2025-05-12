@@ -1,6 +1,5 @@
 package com.example.culinar
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -42,16 +41,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.compose.runtime.*
+import com.example.culinar.AccountScreens.LoginScreen
+import com.example.culinar.AccountScreens.ProfileScreen
+import com.example.culinar.AccountScreens.SignupScreen
+import com.example.culinar.GroceriesScreens.Grocery
 import com.example.culinar.ui.theme.CulinarTheme
 import com.example.culinar.ui.theme.Typography
 import com.example.culinar.ui.theme.darkGreen
@@ -82,20 +82,20 @@ fun CulinarApp(
     navController: NavHostController = rememberNavController()
 ) {
 
-    // Get the current back stack entry as a State
+    // Getting the current back stack entry as a State
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    // Get the current route from the back stack entry
+    // Getting the current route from the back stack entry
     val currentRoute = currentBackStackEntry?.destination?.route
 
     val navRoutes = { screen: Screen ->
         navController.navigate(screen.name) {
-            // Optional: Configure navigation behavior (e.g., pop up to a specific destination)
+            // Optional: Configuring navigation behavior (e.g., pop up to a specific destination)
             popUpTo(navController.graph.startDestinationId) {
                 saveState = true
             }
-            // Avoid building up a large stack of the same destination
+            // Avoiding building up a large stack of the same destination
             launchSingleTop = true
-            // Restore state when reselecting a previously selected item
+            // Restoring state when reselecting a previously selected item
             restoreState = true
         }
     }
@@ -108,27 +108,27 @@ fun CulinarApp(
         ) {
 
             composable(route = Screen.Home.name) {
-                HomeScreen(navRoutes = navRoutes, currentRoute = currentRoute)
+                HomeScreen(navRoutes = navRoutes, currentRoute = currentRoute, toAuth = { navRoutes(Screen.Account) })
             }
 
             composable(route = Screen.Groceries.name) {
-                Grocery(navRoutes = navRoutes, currentRoute = currentRoute)
+                Grocery(navRoutes = navRoutes, currentRoute = currentRoute, toAuth = { navRoutes(Screen.Account) })
             }
 
             composable(route = Screen.Recipes.name) {
-               RecipesScreen(navRoutes = navRoutes, currentRoute = currentRoute)
+               RecipesScreen(navRoutes = navRoutes, currentRoute = currentRoute, toAuth = { navRoutes(Screen.Account) })
             }
 
             composable(route = Screen.Account.name) {
-                AccountScreen()
+                AccountScreen(authAndNavigation = { navRoutes(Screen.Home) })
             }
 
             composable(route = Screen.Community.name) {
-                CommunityScreen(navRoutes = navRoutes, currentRoute = currentRoute)
+                CommunityScreen(navRoutes = navRoutes, currentRoute = currentRoute, toAuth = { navRoutes(Screen.Account) })
             }
 
             composable(route = Screen.Calendar.name) {
-                CalendarScreen(navRoutes = navRoutes, currentRoute = currentRoute)
+                CalendarScreen(navRoutes = navRoutes, currentRoute = currentRoute, toAuth = { navRoutes(Screen.Account) })
             }
 
 
@@ -140,53 +140,52 @@ fun CulinarApp(
 
 
 @Composable
-fun HomeScreen (modifier: Modifier = Modifier, navRoutes: (Screen) -> Unit = {}, currentRoute: String? = null) {
+fun HomeScreen (modifier: Modifier = Modifier, navRoutes: (Screen) -> Unit = {}, currentRoute: String? = null, toAuth : () -> Unit = {}) {
     Box()
     {
-        Header(modifier = modifier)
+        Header(modifier = modifier, toAuth = toAuth)
         Footer(modifier = modifier, navRoutes = navRoutes, screenName = currentRoute ?: "home")
     }
 }
 
 @Composable
-fun AccountScreen (modifier: Modifier = Modifier) {
+fun AccountScreen (modifier: Modifier = Modifier, authAndNavigation: () -> Unit = {}) {
 
     var currentScreen by remember { mutableStateOf("login") }
 
     Box()
     {
         when (currentScreen) {
-            "login" -> LoginScreen { currentScreen = "signup" }
+            "login" -> LoginScreen ({ currentScreen = "signup" }, authAndNavigation = authAndNavigation)
             "signup" -> SignupScreen { currentScreen = "profile" }
             "profile" -> ProfileScreen { currentScreen = "login" }
         }
-        Header(modifier = modifier)
     }
 }
 
 @Composable
-fun CalendarScreen (modifier: Modifier = Modifier, navRoutes: (Screen) -> Unit = {}, currentRoute: String? = null) {
+fun CalendarScreen (modifier: Modifier = Modifier, navRoutes: (Screen) -> Unit = {}, currentRoute: String? = null, toAuth : () -> Unit = {}) {
     Box()
     {
-        Header(modifier = modifier)
+        Header(modifier = modifier, toAuth = toAuth)
         Footer(modifier = modifier, screenName = currentRoute ?: "calendar", navRoutes = navRoutes)
     }
 }
 
 @Composable
-fun RecipesScreen (modifier: Modifier = Modifier, navRoutes: (Screen) -> Unit = {}, currentRoute: String? = null) {
+fun RecipesScreen (modifier: Modifier = Modifier, navRoutes: (Screen) -> Unit = {}, currentRoute: String? = null, toAuth : () -> Unit = {}) {
     Box()
     {
-        Header(modifier = modifier)
+        Header(modifier = modifier, toAuth = toAuth)
         Footer(modifier = modifier, screenName = currentRoute ?: "recipes", navRoutes = navRoutes)
     }
 }
 
 @Composable
-fun CommunityScreen (modifier: Modifier = Modifier, navRoutes: (Screen) -> Unit = {}, currentRoute: String? = null) {
+fun CommunityScreen (modifier: Modifier = Modifier, navRoutes: (Screen) -> Unit = {}, currentRoute: String? = null, toAuth : () -> Unit = {}) {
     Box()
     {
-        Header(modifier = modifier)
+        Header(modifier = modifier, toAuth = toAuth)
         Footer(modifier = modifier, screenName = currentRoute ?: "community", navRoutes = navRoutes)
     }
 }
@@ -195,7 +194,7 @@ fun CommunityScreen (modifier: Modifier = Modifier, navRoutes: (Screen) -> Unit 
 // Header bar
 
 @Composable
-fun Header(modifier: Modifier = Modifier) {
+fun Header(modifier: Modifier = Modifier, toAuth : () -> Unit = {}) {
 
     var menuClicked by remember { mutableStateOf(false) }
 
@@ -274,7 +273,7 @@ fun Header(modifier: Modifier = Modifier) {
 
                 // Profile settings button
                 TextButton(
-                    onClick = { menuClicked = !menuClicked },
+                    onClick = { toAuth() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
@@ -409,7 +408,6 @@ fun Footer(modifier: Modifier = Modifier, screenName: String = "home", navRoutes
         ) {
 
             // Calendar button
-            Log.d("Footer", screenName)
             Button(
                 onClick = { navRoutes(Screen.Calendar) },
                 modifier = Modifier.weight(1f).height(72.dp).padding(0.dp),

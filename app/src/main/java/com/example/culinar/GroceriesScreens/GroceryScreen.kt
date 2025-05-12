@@ -1,4 +1,4 @@
-package com.example.culinar
+package com.example.culinar.GroceriesScreens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -52,6 +52,9 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
+import com.example.culinar.Footer
+import com.example.culinar.Header
+import com.example.culinar.Screen
 import com.example.culinar.ui.theme.CulinarTheme
 import com.example.culinar.ui.theme.Typography
 
@@ -63,7 +66,7 @@ var toModify = ""
 
 
 @Composable
-fun Grocery(modifier: Modifier = Modifier, navRoutes: (Screen) -> Unit = {}, currentRoute: String? = null) {
+fun Grocery(modifier: Modifier = Modifier, navRoutes: (Screen) -> Unit = {}, currentRoute: String? = null, toAuth : () -> Unit = {}) {
     var screenOn by remember { mutableIntStateOf(1) }
 
     if (screenOn == 1) {
@@ -72,14 +75,17 @@ fun Grocery(modifier: Modifier = Modifier, navRoutes: (Screen) -> Unit = {}, cur
             changeOnboardingScreen = { value -> screenOn = value },
             modifier = modifier,
             navRoutes = navRoutes,
-            currentRoute = currentRoute)
+            currentRoute = currentRoute,
+            toAuth = toAuth
+        )
     } else if (screenOn == 2) {
         HomeTemplate(
             subscreen = { value -> GroceryAddItem(changeOnboardingScreen = value) },
             changeOnboardingScreen = { value -> screenOn = value },
             modifier = modifier,
             navRoutes = navRoutes,
-            currentRoute = currentRoute
+            currentRoute = currentRoute,
+            toAuth = toAuth
             )
     } else if (screenOn == 3) {
         HomeTemplate(
@@ -87,7 +93,8 @@ fun Grocery(modifier: Modifier = Modifier, navRoutes: (Screen) -> Unit = {}, cur
             changeOnboardingScreen = { value -> screenOn = value },
             modifier = modifier,
             navRoutes = navRoutes,
-            currentRoute = currentRoute
+            currentRoute = currentRoute,
+            toAuth = toAuth
             )
     }
 }
@@ -100,12 +107,13 @@ fun HomeTemplate(
     subscreen: @Composable ((Int) -> Unit) -> Unit = {},
     changeOnboardingScreen: (Int) -> Unit,
     navRoutes: (Screen) -> Unit = {},
-    currentRoute: String? = null
+    currentRoute: String? = null,
+    toAuth : () -> Unit = {}
     ) {
     Box()
     {
         subscreen(changeOnboardingScreen)
-        Header(modifier = modifier)
+        Header(modifier = modifier, toAuth = toAuth)
         Footer(modifier = modifier, screenName = currentRoute ?: "grocery", navRoutes = navRoutes)
     }
 }
