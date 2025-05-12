@@ -188,7 +188,7 @@ fun CommunityScreen (modifier: Modifier = Modifier, navRoutes: (Screen) -> Unit 
 // Header bar
 
 @Composable
-fun Header(modifier: Modifier = Modifier, screenName: String = "home") {
+fun Header(modifier: Modifier = Modifier) {
 
     var menuClicked by remember { mutableStateOf(false) }
 
