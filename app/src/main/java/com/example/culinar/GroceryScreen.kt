@@ -1,9 +1,5 @@
 package com.example.culinar
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -36,7 +32,6 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -65,50 +60,53 @@ val AllGroceryItems = List(10) { index -> "item ${index + 1}" }
 var groceryItems = AllGroceryItems.filter { it.contains("1") }
 var toModify = ""
 
-class GroceryActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        
-        setContent {
-            CulinarTheme {
-                Scaffold(modifier = Modifier.fillMaxSize().background(color = Color(0xFFFFFFFF))) { innerPadding ->
-                    Grocery(
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
-        }
-    }
 
-    override fun onResume() {
-        super.onResume()
-        //groceryItems = AllGroceryItems.filter { it.contains("item") }
-    }
-}
 
 @Composable
-fun Grocery(modifier: Modifier = Modifier) {
+fun Grocery(modifier: Modifier = Modifier, navRoutes: (Screen) -> Unit = {}, currentRoute: String? = null) {
     var screenOn by remember { mutableIntStateOf(1) }
 
     if (screenOn == 1) {
-        HomeTemplate(subscreen = { value -> GroceryList(changeOnboardingScreen = value) }, changeOnboardingScreen = { value -> screenOn = value }, modifier = modifier)
+        HomeTemplate(
+            subscreen = { value -> GroceryList(changeOnboardingScreen = value) },
+            changeOnboardingScreen = { value -> screenOn = value },
+            modifier = modifier,
+            navRoutes = navRoutes,
+            currentRoute = currentRoute)
     } else if (screenOn == 2) {
-        HomeTemplate(subscreen = { value -> GroceryAddItem(changeOnboardingScreen = value) }, changeOnboardingScreen = { value -> screenOn = value }, modifier = modifier)
+        HomeTemplate(
+            subscreen = { value -> GroceryAddItem(changeOnboardingScreen = value) },
+            changeOnboardingScreen = { value -> screenOn = value },
+            modifier = modifier,
+            navRoutes = navRoutes,
+            currentRoute = currentRoute
+            )
     } else if (screenOn == 3) {
-        HomeTemplate(subscreen = { value -> GroceryModifyItem(changeOnboardingScreen = value) }, changeOnboardingScreen = { value -> screenOn = value }, modifier = modifier)
+        HomeTemplate(
+            subscreen = { value -> GroceryModifyItem(changeOnboardingScreen = value) },
+            changeOnboardingScreen = { value -> screenOn = value },
+            modifier = modifier,
+            navRoutes = navRoutes,
+            currentRoute = currentRoute
+            )
     }
 }
 
 
 
 @Composable
-fun HomeTemplate(modifier: Modifier = Modifier, subscreen: @Composable ((Int) -> Unit) -> Unit = {}, changeOnboardingScreen: (Int) -> Unit) {
+fun HomeTemplate(
+    modifier: Modifier = Modifier,
+    subscreen: @Composable ((Int) -> Unit) -> Unit = {},
+    changeOnboardingScreen: (Int) -> Unit,
+    navRoutes: (Screen) -> Unit = {},
+    currentRoute: String? = null
+    ) {
     Box()
     {
         subscreen(changeOnboardingScreen)
         Header(modifier = modifier)
-        Footer(modifier = modifier)
+        Footer(modifier = modifier, screenName = currentRoute ?: "grocery", navRoutes = navRoutes)
     }
 }
 

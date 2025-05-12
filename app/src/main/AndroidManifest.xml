@@ -13,14 +13,6 @@
         android:theme="@style/Theme.Culinar"
         tools:targetApi="31">
         <activity
-            android:name=".HomeActivity"
-            android:exported="true"
-            android:theme="@style/Theme.Culinar"/>
-        <activity
-            android:name=".GroceryActivity"
-            android:exported="true"
-            android:theme="@style/Theme.Culinar"/>
-        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Culinar">
