@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -52,6 +51,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.runtime.*
 import com.example.culinar.ui.theme.CulinarTheme
 import com.example.culinar.ui.theme.Typography
 import com.example.culinar.ui.theme.darkGreen
@@ -65,7 +65,6 @@ enum class Screen { Account, Home, Calendar, Groceries, Recipes, Community }
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             CulinarTheme {
                     CulinarApp()
@@ -151,8 +150,16 @@ fun HomeScreen (modifier: Modifier = Modifier, navRoutes: (Screen) -> Unit = {},
 
 @Composable
 fun AccountScreen (modifier: Modifier = Modifier) {
+
+    var currentScreen by remember { mutableStateOf("login") }
+
     Box()
     {
+        when (currentScreen) {
+            "login" -> LoginScreen { currentScreen = "signup" }
+            "signup" -> SignupScreen { currentScreen = "profile" }
+            "profile" -> ProfileScreen { currentScreen = "login" }
+        }
         Header(modifier = modifier)
     }
 }
@@ -198,7 +205,7 @@ fun Header(modifier: Modifier = Modifier) {
                 .height(30.dp)
                 .fillMaxWidth()
                 .background(color = mediumGreen)
-        ){}
+        ) {}
 
 
         Row(
@@ -234,7 +241,7 @@ fun Header(modifier: Modifier = Modifier) {
             //Spacer(modifier = Modifier.weight(1f))
             // Profile picture
             TextButton(
-                onClick = {menuClicked = !menuClicked},
+                onClick = { menuClicked = !menuClicked },
                 modifier = Modifier.width(85.dp).height(85.dp).padding(0.dp),
                 shape = CutCornerShape(3.dp),
                 colors = ButtonColors(
@@ -280,7 +287,7 @@ fun Header(modifier: Modifier = Modifier) {
                     )
                 ) {
 
-                    Row (
+                    Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxWidth()
@@ -293,7 +300,12 @@ fun Header(modifier: Modifier = Modifier) {
                                 .width(30.dp)
                                 .height(30.dp)
                         )
-                        Text("Compte", style = Typography.bodyMedium, color = Color(0xFF0A0A0A), modifier = Modifier.padding(horizontal = 10.dp))
+                        Text(
+                            "Compte",
+                            style = Typography.bodyMedium,
+                            color = Color(0xFF0A0A0A),
+                            modifier = Modifier.padding(horizontal = 10.dp)
+                        )
                     }
                 }
 
@@ -312,7 +324,7 @@ fun Header(modifier: Modifier = Modifier) {
                     )
                 ) {
 
-                    Row (
+                    Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxWidth()
@@ -325,12 +337,17 @@ fun Header(modifier: Modifier = Modifier) {
                                 .width(30.dp)
                                 .height(30.dp)
                         )
-                        Text("Paramètres", style = Typography.bodyMedium, color = Color(0xFF0A0A0A), modifier = Modifier.padding(horizontal = 10.dp))
+                        Text(
+                            "Paramètres",
+                            style = Typography.bodyMedium,
+                            color = Color(0xFF0A0A0A),
+                            modifier = Modifier.padding(horizontal = 10.dp)
+                        )
                     }
                 }
 
                 // Log out button
-                TextButton (
+                TextButton(
                     onClick = { menuClicked = !menuClicked },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -344,7 +361,7 @@ fun Header(modifier: Modifier = Modifier) {
                     )
                 ) {
 
-                    Row (
+                    Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxWidth()
@@ -360,14 +377,20 @@ fun Header(modifier: Modifier = Modifier) {
                                     rotationZ = 180f
                                 }
                         )
-                        Text("Déconnexion", style = Typography.bodyMedium, color = Color(0xFF0A0A0A), modifier = Modifier.padding(horizontal = 10.dp))
+                        Text(
+                            "Déconnexion",
+                            style = Typography.bodyMedium,
+                            color = Color(0xFF0A0A0A),
+                            modifier = Modifier.padding(horizontal = 10.dp)
+                        )
                     }
+
+                    
                 }
             }
         }
     }
 }
-
 // Footer bar
 
 @Composable
@@ -495,3 +518,4 @@ fun Footer(modifier: Modifier = Modifier, screenName: String = "home", navRoutes
         }
     }
 }
+
