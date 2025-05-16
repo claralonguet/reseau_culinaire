@@ -5,7 +5,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -52,9 +51,6 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
-import com.example.culinar.Footer
-import com.example.culinar.Header
-import com.example.culinar.Screen
 import com.example.culinar.ui.theme.CulinarTheme
 import com.example.culinar.ui.theme.Typography
 
@@ -66,57 +62,23 @@ var toModify = ""
 
 
 @Composable
-fun Grocery(modifier: Modifier = Modifier, navRoutes: (Screen) -> Unit = {}, currentRoute: String? = null, toAuth : () -> Unit = {}) {
+fun Grocery() {
     var screenOn by remember { mutableIntStateOf(1) }
 
+    val changeOnboardingScreen = { value : Int -> screenOn = value }
+
     if (screenOn == 1) {
-        HomeTemplate(
-            subscreen = { value -> GroceryList(changeOnboardingScreen = value) },
-            changeOnboardingScreen = { value -> screenOn = value },
-            modifier = modifier,
-            navRoutes = navRoutes,
-            currentRoute = currentRoute,
-            toAuth = toAuth
-        )
+        GroceryList(changeOnboardingScreen = changeOnboardingScreen)
+
     } else if (screenOn == 2) {
-        HomeTemplate(
-            subscreen = { value -> GroceryAddItem(changeOnboardingScreen = value) },
-            changeOnboardingScreen = { value -> screenOn = value },
-            modifier = modifier,
-            navRoutes = navRoutes,
-            currentRoute = currentRoute,
-            toAuth = toAuth
-            )
+        GroceryAddItem(changeOnboardingScreen = changeOnboardingScreen)
+
     } else if (screenOn == 3) {
-        HomeTemplate(
-            subscreen = { value -> GroceryModifyItem(changeOnboardingScreen = value) },
-            changeOnboardingScreen = { value -> screenOn = value },
-            modifier = modifier,
-            navRoutes = navRoutes,
-            currentRoute = currentRoute,
-            toAuth = toAuth
-            )
+        GroceryModifyItem(changeOnboardingScreen = changeOnboardingScreen)
+
     }
 }
 
-
-
-@Composable
-fun HomeTemplate(
-    modifier: Modifier = Modifier,
-    subscreen: @Composable ((Int) -> Unit) -> Unit = {},
-    changeOnboardingScreen: (Int) -> Unit,
-    navRoutes: (Screen) -> Unit = {},
-    currentRoute: String? = null,
-    toAuth : () -> Unit = {}
-    ) {
-    Box()
-    {
-        subscreen(changeOnboardingScreen)
-        Header(modifier = modifier, toAuth = toAuth)
-        Footer(modifier = modifier, screenName = currentRoute ?: "grocery", navRoutes = navRoutes)
-    }
-}
 
 @Composable
 fun GroceryList(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) -> Unit) {
@@ -125,19 +87,23 @@ fun GroceryList(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) -> 
 
     // Screen content
     Column (verticalArrangement = Arrangement.SpaceEvenly, horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier.fillMaxSize()) {
-        // Header place
-        Spacer(modifier = modifier.height(90.dp))
 
-        // Body place
+
         // Title of the subscreen
-        Text(
-            text = "Ma liste de courses",
-            style = Typography.titleLarge,
-            fontSize = 30.sp,
-            modifier = modifier.fillMaxWidth()
-                .background(color = Color(0xFFE5E3E3))
+        Row (
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = modifier
+                .fillMaxWidth()
                 .height(50.dp)
+                .background(color = Color(0xFFE5E3E3))
+        ) {
+            Text(
+                text = "Ma liste de courses",
+                style = Typography.titleLarge,
+                fontSize = 30.sp,
+                modifier = modifier.fillMaxWidth()
             )
+        }
 
         Spacer(modifier = modifier.height(15.dp))
 
@@ -188,8 +154,6 @@ fun GroceryList(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) -> 
             }
         }
 
-        // Footer space
-        Spacer(modifier = modifier.height(90.dp))
     }
 }
 
@@ -314,10 +278,7 @@ fun GroceryAddItem(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) 
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxSize()
     ) {
-        // Header place
-        Spacer(modifier = modifier.height(90.dp))
 
-        // Body place
         var nameText by remember { mutableStateOf(toModify) }
 
         // Screen title and options
@@ -576,8 +537,6 @@ fun GroceryAddItem(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) 
             }
 
 
-            // Footer space
-            Spacer(modifier = modifier.height(90.dp))
         }
 
     }

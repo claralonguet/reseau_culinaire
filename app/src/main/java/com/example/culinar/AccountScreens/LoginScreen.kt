@@ -10,6 +10,23 @@ import androidx.compose.ui.unit.dp
 import com.example.culinar.ui.theme.CulinarTheme
 import com.example.culinar.ui.theme.GreenPrimary
 
+
+@Composable
+fun AccountScreen (modifier: Modifier = Modifier, authAndNavigation: () -> Unit = {}) {
+
+    var currentScreen by remember { mutableStateOf("login") }
+
+    Box()
+    {
+        when (currentScreen) {
+            "login" -> LoginScreen ({ currentScreen = "signup" }, authAndNavigation = authAndNavigation)
+            "signup" -> SignupScreen { currentScreen = "profile" }
+            "profile" -> ProfileScreen { currentScreen = "login" }
+        }
+    }
+}
+
+
 @Composable
 fun LoginScreen(
     changeScreen: (String) -> Unit,

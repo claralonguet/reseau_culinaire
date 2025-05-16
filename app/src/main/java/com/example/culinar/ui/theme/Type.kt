@@ -61,7 +61,7 @@ val Typography = Typography(
     ),
     // For screens titles
     titleLarge = TextStyle(
-        fontFamily = FontFamily.Serif,
+        fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
         fontSize = 40.sp,
         lineHeight = 50.sp,
