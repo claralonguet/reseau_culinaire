@@ -1,4 +1,4 @@
-package com.example.culinar.models
+package com.example.culinar.models.viewModels
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel

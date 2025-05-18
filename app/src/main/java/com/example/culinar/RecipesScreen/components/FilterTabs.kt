@@ -50,14 +50,14 @@ fun FilterTabs(
                 onClick = { onFilterChange(filter) },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isSelected) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
                         MaterialTheme.colorScheme.secondary
+                    } else {
+                        MaterialTheme.colorScheme.primary
                     },
                     contentColor = if (isSelected) {
                         MaterialTheme.colorScheme.onPrimary
                     } else {
-                        MaterialTheme.colorScheme.onSecondary
+                        MaterialTheme.colorScheme.onPrimary
                     },
                 )
             ) {

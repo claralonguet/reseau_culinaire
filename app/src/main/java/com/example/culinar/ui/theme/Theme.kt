@@ -9,15 +9,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
-// Définition des couleurs globales
-val GreenPrimary = Color(0xFF69F0AE)
-val PurplePrimary = Purple40
+
 
 // Jeu de couleurs en mode sombre
 private val DarkColorScheme = darkColorScheme(
-    primary = PurplePrimary, 
-    secondary = PurpleGrey80,
-    tertiary = Pink80,
+    primary = mediumGreen,
+    secondary = darkGreen,
+    tertiary = lightGreen,
     background = Color(0xFF121212),
     surface = Color(0xFF1E1E1E),
     onPrimary = Color.White,
@@ -28,12 +26,12 @@ private val DarkColorScheme = darkColorScheme(
 
 // Jeu de couleurs en mode clair
 private val LightColorScheme = lightColorScheme(
-    primary = PurplePrimary, 
-    secondary = PurpleGrey40,
-    tertiary = Pink40,
+    primary = mediumGreen,
+    secondary = darkGreen,
+    tertiary = lightGreen,
     background = Color.White,
     surface = Color(0xFFFFFBFE),
-    onPrimary = Color.Black,
+    onPrimary = Color.White,
     onSecondary = Color.Black,
     onBackground = Color.Black,
     onSurface = Color.Black
@@ -53,10 +51,13 @@ fun CulinarTheme(
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
+        /*
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
+        */
+
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }

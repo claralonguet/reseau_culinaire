@@ -1,6 +1,5 @@
 package com.example.culinar.ui.screens
 
-import android.inputmethodservice.Keyboard.Row
 import androidx.compose.foundation.background
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
@@ -11,17 +10,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.example.culinar.models.Screen
 import com.example.culinar.ui.components.FilterTabs
 import com.example.culinar.ui.components.RecipeCard
+import com.example.culinar.ui.theme.Typography
+import com.example.culinar.ui.theme.grey
+import com.example.culinar.ui.theme.mediumGreen
 import com.example.culinar.viewmodels.RecipeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecipeListScreen(navController: NavController, vm: RecipeViewModel) {
+fun RecipeListScreen(navController: NavHostController = rememberNavController(), vm: RecipeViewModel = viewModel ()) {
     // On récupère le filtre et les recettes filtrées depuis le ViewModel
     val filter by remember{ vm::filter }
     val list = vm.getFiltered()
@@ -29,19 +36,19 @@ fun RecipeListScreen(navController: NavController, vm: RecipeViewModel) {
 
     // Structure de la page avec un app bar et un lazy column
     Column(Modifier.fillMaxSize()) {
-        Spacer(Modifier.height(90.dp))
         // AppBar avec le titre
-        Row(
-            modifier = Modifier.background(
-            color = Color.Gray
-            ).height(50.dp)
+        Row (
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .background(color = grey)
         ) {
             Text(
                 text = "Recettes",
-                color = Color.Black,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.titleLarge
+                style = Typography.titleLarge,
             )
         }
 
@@ -64,7 +71,7 @@ fun RecipeListScreen(navController: NavController, vm: RecipeViewModel) {
                     vm.toggleFavorite(list[i])
                 }) { id ->
                     vm.recordHistory(list[i])
-                    navController.navigate("recipeDetail/$id")
+                    navController.navigate("${Screen.RecipeDetail.name}/$id")
                 }
             }
         }
@@ -72,22 +79,9 @@ fun RecipeListScreen(navController: NavController, vm: RecipeViewModel) {
     }
 }
 
-/*
 @Preview(showBackground = true)
 @Composable
 fun RecipeListScreenPreview() {
-    // Initialisation du ViewModel avec des données d'exemple
-    val viewModel = RecipeViewModel().apply {
-        // Ajouter des recettes d'exemple
-        recipes.addAll(
-            listOf(
-                Recipe(3, "Salade Césartyy", "url_image1", "15 min", "Facile", ingredients = listOf("Laitue", "Poulet", "Parmesan"), steps = listOf("Couper la laitue", "Griller le poulet")),
-                Recipe(4, "Tarte aux pommestyy", "url_image2", "45 min", "Moyen", ingredients = listOf("Pommes", "Pâte", "Sucre"), steps = listOf("Peler les pommes", "Monter la tarte"))
-            )
-        )
-    }
-
-    // Passer le ViewModel à la RecipeListScreen
-    RecipeListScreen(vm = viewModel)
-}*/
+    RecipeListScreen()
+}
 

@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
 import com.example.culinar.ui.theme.CulinarTheme
 import com.example.culinar.ui.theme.Typography
+import com.example.culinar.ui.theme.grey
 
 // Retrieve list of grocery items
 val AllGroceryItems = List(10) { index -> "item ${index + 1}" }
@@ -95,7 +96,7 @@ fun GroceryList(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) -> 
             modifier = modifier
                 .fillMaxWidth()
                 .height(50.dp)
-                .background(color = Color(0xFFE5E3E3))
+                .background(color = grey)
         ) {
             Text(
                 text = "Ma liste de courses",

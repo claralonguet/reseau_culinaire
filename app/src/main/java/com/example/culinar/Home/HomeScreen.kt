@@ -31,6 +31,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -69,7 +70,7 @@ fun TopBar(modifier: Modifier = Modifier, toAuth : () -> Unit = {}) {
             modifier = Modifier
                 .height(30.dp)
                 .fillMaxWidth()
-                .background(color = mediumGreen)
+                .background(color = MaterialTheme.colorScheme.primary)
         ) {}
 
 
@@ -77,14 +78,14 @@ fun TopBar(modifier: Modifier = Modifier, toAuth : () -> Unit = {}) {
             modifier = Modifier
                 .height(60.dp)
                 .fillMaxWidth()
-                .background(color = mediumGreen),
+                .background(color = MaterialTheme.colorScheme.primary),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
             // App title
             Text(
                 text = "Culinary",
-                style = Typography.headlineLarge,
+                style = MaterialTheme.typography.headlineLarge,
                 textAlign = TextAlign.Center,
                 color = Color.White,
                 modifier = Modifier.padding(horizontal = 5.dp)
@@ -110,7 +111,7 @@ fun TopBar(modifier: Modifier = Modifier, toAuth : () -> Unit = {}) {
                 modifier = Modifier.width(85.dp).height(85.dp).padding(0.dp),
                 shape = CutCornerShape(3.dp),
                 colors = ButtonColors(
-                    containerColor = if (menuClicked) darkGreen else mediumGreen,
+                    containerColor = if (menuClicked) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary,
                     contentColor = Color.White,
                     disabledContainerColor = Color(0xFF3CB460),
                     disabledContentColor = Color.White
@@ -167,7 +168,7 @@ fun TopBar(modifier: Modifier = Modifier, toAuth : () -> Unit = {}) {
                         )
                         Text(
                             "Compte",
-                            style = Typography.bodyMedium,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = Color(0xFF0A0A0A),
                             modifier = Modifier.padding(horizontal = 10.dp)
                         )
@@ -204,7 +205,7 @@ fun TopBar(modifier: Modifier = Modifier, toAuth : () -> Unit = {}) {
                         )
                         Text(
                             "Paramètres",
-                            style = Typography.bodyMedium,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = Color(0xFF0A0A0A),
                             modifier = Modifier.padding(horizontal = 10.dp)
                         )
@@ -244,7 +245,7 @@ fun TopBar(modifier: Modifier = Modifier, toAuth : () -> Unit = {}) {
                         )
                         Text(
                             "Déconnexion",
-                            style = Typography.bodyMedium,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = Color(0xFF0A0A0A),
                             modifier = Modifier.padding(horizontal = 10.dp)
                         )
@@ -268,7 +269,7 @@ fun BottomNavBar(modifier: Modifier = Modifier, navRoutes: (String) -> Unit = {}
     NavigationBar(
         modifier = Modifier.fillMaxWidth().height(85.dp),
         contentColor = Color.White,
-        containerColor = mediumGreen // Couleur de fond de la barre
+        containerColor = MaterialTheme.colorScheme.primary // Couleur de fond de la barre
     ) {
         // Calendar button
         NavigationBarItem(

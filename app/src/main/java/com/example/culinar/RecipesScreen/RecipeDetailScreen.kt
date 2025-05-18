@@ -21,7 +21,7 @@ import com.example.culinar.models.Recipe
 fun RecipeDetailScreen(recipe: Recipe) {
 
     Column(modifier = Modifier.padding(bottom = 90.dp)){
-        Spacer(Modifier.height(90.dp))
+
         // Titre (nom de la recette)
         Row(modifier = Modifier
             .background(color = Color.Gray)

@@ -34,7 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.culinar.models.FriendViewModel
+import com.example.culinar.models.viewModels.FriendViewModel
 import com.example.culinar.ui.theme.grey
 
 

@@ -10,12 +10,17 @@ enum class Screen {
     Community,
 
     // Secondary screens
-    // ... Community
+    // ... Home
     PostFeed,
     CheckFeed,
     SendMessage,
     AddFriends,
     Conversation,
-    PhotoPreview
+    PhotoPreview,
+
+    // ... Recipes
+    RecipeList,
+    RecipeDetail,
+
 }
 

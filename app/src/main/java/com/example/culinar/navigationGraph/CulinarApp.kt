@@ -7,7 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -27,16 +26,19 @@ import com.example.culinar.Home.TopBar
 import com.example.culinar.Home.Home
 import com.example.culinar.CommunityScreens.PhotoPreviewScreen
 import com.example.culinar.CommunityScreens.PostFeed
-import com.example.culinar.RecipesScreen.RecipesScreen
 import com.example.culinar.CommunityScreens.SendMessage
-import com.example.culinar.models.FriendViewModel
+import com.example.culinar.models.viewModels.FriendViewModel
 import com.example.culinar.models.Screen
+import com.example.culinar.ui.screens.RecipeDetailScreen
+import com.example.culinar.ui.screens.RecipeListScreen
+import com.example.culinar.viewmodels.RecipeViewModel
 
 @Composable
 fun CulinarApp(
     modifier: Modifier = Modifier,
     //viewModel: CulinarViewModel = viewModel(),
     friendViewModel: FriendViewModel = viewModel(),
+    viewModelRecipes: RecipeViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
 
@@ -83,12 +85,13 @@ fun CulinarApp(
             composable(route = Screen.Home.name) { Home(navRoutes = navRoutes) }
             composable(route = Screen.Calendar.name) {CalendarScreen() }
             composable(route = Screen.Groceries.name) { Grocery() }
-            composable(route = Screen.Recipes.name) { RecipesScreen() }
+            composable(route = Screen.Recipes.name) { RecipeListScreen(navController = navController, vm = viewModelRecipes) }
             composable(route = Screen.Community.name) { CommunityScreen() }
 
 
-            // Secondary screens routes (accessible from within main screens
+            // Secondary screens routes (accessible from within main screens)
 
+            // ...Home screen sub-routes
             composable(route = Screen.PostFeed.name) { PostFeed(navController) }
             composable(route = Screen.CheckFeed.name) { CheckFeed() }
             composable(route = Screen.SendMessage.name) { SendMessage(navController, friendViewModel) }
@@ -103,7 +106,6 @@ fun CulinarApp(
                 val username = backStackEntry.arguments?.getString("username")
                 username?.let { ConversationScreen(username = it) }
             }
-
             composable(
                 "${Screen.PhotoPreview.name}?uri={uri}",
                 arguments = listOf(
@@ -116,6 +118,19 @@ fun CulinarApp(
             ) { backStackEntry ->
                 val uri = backStackEntry.arguments?.getString("uri")
                 PhotoPreviewScreen(imageUriString = uri)
+            }
+
+
+            // ...Recipes screen sub-routes
+            composable(Screen.RecipeList.name) {
+                RecipeListScreen(navController = navController, vm = viewModelRecipes)
+            }
+            composable("${Screen.RecipeDetail.name}/{id}") { backStackEntry ->
+                val id = backStackEntry.arguments?.getString("id")?.toIntOrNull()
+                val recipe = viewModelRecipes.findById(id ?: 0)
+                if (recipe != null) {
+                    RecipeDetailScreen(recipe = recipe)
+                }
             }
 
         }

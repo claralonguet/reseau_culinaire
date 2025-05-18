@@ -36,7 +36,7 @@ val Typography = Typography(
         lineHeight = 28.sp,
         letterSpacing = 0.sp
     ),
-    // For action bar menu items
+    // For top navbar menu items
     bodyMedium = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
@@ -63,12 +63,11 @@ val Typography = Typography(
     titleLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
-        fontSize = 40.sp,
+        fontSize = 30.sp,
         lineHeight = 50.sp,
         letterSpacing = 1.sp,
         textAlign = TextAlign.Center,
         color = mediumGreen,
-
         ),
     // For subsections titles
     titleMedium = TextStyle(
