@@ -24,6 +24,7 @@ import com.example.culinar.ui.components.RecipeCard
 import com.example.culinar.ui.theme.Typography
 import com.example.culinar.ui.theme.grey
 import com.example.culinar.ui.theme.mediumGreen
+import com.example.culinar.viewmodels.Filter
 import com.example.culinar.viewmodels.RecipeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,6 +34,7 @@ fun RecipeListScreen(navController: NavHostController = rememberNavController(),
     val filter by remember{ vm::filter }
     val list = vm.getFiltered()
     var currentFilter by remember { mutableStateOf(filter) }
+    var searchFilterRecipes by remember { mutableStateOf("") }
 
     // Structure de la page avec un app bar et un lazy column
     Column(Modifier.fillMaxSize()) {
@@ -60,8 +62,24 @@ fun RecipeListScreen(navController: NavHostController = rememberNavController(),
         onFilterChange = { selectedFilter ->
             currentFilter = selectedFilter
             vm.setFilter(selectedFilter) // Mettez à jour le filtre dans le ViewModel
+            searchFilterRecipes = selectedFilter.name
         }
     )
+        Spacer(modifier = Modifier.height(5.dp))
+        if ( searchFilterRecipes == Filter.SEARCH.name) {
+            OutlinedTextField(
+                value = vm.searchRecipes,
+                onValueChange = {
+                    vm.UpdateSearchRecipes(it)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                label = { Text("Rechercher une recette") },
+                singleLine = true
+            )
+       }
+
 
         // Liste des recettes avec LazyColumn
         LazyColumn(Modifier.fillMaxSize().padding(bottom = 90.dp)) {
