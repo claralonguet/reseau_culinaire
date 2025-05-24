@@ -66,6 +66,7 @@ fun RecipeListScreen(navController: NavHostController = rememberNavController(),
             }
         )
         Spacer(modifier = Modifier.height(5.dp))
+        //ajout d'une barre de recherche si le filtre est sur la recherche
         if ( searchFilterRecipes == Filter.SEARCH.name) {
             OutlinedTextField(
                 value = vm.searchRecipes,

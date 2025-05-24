@@ -23,10 +23,11 @@ class RecipeViewModel : ViewModel() {
 
     var history = mutableStateListOf<Recipe>()
         private set
-
+    // Mot de recherche pour la liste des recettes
     var searchRecipes by mutableStateOf("")
         private set
 
+    // Mettre à jour le mot de recherche en fonction de la saisie de l'utilisateur
     fun UpdateSearchRecipes(query: String) {
         searchRecipes = query
     }
