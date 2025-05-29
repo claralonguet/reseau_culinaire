@@ -23,28 +23,27 @@ class RecipeViewModel : ViewModel() {
 
     var history = mutableStateListOf<Recipe>()
         private set
-    // Mot de recherche pour la liste des recettes
-    var searchRecipes by mutableStateOf("")
-        private set
-
-    // Mettre à jour le mot de recherche en fonction de la saisie de l'utilisateur
-    fun UpdateSearchRecipes(query: String) {
-        searchRecipes = query
-    }
 
     init {
         // Exemples de recettes
         recipes.addAll(listOf(
-            Recipe("1Salade César", "url_image1", "15 min", "Facile",
+            Recipe("Salade César", "url_image1", "15 min", "Facile",
                 ingredients = listOf("Laitue", "Poulet", "Parmesan"), steps = listOf("Couper la laitue", "Griller le poulet")),
-            Recipe("2Tarte aux pommes", "url_image2", "45 min", "Moyen",
-                ingredients = listOf("Pommes", "Pâte", "Sucre"), steps = listOf("Peler les pommes", "Monter la tarte")),
-            Recipe("3Salade César", "url_image1", "15 min", "Facile",
-                ingredients = listOf("Laitue", "Poulet", "Parmesan"), steps = listOf("Couper la laitue", "Griller le poulet")),
-            Recipe("4Tarte aux pommes", "url_image2", "45 min", "Moyen",
+            Recipe("Tarte aux pommes", "url_image2", "45 min", "Moyen",
                 ingredients = listOf("Pommes", "Pâte", "Sucre"), steps = listOf("Peler les pommes", "Monter la tarte"))
         ))
     }
+    /*
+    val viewModelRecipes = RecipeViewModel().apply {
+        // Ajouter des recettes d'exemple
+        recipes.addAll(
+            listOf(
+                Recipe("Salade Césartyy", "url_image1", "15 min", "Facile", ingredients = listOf("Laitue", "Poulet", "Parmesan"), steps = listOf("Couper la laitue", "Griller le poulet")),
+                Recipe("Tarte aux pommestyy", "url_image2", "45 min", "Moyen", ingredients = listOf("Pommes", "Pâte", "Sucre"), steps = listOf("Peler les pommes", "Monter la tarte"))
+            )
+        )
+    }
+    */
 
     fun setFilter(f: Filter) { _filter.value = f }
 
@@ -59,9 +58,7 @@ class RecipeViewModel : ViewModel() {
     fun getFiltered(): List<Recipe> = when (filter) {
         Filter.ALL -> recipes
         Filter.DAILY -> recipes.take(3)  // par ex.
-        Filter.SEARCH -> recipes.filter{
-            it.name.contains(searchRecipes, ignoreCase = true)
-        }         // implémenter une vraie recherche
+        Filter.SEARCH -> recipes         // implémenter une vraie recherche
         Filter.FAVORITES -> recipes.filter { it.isFavorite }
         Filter.HISTORY -> history
     }
