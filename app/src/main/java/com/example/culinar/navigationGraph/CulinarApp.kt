@@ -106,7 +106,7 @@ fun CulinarApp(
                 val username = backStackEntry.arguments?.getString("username")
                 username?.let { ConversationScreen(username = it) }
             }
-            composable(
+            composable( 
                 "${Screen.PhotoPreview.name}?uri={uri}",
                 arguments = listOf(
                     navArgument("uri") {
