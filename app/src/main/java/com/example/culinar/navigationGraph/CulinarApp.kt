@@ -126,8 +126,8 @@ fun CulinarApp(
                 RecipeListScreen(navController = navController, vm = viewModelRecipes)
             }
             composable("${Screen.RecipeDetail.name}/{id}") { backStackEntry ->
-                val id = backStackEntry.arguments?.getString("id")?.toIntOrNull()
-                val recipe = viewModelRecipes.findById(id ?: 0)
+                val id = backStackEntry.arguments?.getString("id")
+                val recipe = viewModelRecipes.findById(id ?: "")
                 if (recipe != null) {
                     RecipeDetailScreen(recipe = recipe)
                 }

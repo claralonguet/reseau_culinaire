@@ -14,7 +14,7 @@ data class Recipe(
     val difficulty: String,
     val ingredients: List<String> = emptyList(),
     val steps: List<String> = emptyList(),
-    val id: Int = Random.Default.nextInt(0, 1000000)
+    val firestoreId: String = ""
 ) {
     var isFavorite by mutableStateOf(false)
 }

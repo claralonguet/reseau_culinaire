@@ -7,6 +7,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.culinar.models.Recipe
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore// ajout pour communication avec la base de donnée
+import com.google.firebase.ktx.Firebase //ajout pour communication avec la base de donnée
 
 
 enum class Filter { ALL, DAILY, SEARCH, FAVORITES, HISTORY }
@@ -23,27 +26,59 @@ class RecipeViewModel : ViewModel() {
 
     var history = mutableStateListOf<Recipe>()
         private set
+    // Mot de recherche pour la liste des recettes
+    var searchRecipes by mutableStateOf("")
+        private set
+
+    private val db: FirebaseFirestore = Firebase.firestore
+
+    // Mettre à jour le mot de recherche en fonction de la saisie de l'utilisateur
+    fun UpdateSearchRecipes(query: String) {
+        searchRecipes = query
+    }
+
+
 
     init {
-        // Exemples de recettes
-        recipes.addAll(listOf(
-            Recipe("Salade César", "url_image1", "15 min", "Facile",
-                ingredients = listOf("Laitue", "Poulet", "Parmesan"), steps = listOf("Couper la laitue", "Griller le poulet")),
-            Recipe("Tarte aux pommes", "url_image2", "45 min", "Moyen",
-                ingredients = listOf("Pommes", "Pâte", "Sucre"), steps = listOf("Peler les pommes", "Monter la tarte"))
-        ))
+
+        fetchRecipesFromFirestore()
     }
-    /*
-    val viewModelRecipes = RecipeViewModel().apply {
-        // Ajouter des recettes d'exemple
-        recipes.addAll(
-            listOf(
-                Recipe("Salade Césartyy", "url_image1", "15 min", "Facile", ingredients = listOf("Laitue", "Poulet", "Parmesan"), steps = listOf("Couper la laitue", "Griller le poulet")),
-                Recipe("Tarte aux pommestyy", "url_image2", "45 min", "Moyen", ingredients = listOf("Pommes", "Pâte", "Sucre"), steps = listOf("Peler les pommes", "Monter la tarte"))
-            )
-        )
+
+    private fun fetchRecipesFromFirestore() {
+        db.collection("Recette")
+            .get()
+            .addOnSuccessListener { result ->
+                recipes.clear()
+                for (document in result) {
+
+                    val documentId = document.id
+
+                    // recuperation des données des champs
+                    val name = document.getString("name") ?: ""
+                    val imageUrl = document.getString("imageUrl") ?: ""
+                    val prepTime = document.getString("prepTime") ?: ""
+                    val difficulty = document.getString("difficulty") ?: ""
+                    val ingredients = document.get("ingredients") as? List<String> ?: emptyList()
+                    val steps = document.get("steps") as? List<String> ?: emptyList()
+
+                    val recipe = Recipe(
+                        firestoreId = documentId,
+                        name = name,
+                        imageUrl = imageUrl,
+                        prepTime = prepTime,
+                        difficulty = difficulty,
+                        ingredients = ingredients,
+                        steps = steps
+                    )
+                    recipes.add(recipe)
+                }
+            }
+            .addOnFailureListener { exception ->
+                println("Erreur de récupération Firestore: ${exception.message}")
+            }
     }
-    */
+
+
 
     fun setFilter(f: Filter) { _filter.value = f }
 
@@ -58,10 +93,12 @@ class RecipeViewModel : ViewModel() {
     fun getFiltered(): List<Recipe> = when (filter) {
         Filter.ALL -> recipes
         Filter.DAILY -> recipes.take(3)  // par ex.
-        Filter.SEARCH -> recipes         // implémenter une vraie recherche
+        Filter.SEARCH -> recipes.filter{
+            it.name.contains(searchRecipes, ignoreCase = true)
+        }         // implémenter une vraie recherche
         Filter.FAVORITES -> recipes.filter { it.isFavorite }
         Filter.HISTORY -> history
     }
 
-    fun findById(id: Int): Recipe? = recipes.find { it.id == id }
+    fun findById(id: String): Recipe? = recipes.find { it.firestoreId == id }
 }
