@@ -194,6 +194,8 @@ fun GroceryItem(modifier: Modifier = Modifier, item : Aliment, changeOnboardingS
             modifier = modifier
                 .width(85.dp)
                 .height(85.dp)
+                .padding(start = 5.dp)
+                .border(color = Color(0xFFAAAAAA), width = 1.dp, shape = CutCornerShape(3.dp))
         )
 
         Spacer(modifier = modifier.width(20.dp))
