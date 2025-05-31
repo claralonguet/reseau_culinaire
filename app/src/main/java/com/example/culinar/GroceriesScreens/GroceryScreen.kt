@@ -19,19 +19,21 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -60,6 +62,7 @@ import com.example.culinar.models.viewModels.GroceryViewModel
 import com.example.culinar.ui.theme.CulinarTheme
 import com.example.culinar.ui.theme.Typography
 import com.example.culinar.ui.theme.grey
+import com.example.culinar.ui.theme.lightGrey
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.selects.select
 
@@ -297,7 +300,7 @@ fun GroceryAddItem(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) 
     val groceryItems : List<Aliment> by groceryViewModel.groceryItems.collectAsState()
 
     var nameText by remember { mutableStateOf(toModify) }
-    var selectedItem: Aliment by remember { mutableStateOf(Aliment("", "")) }
+    var selectedItem: Aliment by remember { mutableStateOf(Aliment("")) }
     var itemToModify: Aliment by remember { mutableStateOf(groceryItems.find { it.name == toModify } ?: Aliment()) }
 
     // Screen content
@@ -312,12 +315,11 @@ fun GroceryAddItem(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) 
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
                 .height(80.dp)
-                .background(color = Color(0xFFE5E3E3))
+                .background(color = grey)
         ) {
             // Return button
-            Button(
+            TextButton(
                 onClick = {changeOnboardingScreen(1)},
-                modifier = modifier.width(80.dp).height(100.dp),
                 shape = CutCornerShape(3.dp),
                 colors = ButtonColors(
                     containerColor = Color(0x0059EA85),
@@ -327,15 +329,15 @@ fun GroceryAddItem(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) 
                 )
             ) {
                 Icon(
-                    Icons.Default.Close,
+                    Icons.AutoMirrored.Default.KeyboardArrowLeft,
                     contentDescription = "Cancel",
                     tint = Color.Red,
-                    modifier = modifier.height(70.dp).width(70.dp)
+                    modifier = modifier.height(100.dp).width(60.dp)
                 )
 
             }
 
-            Spacer(modifier = modifier.weight(1f))
+            Spacer(modifier = modifier.width(15.dp))
 
             // Title of the subscreen
             Text(
@@ -349,45 +351,10 @@ fun GroceryAddItem(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) 
 
                 modifier = modifier
                     .height(50.dp)
-                    .background(color = Color(0xFFE5E3E3))
+                    .background(color = grey)
             )
 
-            Spacer(modifier = modifier.weight(1f))
-
-            // Add button
-            Button(
-                onClick = {
-                    // val newItem = allFoodItems.find{ it.name == nameText }
-                    if (toModify == "") { // Ajout d'un nouvel aliment à la liste
-                        if (selectedItem.name == nameText) { // Si l'aliment existe
-                            if (selectedItem !in groceryItems) // Si l'aliment n'est pas déjà dans la liste
-                                groceryViewModel.addItemToGroceryList(selectedItem)
-
-                        } else // Si l'aliment n'existe pas
-                            groceryViewModel.addItemToGroceryList(selectedItem)
-                    } else
-                        groceryViewModel.modifyItemToGroceryList(itemToModify)
-
-                    changeOnboardingScreen(1)
-                },
-                modifier = modifier.width(80.dp).height(100.dp),
-                shape = CutCornerShape(3.dp),
-                colors = ButtonColors(
-                    containerColor = Color(0x0059EA85),
-                    contentColor = Color.White,
-                    disabledContainerColor = Color(0xFF59EA85),
-                    disabledContentColor = Color.White
-                )
-            ) {
-                Icon(
-                    Icons.Default.Check,
-                    contentDescription = "Ajouter",
-                    tint = Color(0xFF59EA85),
-                    modifier = modifier.height(70.dp).width(70.dp)
-                )
-                Spacer(modifier = modifier.width(10.dp))
-                Text(text = "Add", fontSize = 18.sp, letterSpacing = 3.sp)
-            }
+            Spacer(modifier = modifier.weight(5f))
         }
 
 
@@ -395,203 +362,185 @@ fun GroceryAddItem(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) 
         Column (
             modifier = modifier.fillMaxHeight(),
             verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Name of the food item
-            Row {
-                Text(
-                    text = "Nom: ",
-                    fontSize = 20.sp,
-                    fontFamily = FontFamily.Serif,
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 50.sp,
-                    modifier = modifier.padding(start = 10.dp)
-                )
-                Spacer(modifier = modifier.width(60.dp))
-                var expanded by remember { mutableStateOf(false) }
-                TextField(
-                    value = if (toModify != "") itemToModify.name else nameText,
-                    onValueChange = {
-                        nameText = it
-                        selectedItem = selectedItem.copy(name = it)
-                                    },
-                    placeholder = { Text("Nom de l'aliment", fontSize = 15.sp) },
-                    enabled = toModify == "",
-                    singleLine = true,
-                    modifier = modifier
-                        .width(if (toModify != "") 200.dp else 160.dp)
-                        .height(50.dp)
-                        .border(
-                            color = Color(0xFFAAAAAA),
-                            width = 0.dp,
-                            shape = CutCornerShape(3.dp)
-                        ),
-                )
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    offset = DpOffset(x = 134.dp, y = 0.dp),
-                    modifier = modifier
-                        .width(200.dp)
-                        .height(300.dp)
-                        .border(
-                            color = Color(0xFFAAAAAA),
-                            width = 0.dp,
-                            shape = CutCornerShape(3.dp)
-                        )
-                ) {
+            Column (
+                verticalArrangement = Arrangement.SpaceEvenly,
+                modifier = modifier.height(420.dp)
+            ) {
 
-                    DropdownMenuItem(
-                        text = { Text("Choisissez un aliment") },
-                        onClick = { nameText = "Choisissez un aliment" }
-                    )
-                    for (item in allFoodItems) {
-                        if(groceryItems.none { it.name == item.name }) {
-                            DropdownMenuItem(
-                                text = { Text(text = item.name) },
-                                onClick = {
-                                    nameText = item.name
-                                    selectedItem = item
-                                    selectedItem.quantity = 1
-                                    expanded = false
-                                }
-                            )
+                // Name of the food item
+                Column {
+                    var expanded by remember { mutableStateOf(false) }
+                    Row {
+                        TextField(
+                            value = if (toModify != "") itemToModify.name else nameText,
+                            onValueChange = {
+                                nameText = it
+                                selectedItem = selectedItem.copy(name = it)
+                            },
+                            label = { Text("Nom de l'aliment", fontSize = 15.sp) },
+                            enabled = toModify == "",
+                            singleLine = true,
+                            modifier = modifier
+                                .width(if (toModify != "") 280.dp else 240.dp)
+                                .height(60.dp)
+                                .border(
+                                    color = Color(0xFFAAAAAA),
+                                    width = 0.dp,
+                                    shape = CutCornerShape(3.dp)
+                                ),
+                        )
+
+                        // Expand dropdown menu button
+                        if (toModify == "") {
+                            TextButton(
+                                onClick = { expanded = !expanded },
+                                modifier = modifier.width(40.dp).height(60.dp),
+                                shape = CutCornerShape(3.dp),
+                                border = BorderStroke(width = 1.dp, color = Color(0xFF939292)),
+                                colors = ButtonColors(
+                                    containerColor = Color(0x0059EA85),
+                                    contentColor = Color.White,
+                                    disabledContainerColor = Color(0xFF59EA85),
+                                    disabledContentColor = Color.White
+                                )
+                            ) {
+                                Icon(
+                                    Icons.Default.ArrowDropDown,
+                                    contentDescription = "Create new food",
+                                    tint = Color(0xFF142119),
+                                    modifier = modifier
+                                        .height(45.dp)
+                                        .width(45.dp)
+
+                                )
+
+                            }
                         }
                     }
-                }
-
-                // Expand dropdown menu button
-                if (toModify == "") {
-                    TextButton(
-                        onClick = { expanded = !expanded },
-                        modifier = modifier.width(40.dp).height(50.dp),
-                        shape = CutCornerShape(3.dp),
-                        border = BorderStroke(width = 1.dp, color = Color(0xFF17211A)),
-                        colors = ButtonColors(
-                            containerColor = Color(0x0059EA85),
-                            contentColor = Color.White,
-                            disabledContainerColor = Color(0xFF59EA85),
-                            disabledContentColor = Color.White
-                        )
-                    ) {
-                        Icon(
-                            Icons.Default.ArrowDropDown,
-                            contentDescription = "Create new food",
-                            tint = Color(0xFF142119),
-                            modifier = modifier
-                                .height(45.dp)
-                                .width(45.dp)
-
-                        )
-
-                    }
-                }
-                // Spacer(modifier = modifier.width(5.dp))
-
-                /*/ Create new food button
-                Button(
-                    onClick = {},
-                    modifier = modifier.width(80.dp).height(50.dp),
-                    shape = CutCornerShape(3.dp),
-                    //border = BorderStroke(width = 1.dp, color = Color(0xFF59EA85)),
-                    colors = ButtonColors(
-                        containerColor = Color(0x0059EA85),
-                        contentColor = Color.White,
-                        disabledContainerColor = Color(0xFF59EA85),
-                        disabledContentColor = Color.White
-                    )
-                ) {
-                    Icon(
-                        Icons.Default.AddCircle,
-                        contentDescription = "Create new food",
-                        tint = Color(0xFF59EA85),
+                    // Drop down menu
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        offset = DpOffset(x = 0.dp, y = 0.dp),
                         modifier = modifier
-                            .height(45.dp)
-                            .width(45.dp)
+                            .width(240.dp)
+                            .height(300.dp)
+                            .border(
+                                color = Color(0xFFAAAAAA),
+                                width = 0.dp,
+                                shape = CutCornerShape(3.dp)
+                            )
+                    ) {
 
-                    )
+                        DropdownMenuItem(
+                            text = { Text("Choisissez un aliment") },
+                            onClick = { nameText = "Choisissez un aliment" }
+                        )
+                        for (item in allFoodItems) {
+                            if (groceryItems.none { it.name == item.name }) {
+                                DropdownMenuItem(
+                                    text = { Text(text = item.name) },
+                                    onClick = {
+                                        nameText = item.name
+                                        selectedItem = item
+                                        selectedItem.quantity = 1
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
 
                 }
-                */
 
-            }
-
-            // Quantity unit
-            Row {
-                Text(
-                    text = "Unité: ",
-                    fontSize = 20.sp,
-                    fontFamily = FontFamily.Serif,
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 50.sp,
-                    modifier = modifier.padding(start = 10.dp)
-                )
-                Spacer(modifier = modifier.width(55.dp))
-
+                // Quantity unit
                 var unit by remember { mutableStateOf("unité") }
                 TextField(
-                    value = if(toModify != "") itemToModify.unit else if (allFoodItems.none { it.name == nameText }) unit else selectedItem.unit, //allFoodItems.find{ it.name.contains(nameText) }?.unit ?: "",
+                    value = if (toModify != "") itemToModify.unit else if (allFoodItems.none { it.name == nameText }) unit else selectedItem.unit, //allFoodItems.find{ it.name.contains(nameText) }?.unit ?: "",
                     enabled = allFoodItems.none { it.name == nameText } && toModify == "",
                     singleLine = true,
+                    label = { Text("Unité", fontSize = 15.sp) },
                     onValueChange = {
                         unit = it
                         if (toModify != "")
                             itemToModify = itemToModify.copy(unit = it)
                         else
-                           selectedItem = selectedItem.copy(unit = it)
-                                    },
+                            selectedItem = selectedItem.copy(unit = it)
+                    },
                     modifier = modifier
-                        .width(220.dp)
+                        .width(280.dp)
                         .height(60.dp)
-                        .padding(end = 20.dp)
                         .border(
                             color = Color(0xFFAAAAAA),
                             width = 0.dp,
                             shape = CutCornerShape(3.dp)
                         ),
                 )
-            }
 
-            // Quantity input
-            Row {
-                Text(
-                    text = "Quantité: ",
-                    fontSize = 20.sp,
-                    fontFamily = FontFamily.Serif,
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 50.sp,
-                    modifier = modifier.padding(start = 10.dp)
-                )
-                Spacer(modifier = modifier.width(20.dp))
+
+                // Quantity input
                 var value by remember { mutableStateOf((itemToModify.quantity ?: 1).toString()) }
                 TextField(
                     value = value,
                     singleLine = true,
+                    label = { Text("Quantité", fontSize = 15.sp) },
                     onValueChange = {
-                        if(it.isDigitsOnly()) {
-                            value = if(it == "") "1" else it
+                        if (it.isDigitsOnly()) {
+                            value = if (it == "") "1" else it
                             if (toModify != "")
                                 itemToModify = itemToModify.copy(quantity = value.toInt())
                             else
                                 selectedItem = selectedItem.copy(quantity = value.toInt())
                         }
-                                    },
+                    },
                     placeholder = { Text("Quantité de l'aliment", fontSize = 15.sp) },
                     modifier = modifier
-                        .width(220.dp)
-                        .height(50.dp)
-                        .padding(end = 20.dp)
+                        .width(280.dp)
+                        .height(60.dp)
                         .border(
                             color = Color(0xFFAAAAAA),
                             width = 0.dp,
                             shape = CutCornerShape(3.dp)
                         ),
-                )
 
+                    )
             }
 
+            //Spacer(modifier = modifier.weight(1f))
+
+            // Add button
+            Button(
+                onClick = {
+                    // val newItem = allFoodItems.find{ it.name == nameText }
+                    if (toModify == "") { // Ajout d'un nouvel aliment à la liste
+                        if (allFoodItems.any { it.name == selectedItem.name }) { // Si l'aliment existe
+                            if (selectedItem !in groceryItems) // Si l'aliment n'est pas déjà dans la liste
+                                groceryViewModel.addItemToGroceryList(selectedItem)
+
+                        } else { // Si l'aliment n'existe pas
+                            if (selectedItem.name != "")
+                                groceryViewModel.addItemToGroceryList(selectedItem)
+                        }
+                    } else
+                        groceryViewModel.modifyItemToGroceryList(itemToModify)
+
+                    changeOnboardingScreen(1)
+                },
+                modifier = modifier.width(150.dp).height(50.dp),
+                shape = CutCornerShape(3.dp),
+                colors = ButtonColors(
+                    containerColor = Color(0xFF59EA85),
+                    contentColor = Color.White,
+                    disabledContainerColor = Color(0xFF59EA85),
+                    disabledContentColor = Color.White
+                )
+            ) {
+
+                // Spacer(modifier = modifier.width(10.dp))
+                Text(text = "Ajouter", fontSize = 18.sp, letterSpacing = 3.sp)
+            }
         }
 
     }
@@ -609,5 +558,13 @@ fun GroceryModifyItem(modifier: Modifier = Modifier, changeOnboardingScreen: (In
 fun GroceryPreview() {
     CulinarTheme {
         Grocery()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun GroceryAddItemPreview() {
+    CulinarTheme {
+        GroceryAddItem(changeOnboardingScreen = {})
     }
 }

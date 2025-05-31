@@ -21,12 +21,16 @@ import com.example.culinar.CalendarScreens.CalendarScreen
 import com.example.culinar.CommunityScreens.CheckFeed
 import com.example.culinar.CommunityScreens.CommunityScreen
 import com.example.culinar.CommunityScreens.ConversationScreen
+import com.example.culinar.CommunityScreens.CreateCommunity
+import com.example.culinar.CommunityScreens.ListCommunities
+import com.example.culinar.CommunityScreens.MyCommunity
 import com.example.culinar.GroceriesScreens.Grocery
 import com.example.culinar.Home.TopBar
 import com.example.culinar.Home.Home
 import com.example.culinar.CommunityScreens.PhotoPreviewScreen
 import com.example.culinar.CommunityScreens.PostFeed
 import com.example.culinar.CommunityScreens.SendMessage
+import com.example.culinar.models.viewModels.CommunityViewModel
 import com.example.culinar.models.viewModels.FriendViewModel
 import com.example.culinar.models.Screen
 import com.example.culinar.ui.screens.RecipeDetailScreen
@@ -39,6 +43,7 @@ fun CulinarApp(
     //viewModel: CulinarViewModel = viewModel(),
     friendViewModel: FriendViewModel = viewModel(),
     viewModelRecipes: RecipeViewModel = viewModel(),
+    communityViewModel: CommunityViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
 
@@ -86,7 +91,7 @@ fun CulinarApp(
             composable(route = Screen.Calendar.name) {CalendarScreen() }
             composable(route = Screen.Groceries.name) { Grocery() }
             composable(route = Screen.Recipes.name) { RecipeListScreen(navController = navController, vm = viewModelRecipes) }
-            composable(route = Screen.Community.name) { CommunityScreen() }
+            composable(route = Screen.Community.name) { CommunityScreen(communityViewModel = communityViewModel, navController = navController) }
 
 
             // Secondary screens routes (accessible from within main screens)
@@ -133,55 +138,13 @@ fun CulinarApp(
                 }
             }
 
+
+            // ...Community screen sub-routes
+            composable(Screen.CreateCommunity.name) { CreateCommunity(communityViewModel = communityViewModel, navController = navController) }
+            composable(Screen.ListCommunities.name) { ListCommunities(communityViewModel = communityViewModel, navController = navController) }
+            composable(Screen.MyCommunity.name) { MyCommunity(communityViewModel = communityViewModel, navController = navController) }
+
         }
     }
 
 }
-
-
-
-
-/*
-@Composable
-fun AppNavigation(goBackHome : () -> Unit = {}) {
-    val navController = rememberNavController()
-    val friendViewModel: FriendViewModel = viewModel()
-
-    Scaffold (
-        bottomBar = { BottomNavBar(navController) }
-    ) { paddingValues ->
-        NavHost(navController = navController, startDestination = "home", modifier = Modifier.padding(paddingValues)) {
-            composable("home") { Home(navController) }
-            composable("PostFeed") { PostFeed(navController) }
-            composable("CheckFeed") { CheckFeed() }
-            composable("SendMessage") { SendMessage(navController, friendViewModel) }
-            composable("AddFriends") { AddFriends(friendViewModel) }
-
-            composable(
-                route = "conversation/{username}",
-                arguments = listOf(navArgument("username") {
-                    type = NavType.StringType
-                    nullable = false
-                })
-            ) { backStackEntry ->
-                val username = backStackEntry.arguments?.getString("username")
-                username?.let { ConversationScreen(username = it) }
-            }
-
-            composable(
-                "photoPreview?uri={uri}",
-                arguments = listOf(
-                    navArgument("uri") {
-                        type = NavType.StringType
-                        nullable = true
-                        defaultValue = null
-                    }
-                )
-            ) { backStackEntry ->
-                val uri = backStackEntry.arguments?.getString("uri")
-                PhotoPreviewScreen(imageUriString = uri)
-            }
-        }
-    }
-}
-*/

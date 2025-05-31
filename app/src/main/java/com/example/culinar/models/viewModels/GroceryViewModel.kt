@@ -9,29 +9,15 @@ import com.example.culinar.models.FoodItem
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.database
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.tasks.await
 
 class GroceryViewModel: ViewModel() {
 
-	private val rdb = Firebase.database.reference
 	private val db = Firebase.firestore
 	private val userId = "one"
 
 	var groceryItems: MutableStateFlow<List<Aliment>> = MutableStateFlow<List<Aliment>>(listOf())
 	val allFoodItems = mutableListOf<Aliment>()
-
-	val dbListener = object : ValueEventListener {
-		override fun onDataChange(dataSnapshot: DataSnapshot) {
-
-		}
-
-		override fun onCancelled(databaseError: DatabaseError) {
-			// Getting Post failed, log a message
-			Log.w("GroceryViewModel", "loadPost:onCancelled", databaseError.toException())
-		}
-	}
 
     init {
 		loadFoodItems()
@@ -130,7 +116,6 @@ class GroceryViewModel: ViewModel() {
 
 	fun modifyItemToGroceryList(item: Aliment) {
 		groceryItems.value = groceryItems.value.filter { it.name != item.name } + item
-		//rdb.child("GroceryList").child(userId).child("items").child(item.name).child("details").setValue(item.toMap())
 		db.collection("GroceryList").document(userId).collection("items").document(item.name).update("details", item.toMap())
 			.addOnFailureListener {
 				Log.d("GroceryViewModel", "Error modifying item '${item.name}' in Firestore.")

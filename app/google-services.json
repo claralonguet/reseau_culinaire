@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "1043647365859",
+    "firebase_url": "https://culinarapp-default-rtdb.firebaseio.com",
     "project_id": "culinarapp",
     "storage_bucket": "culinarapp.firebasestorage.app"
   },

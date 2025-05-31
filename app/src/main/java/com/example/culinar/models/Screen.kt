@@ -22,5 +22,10 @@ enum class Screen {
     RecipeList,
     RecipeDetail,
 
+    // ... Community
+    CreateCommunity,
+    ListCommunities,
+    MyCommunity,
+
 }
 

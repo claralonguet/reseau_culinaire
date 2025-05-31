@@ -1,3 +1,12 @@
 <resources>
-    <string name="app_name">Culinar</string>
+    <string name="app_name">Culinary</string>
+    <string name="expert_terms_and_conditions">
+        lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        \n
+        lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    </string>
+    <string name="community_space_description">
+        Bienvenue sur L\'espace communautaire !\n
+        Vous pourrez y partagez vos expériences culinaires et expérimentez celle d\'experts du domaine.
+    </string>
 </resources>
