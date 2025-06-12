@@ -5,43 +5,50 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.google.firebase.firestore.firestore
-import com.google.firebase.Firebase
-
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 @Composable
-fun AccountScreen (modifier: Modifier = Modifier, authAndNavigation: () -> Unit = {}) {
-
+fun AccountScreen(
+    modifier: Modifier = Modifier,
+    authAndNavigation: (String) -> Unit = {}
+) {
     var currentScreen by remember { mutableStateOf("login") }
 
-    Box()
-    {
+    Box {
         when (currentScreen) {
-            "login" -> LoginScreen ({ currentScreen = "signup" }, authAndNavigation = authAndNavigation)
+            "login" -> LoginScreen(
+                changeScreen = { currentScreen = "signup" },
+                authAndNavigation = authAndNavigation
+            )
             "signup" -> SignupScreen { currentScreen = "profile" }
             "profile" -> ProfileScreen { currentScreen = "login" }
         }
     }
 }
 
-
 @Composable
 fun LoginScreen(
     changeScreen: (String) -> Unit,
-    authAndNavigation: () -> Unit,
-    // authViewModel: AuthViewModel
+    authAndNavigation: (String) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "CONNEXION", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.tertiary)
+        Text(
+            text = "CONNEXION",
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.tertiary
+        )
 
         var username by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
+        var errorMessage by remember { mutableStateOf("") }
         val db = Firebase.firestore
 
         OutlinedTextField(
@@ -63,7 +70,13 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                // Récupère la collection "users" et cherche le document où "username" == username
+                errorMessage = "" // reset erreur
+                if (username.isBlank() || password.isBlank()) {
+                    errorMessage = "Veuillez remplir tous les champs"
+                    return@Button
+                }
+                println("Tentative de connexion avec : $username")
+
                 db.collection("Utilisateur")
                     .whereEqualTo("username", username)
                     .get()
@@ -73,25 +86,27 @@ fun LoginScreen(
                             val storedPassword = userDoc.getString("password")
 
                             if (storedPassword == password) {
-
-                                authAndNavigation()
+                                // Passe le username, pas l'id
+                                authAndNavigation(username)
                             } else {
-                                // Mot de passe incorrect
-                                println("Mot de passe incorrect")
+                                errorMessage = "Mot de passe incorrect"
                             }
                         } else {
-                            println("Nom d'utilisateur introuvable")
+                            errorMessage = "Nom d'utilisateur introuvable"
                         }
                     }
                     .addOnFailureListener { exception ->
-                        println("Erreur lors de la connexion : ${exception.message}")
+                        errorMessage = "Erreur lors de la connexion : ${exception.message}"
                     }
             },
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
             shape = MaterialTheme.shapes.large
-
         ) {
             Text("Se connecter")
+        }
+
+        if (errorMessage.isNotEmpty()) {
+            Text(text = errorMessage, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -104,5 +119,6 @@ fun LoginScreen(
             Text("S'inscrire")
         }
     }
-
 }
+
+// Tu peux ajouter ici SignupScreen et ProfileScreen si besoin, ou les importer.
