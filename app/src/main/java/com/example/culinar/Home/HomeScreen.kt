@@ -24,10 +24,9 @@ import com.example.culinar.ui.theme.grey
 // Top bar
 @Composable
 fun TopBar(
-    modifier: Modifier = Modifier,
-    onAccountClick: () -> Unit = {},
-    onLogoutClick: () -> Unit = {},
-    onSettingsClick: () -> Unit = {}
+    toAccount: () -> Unit = {},
+    toSettings: () -> Unit = {},
+    logout: () -> Unit = {}
 ) {
 
     var menuClicked by remember { mutableStateOf(false) }
@@ -90,7 +89,7 @@ fun TopBar(
             ) {
                 TextButton(
                     onClick = {
-                        onAccountClick()
+                        toAccount()
                         menuClicked = false
                     },
                     modifier = Modifier.fillMaxWidth().height(50.dp),
@@ -116,7 +115,7 @@ fun TopBar(
                 }
                 TextButton(
                     onClick = {
-                        onSettingsClick()
+                        toSettings()
                         menuClicked = false
                     },
                     modifier = Modifier.fillMaxWidth().height(50.dp),
@@ -142,7 +141,7 @@ fun TopBar(
                 }
                 TextButton(
                     onClick = {
-                        onLogoutClick()
+                        logout()
                         menuClicked = false
                     },
                     modifier = Modifier.fillMaxWidth().height(50.dp),
@@ -228,7 +227,6 @@ fun BottomNavBar(
             },
             selected = screenName.startsWith(Screen.Home.name),
             onClick = {
-                // Construire la route complète avec username si présent
                 val route = if (!username.isNullOrEmpty()) {
                     "${Screen.Home.name}?username=$username"
                 } else {
