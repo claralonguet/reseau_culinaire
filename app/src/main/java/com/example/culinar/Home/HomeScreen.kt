@@ -188,8 +188,11 @@ fun BottomNavBar(
             .fillMaxWidth()
             .height(85.dp),
         containerColor = MaterialTheme.colorScheme.primary,
-        contentColor = Color.White
+        //contentColor = Color(0x33FFFFFF)
     ) {
+        // Options du menu
+
+        // ... Calendrier
         NavigationBarItem(
             icon = {
                 Icon(
@@ -200,9 +203,13 @@ fun BottomNavBar(
                 )
             },
             selected = screenName == Screen.Calendar.name,
-            onClick = { navRoutes(Screen.Calendar.name) }
+            onClick = { navRoutes(Screen.Calendar.name) },
+            colors = NavigationBarItemDefaults.colors(
+                indicatorColor = MaterialTheme.colorScheme.primary
+            )
         )
 
+        // ... Liste de courses
         NavigationBarItem(
             icon = {
                 Icon(
@@ -213,9 +220,13 @@ fun BottomNavBar(
                 )
             },
             selected = screenName == Screen.Groceries.name,
-            onClick = { navRoutes(Screen.Groceries.name) }
+            onClick = { navRoutes(Screen.Groceries.name) },
+            colors = NavigationBarItemDefaults.colors(
+                indicatorColor = MaterialTheme.colorScheme.primary
+            )
         )
 
+        // ... Accueil
         NavigationBarItem(
             icon = {
                 Icon(
@@ -233,9 +244,13 @@ fun BottomNavBar(
                     Screen.Home.name
                 }
                 navRoutes(route)
-            }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                indicatorColor = MaterialTheme.colorScheme.primary
+            )
         )
 
+        // ... Liste de recettes
         NavigationBarItem(
             icon = {
                 Icon(
@@ -246,9 +261,13 @@ fun BottomNavBar(
                 )
             },
             selected = screenName == Screen.Recipes.name,
-            onClick = { navRoutes(Screen.Recipes.name) }
+            onClick = { navRoutes(Screen.Recipes.name) },
+            colors = NavigationBarItemDefaults.colors(
+                indicatorColor = MaterialTheme.colorScheme.primary
+            )
         )
 
+        // ... Communauté
         NavigationBarItem(
             icon = {
                 Icon(
@@ -259,7 +278,10 @@ fun BottomNavBar(
                 )
             },
             selected = screenName == Screen.Community.name,
-            onClick = { navRoutes(Screen.Community.name) }
+            onClick = { navRoutes(Screen.Community.name) },
+            colors = NavigationBarItemDefaults.colors(
+                indicatorColor = MaterialTheme.colorScheme.primary
+            )
         )
     }
 }
