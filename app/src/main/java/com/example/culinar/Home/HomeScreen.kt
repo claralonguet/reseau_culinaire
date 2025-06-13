@@ -260,10 +260,8 @@ fun TopBar(modifier: Modifier = Modifier, toAuth : () -> Unit = {}) {
 
 // Bottom bar
 @Composable
-fun BottomNavBar(modifier: Modifier = Modifier, navRoutes: (String) -> Unit = {}, navController : NavHostController = rememberNavController()) {
-
-    val currentBackStackEntr by navController.currentBackStackEntryAsState()
-    var screenName by remember { mutableStateOf( currentBackStackEntr?.destination?.route ?: Screen.Home.name ) }
+fun BottomNavBar(modifier: Modifier = Modifier, currentRoute: String?, onNavigate: (String) -> Unit = {}) {
+    
 
 
     NavigationBar(
@@ -274,7 +272,7 @@ fun BottomNavBar(modifier: Modifier = Modifier, navRoutes: (String) -> Unit = {}
         // Calendar button
         NavigationBarItem(
             icon = { Icon(
-                if(screenName == Screen.Calendar.name) Icons.Default.DateRange else Icons.Outlined.DateRange,
+                if(currentRoute == Screen.Calendar.name) Icons.Default.DateRange else Icons.Outlined.DateRange,
                 contentDescription = "Calendar",
                 tint = Color.White,
                 modifier = Modifier.width(40.dp).height(40.dp)
@@ -289,14 +287,13 @@ fun BottomNavBar(modifier: Modifier = Modifier, navRoutes: (String) -> Unit = {}
             // label = { Text("Calendar") },
             selected = false,
             onClick = {
-                screenName = Screen.Calendar.name
-                navRoutes(Screen.Calendar.name) }
+                onNavigate(Screen.Calendar.name) }
         )
 
         // Groceries button
         NavigationBarItem(
             icon = { Icon(
-                if(screenName == Screen.Groceries.name) Icons.Default.ShoppingCart else Icons.Outlined.ShoppingCart,
+                if(currentRoute == Screen.Groceries.name) Icons.Default.ShoppingCart else Icons.Outlined.ShoppingCart,
                 contentDescription = "Groceries",
                 tint = Color.White,
                 modifier = Modifier.width(40.dp).height(40.dp)
@@ -311,15 +308,14 @@ fun BottomNavBar(modifier: Modifier = Modifier, navRoutes: (String) -> Unit = {}
             // label = { Text("Groceries") },
             selected = false,
             onClick = {
-                screenName = Screen.Groceries.name
-                navRoutes(Screen.Groceries.name)
+                onNavigate(Screen.Groceries.name)
             }
         )
 
         // Home button
         NavigationBarItem(
             icon = { Icon(
-                if(screenName == Screen.Home.name) Icons.Default.Home else Icons.Outlined.Home,
+                if(currentRoute == Screen.Home.name) Icons.Default.Home else Icons.Outlined.Home,
                 contentDescription = "Home",
                 tint = Color.White,
                 modifier = Modifier.width(40.dp).height(40.dp)
@@ -334,15 +330,14 @@ fun BottomNavBar(modifier: Modifier = Modifier, navRoutes: (String) -> Unit = {}
             // label = { Text("Home") },
             selected = false,
             onClick = {
-                screenName = Screen.Home.name
-                navRoutes(Screen.Home.name)
+                onNavigate(Screen.Home.name)
             }
         )
 
         // Recipes button
         NavigationBarItem(
             icon = { Icon(
-                if(screenName == Screen.Recipes.name) Icons.Default.CheckCircle else Icons.Outlined.CheckCircle,
+                if(currentRoute == Screen.Recipes.name) Icons.Default.CheckCircle else Icons.Outlined.CheckCircle,
                 contentDescription = "Recipes",
                 tint = Color.White,
                 modifier = Modifier.width(40.dp).height(40.dp)
@@ -357,15 +352,16 @@ fun BottomNavBar(modifier: Modifier = Modifier, navRoutes: (String) -> Unit = {}
             // label = { Text("Recipes") },
             selected = false,
             onClick = {
-                screenName = Screen.Recipes.name
-                navRoutes(Screen.Recipes.name)
+                onNavigate(Screen.Recipes.name)
             }
         )
 
         // Community button
         NavigationBarItem(
             icon = { Icon(
-                if(screenName == Screen.Community.name) Icons.Default.Email else Icons.Outlined.Email,
+                if(currentRoute == Screen.Community.name || currentRoute == Screen.CreateCommunity.name || currentRoute == Screen.MyCommunity.name || currentRoute == Screen.ListCommunities.name)
+                    Icons.Default.Email
+                else Icons.Outlined.Email,
                 contentDescription = "Community",
                 tint = Color.White,
                 modifier = Modifier.width(40.dp).height(40.dp)
@@ -380,8 +376,7 @@ fun BottomNavBar(modifier: Modifier = Modifier, navRoutes: (String) -> Unit = {}
             // label = { Text("Community") },
             selected = false,
             onClick = {
-                screenName = Screen.Community.name
-                navRoutes(Screen.Community.name)
+                onNavigate(Screen.Community.name)
             }
         )
     }
@@ -389,7 +384,7 @@ fun BottomNavBar(modifier: Modifier = Modifier, navRoutes: (String) -> Unit = {}
 
 
 @Composable
-fun Home(navRoutes: (String) -> Unit = {}) {
+fun Home(onNavigate: (String) -> Unit = {}) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -401,7 +396,7 @@ fun Home(navRoutes: (String) -> Unit = {}) {
                 .fillMaxWidth(0.7f) // 70% de la largeur
         ) {
             Button(
-                onClick = { navRoutes(Screen.PostFeed.name) },
+                onClick = { onNavigate(Screen.PostFeed.name) },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = grey,
                     contentColor = Color.Black
@@ -414,7 +409,7 @@ fun Home(navRoutes: (String) -> Unit = {}) {
             }
 
             Button(
-                onClick = { navRoutes(Screen.CheckFeed.name) },
+                onClick = { onNavigate(Screen.CheckFeed.name) },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = grey,
                     contentColor = Color.Black
@@ -427,7 +422,7 @@ fun Home(navRoutes: (String) -> Unit = {}) {
             }
 
             Button(
-                onClick = { navRoutes(Screen.SendMessage.name
+                onClick = { onNavigate(Screen.SendMessage.name
                 ) },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = grey,
@@ -441,7 +436,7 @@ fun Home(navRoutes: (String) -> Unit = {}) {
             }
 
             Button(
-                onClick = { navRoutes(Screen.AddFriends.name) },
+                onClick = { onNavigate(Screen.AddFriends.name) },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = grey,
                     contentColor = Color.Black
@@ -460,7 +455,7 @@ fun Home(navRoutes: (String) -> Unit = {}) {
 
 /*/ Footer bar
 @Composable
-fun Footer(modifier: Modifier = Modifier, screenName: String = Screen.Home.name, navRoutes: (Screen) -> Unit = {}) {
+fun Footer(modifier: Modifier = Modifier, currentRoute: String = Screen.Home.name, onNavigate: (Screen) -> Unit = {}) {
 
     Column {
         Spacer(modifier = Modifier.weight(1f))
@@ -476,11 +471,11 @@ fun Footer(modifier: Modifier = Modifier, screenName: String = Screen.Home.name,
 
             // Calendar button
             Button(
-                onClick = { navRoutes(Screen.Calendar) },
+                onClick = { onNavigate(Screen.Calendar) },
                 modifier = Modifier.weight(1f).height(72.dp).padding(0.dp),
                 shape = CutCornerShape(1.dp),
                 colors = ButtonColors(
-                    containerColor = if(screenName == Screen.Calendar.name) darkGreen else mediumGreen,
+                    containerColor = if(currentRoute == Screen.Calendar.name) darkGreen else mediumGreen,
                     contentColor = Color.White,
                     disabledContainerColor = Color(0xFF3CB460),
                     disabledContentColor = Color.White
@@ -497,11 +492,11 @@ fun Footer(modifier: Modifier = Modifier, screenName: String = Screen.Home.name,
 
             // Groceries button
             Button(
-                onClick = { navRoutes(Screen.Groceries) },
+                onClick = { onNavigate(Screen.Groceries) },
                 modifier = Modifier.weight(1f).height(72.dp).padding(0.dp),
                 shape = CutCornerShape(1.dp),
                 colors = ButtonColors(
-                    containerColor = if(screenName == Screen.Groceries.name) darkGreen else mediumGreen,
+                    containerColor = if(currentRoute == Screen.Groceries.name) darkGreen else mediumGreen,
                     contentColor = Color.White,
                     disabledContainerColor = Color(0xFF3CB460),
                     disabledContentColor = Color.White
@@ -518,11 +513,11 @@ fun Footer(modifier: Modifier = Modifier, screenName: String = Screen.Home.name,
 
             // Home button
             Button(
-                onClick = { navRoutes(Screen.Home) },
+                onClick = { onNavigate(Screen.Home) },
                 modifier = Modifier.weight(1f).height(72.dp).padding(0.dp),
                 shape = CutCornerShape(1.dp),
                 colors = ButtonColors(
-                    containerColor = if(screenName == Screen.Home.name) darkGreen else mediumGreen,
+                    containerColor = if(currentRoute == Screen.Home.name) darkGreen else mediumGreen,
                     contentColor = Color.White,
                     disabledContainerColor = Color(0xFF3CB460),
                     disabledContentColor = Color.White
@@ -539,11 +534,11 @@ fun Footer(modifier: Modifier = Modifier, screenName: String = Screen.Home.name,
 
             // Recipes button
             Button(
-                onClick = { navRoutes(Screen.Recipes) },
+                onClick = { onNavigate(Screen.Recipes) },
                 modifier = Modifier.weight(1f).height(72.dp).padding(0.dp),
                 shape = CutCornerShape(1.dp),
                 colors = ButtonColors(
-                    containerColor = if(screenName == Screen.Recipes.name) darkGreen else mediumGreen,
+                    containerColor = if(currentRoute == Screen.Recipes.name) darkGreen else mediumGreen,
                     contentColor = Color.White,
                     disabledContainerColor = Color(0xFF3CB460),
                     disabledContentColor = Color.White
@@ -560,11 +555,11 @@ fun Footer(modifier: Modifier = Modifier, screenName: String = Screen.Home.name,
 
             // Community button
             Button(
-                onClick = { navRoutes(Screen.Community) },
+                onClick = { onNavigate(Screen.Community) },
                 modifier = Modifier.weight(1f).height(72.dp).padding(0.dp),
                 shape = CutCornerShape(1.dp),
                 colors = ButtonColors(
-                    containerColor = if(screenName == Screen.Community.name) darkGreen else mediumGreen,
+                    containerColor = if(currentRoute == Screen.Community.name) darkGreen else mediumGreen,
                     contentColor = Color.White,
                     disabledContainerColor = Color(0xFF3CB460),
                     disabledContentColor = Color.White

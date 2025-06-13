@@ -30,6 +30,7 @@ import com.example.culinar.Home.Home
 import com.example.culinar.CommunityScreens.PhotoPreviewScreen
 import com.example.culinar.CommunityScreens.PostFeed
 import com.example.culinar.CommunityScreens.SendMessage
+import com.example.culinar.models.CommunityScreens
 import com.example.culinar.models.viewModels.CommunityViewModel
 import com.example.culinar.models.viewModels.FriendViewModel
 import com.example.culinar.models.Screen
@@ -53,11 +54,21 @@ fun CulinarApp(
     // Determine if the top bar should be shown based on the current route
     val showTopBar = when (currentRoute) {
         Screen.Account.name -> false
+        CommunityScreens.MyCommunity.name -> false
+        CommunityScreens.Feed.name -> false
         else -> true // Default to showing it
     }
 
-    val navRoutes = { screen: String ->
-        navController.navigate(screen) {
+    // Determine if the bottom navbar should be shown based on the current route
+    val showBottomBar = when (currentRoute) {
+        Screen.Account.name -> false
+        CommunityScreens.MyCommunity.name -> false
+        CommunityScreens.Feed.name -> false
+        else -> true // Default to showing it
+    }
+
+    val onNavigate = { screenRoute: String ->
+        navController.navigate(screenRoute) {
             // Optional: Configuring navigation behavior (e.g., pop up to a specific destination)
             popUpTo(navController.graph.startDestinationId) {
                 saveState = true
@@ -71,8 +82,9 @@ fun CulinarApp(
     }
 
     Scaffold (
-        topBar = { if (showTopBar) TopBar(toAuth = { navRoutes(Screen.Account.name) }) },
-        bottomBar = { if (showTopBar) BottomNavBar(navRoutes = navRoutes) }, modifier = modifier.fillMaxSize()
+        topBar = { if (showTopBar) TopBar(toAuth = { onNavigate(Screen.Account.name) }) },
+        bottomBar = { if (showBottomBar) BottomNavBar(currentRoute = currentRoute, onNavigate = onNavigate) },
+        modifier = modifier.fillMaxSize()
     ) { innerPadding ->
 
         NavHost(
@@ -85,9 +97,9 @@ fun CulinarApp(
 
             composable(route = Screen.Account.name) {
                 val previousRoute = navController.previousBackStackEntry?.destination?.route ?: Screen.Home.name
-                AccountScreen(authAndNavigation = { navRoutes(previousRoute) })
+                AccountScreen(authAndNavigation = { onNavigate(previousRoute) })
             }
-            composable(route = Screen.Home.name) { Home(navRoutes = navRoutes) }
+            composable(route = Screen.Home.name) { Home(onNavigate = onNavigate) }
             composable(route = Screen.Calendar.name) {CalendarScreen() }
             composable(route = Screen.Groceries.name) { Grocery() }
             composable(route = Screen.Recipes.name) { RecipeListScreen(navController = navController, vm = viewModelRecipes) }

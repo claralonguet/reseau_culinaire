@@ -4,7 +4,8 @@ import com.google.firebase.database.IgnoreExtraProperties
 import java.util.Date
 
 @IgnoreExtraProperties
-class Community (
+data class Community (
+	var id: String = "",
 	var name: String = "",
 	var description: String = "",
 	val author: String = "cd",

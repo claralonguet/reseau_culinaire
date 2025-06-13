@@ -26,6 +26,12 @@ enum class Screen {
     CreateCommunity,
     ListCommunities,
     MyCommunity,
-
+    Feed,
 }
 
+
+enum class CommunityScreens {
+    ListCommunities,
+    MyCommunity,
+    Feed,
+}

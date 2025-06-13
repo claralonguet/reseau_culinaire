@@ -95,7 +95,7 @@ fun Grocery() {
 
 
 @Composable
-fun GroceryList(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) -> Unit, groceryViewModel: GroceryViewModel = viewModel ()) {
+fun GroceryList(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) -> Unit, groceryViewModel: GroceryViewModel = viewModel()) {
 
     val groceryItems : List<Aliment> by groceryViewModel.groceryItems.collectAsState()
     var groceryItemsToDisplay : List<Aliment> = groceryViewModel.groceryItems.collectAsState().value

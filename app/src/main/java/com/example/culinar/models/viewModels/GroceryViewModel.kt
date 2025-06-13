@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class GroceryViewModel: ViewModel() {
 
 	private val db = Firebase.firestore
+	/*TODO: Replace declaration using the actual user's id*/
 	private val userId = "one"
 
 	var groceryItems: MutableStateFlow<List<Aliment>> = MutableStateFlow<List<Aliment>>(listOf())
