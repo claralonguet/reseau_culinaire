@@ -57,6 +57,7 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation ("androidx.datastore:datastore-preferences:1.0.0")
 
     // 🔥 Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))

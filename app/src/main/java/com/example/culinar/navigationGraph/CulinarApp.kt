@@ -4,10 +4,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,38 +15,40 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.culinar.AccountScreens.AccountScreen
-import com.example.culinar.CommunityScreens.AddFriends
-import com.example.culinar.Home.BottomNavBar
 import com.example.culinar.CalendarScreens.CalendarScreen
+import com.example.culinar.CommunityScreens.AddFriends
 import com.example.culinar.CommunityScreens.CheckFeed
 import com.example.culinar.CommunityScreens.CommunityScreen
 import com.example.culinar.CommunityScreens.ConversationScreen
 import com.example.culinar.CommunityScreens.CreateCommunity
 import com.example.culinar.CommunityScreens.ListCommunities
 import com.example.culinar.CommunityScreens.MyCommunity
-import com.example.culinar.GroceriesScreens.Grocery
-import com.example.culinar.Home.TopBar
-import com.example.culinar.Home.Home
 import com.example.culinar.CommunityScreens.PhotoPreviewScreen
 import com.example.culinar.CommunityScreens.PostFeed
 import com.example.culinar.CommunityScreens.SendMessage
 import com.example.culinar.models.CommunityScreens
+import com.example.culinar.GroceriesScreens.Grocery
+import com.example.culinar.Home.BottomNavBar
+import com.example.culinar.Home.Home
+import com.example.culinar.Home.TopBar
+import com.example.culinar.models.Screen
 import com.example.culinar.models.viewModels.CommunityViewModel
 import com.example.culinar.models.viewModels.FriendViewModel
-import com.example.culinar.models.Screen
 import com.example.culinar.ui.screens.RecipeDetailScreen
 import com.example.culinar.ui.screens.RecipeListScreen
 import com.example.culinar.viewmodels.RecipeViewModel
+import com.example.culinar.viewmodels.SessionViewModel
 
 @Composable
 fun CulinarApp(
     modifier: Modifier = Modifier,
-    //viewModel: CulinarViewModel = viewModel(),
     friendViewModel: FriendViewModel = viewModel(),
     viewModelRecipes: RecipeViewModel = viewModel(),
     communityViewModel: CommunityViewModel = viewModel(),
-    navController: NavHostController = rememberNavController()
+    sessionViewModel: SessionViewModel = viewModel()
 ) {
+    val navController = rememberNavController()
+    val username by sessionViewModel.username.collectAsState()
 
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
@@ -67,39 +69,70 @@ fun CulinarApp(
         else -> true // Default to showing it
     }
 
-    val onNavigate = { screenRoute: String ->
-        navController.navigate(screenRoute) {
-            // Optional: Configuring navigation behavior (e.g., pop up to a specific destination)
+    val onNavigate: (String, String?) -> Unit = { screenRoute: String, user ->
+
+        val destination = if (!user.isNullOrEmpty()) "$screenRoute?username=$user" else screenRoute
+        navController.navigate(destination) {
+        // Optional: Configuring navigation behavior (e.g., pop up to a specific destination)
             popUpTo(navController.graph.startDestinationId) {
                 saveState = true
             }
-            // Avoiding building up a large stack of the same destination
             launchSingleTop = true
-
-            // Restoring state when reselecting a previously selected item
             restoreState = true
         }
     }
 
-    Scaffold (
-        topBar = { if (showTopBar) TopBar(toAuth = { onNavigate(Screen.Account.name) }) },
-        bottomBar = { if (showBottomBar) BottomNavBar(currentRoute = currentRoute, onNavigate = onNavigate) },
+    Scaffold(
+        topBar = {
+            if (showTopBar) {
+                TopBar(
+                    toAccount = { onNavigate(Screen.Account.name, username) },
+                    toSettings = { /* navRoutes(...) si tu as un écran de paramètres */ },
+                    logout = {
+                        sessionViewModel.logout()
+                        onNavigate(Screen.Home.name, null)
+                    }
+                )
+            }
+                 },
+        bottomBar = {
+            if (showBottomBar) {
+                BottomNavBar(
+                    navRoutes = { screen -> onNavigate(screen, username) },
+                    navController = navController,
+                    username = username
+                )
+            }
+        },
         modifier = modifier.fillMaxSize()
     ) { innerPadding ->
-
         NavHost(
             navController = navController,
             startDestination = Screen.Home.name,
             modifier = Modifier.padding(innerPadding)
         ) {
 
-            // Main screens routes (displayed on the bottom navbar)
-
+            // Primary screens routes (accessible from basically anywhere)
             composable(route = Screen.Account.name) {
-                val previousRoute = navController.previousBackStackEntry?.destination?.route ?: Screen.Home.name
-                AccountScreen(authAndNavigation = { onNavigate(previousRoute) })
+                AccountScreen(authAndNavigation = { newUser ->
+                    sessionViewModel.login(newUser)
+                    onNavigate(Screen.Home.name, newUser)
+                })
             }
-            composable(route = Screen.Home.name) { Home(onNavigate = onNavigate) }
+
+            composable(
+                route = "${Screen.Home.name}?username={username}",
+                arguments = listOf(navArgument("username") {
+                    type = NavType.StringType
+                    nullable = true
+                })
+            ) { backStackEntry ->
+                val user = backStackEntry.arguments?.getString("username") ?: username
+                Home(
+                    navRoutes = { screen -> onNavigate(screen, user) },
+                    username = user
+                )
+            }
             composable(route = Screen.Calendar.name) {CalendarScreen() }
             composable(route = Screen.Groceries.name) { Grocery() }
             composable(route = Screen.Recipes.name) { RecipeListScreen(navController = navController, vm = viewModelRecipes) }
@@ -123,7 +156,7 @@ fun CulinarApp(
                 val username = backStackEntry.arguments?.getString("username")
                 username?.let { ConversationScreen(username = it) }
             }
-            composable( 
+            composable(
                 "${Screen.PhotoPreview.name}?uri={uri}",
                 arguments = listOf(
                     navArgument("uri") {

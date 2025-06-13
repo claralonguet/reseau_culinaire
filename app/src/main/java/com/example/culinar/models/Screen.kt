@@ -8,6 +8,7 @@ enum class Screen {
     Groceries,
     Recipes,
     Community,
+    Settings,
 
     // Secondary screens
     // ... Home
