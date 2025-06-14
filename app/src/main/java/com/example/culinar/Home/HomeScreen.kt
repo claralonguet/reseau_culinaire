@@ -271,7 +271,12 @@ fun BottomNavBar(
         NavigationBarItem(
             icon = {
                 Icon(
-                    if (screenName == Screen.Community.name) Icons.Default.Email else Icons.Outlined.Email,
+                    if (screenName == Screen.Community.name
+                        || screenName == Screen.CreateCommunity.name
+                        || screenName == Screen.ListCommunities.name
+                        || screenName == Screen.MyCommunity.name
+                        || screenName == Screen.Feed.name)
+                        Icons.Default.Email else Icons.Outlined.Email,
                     contentDescription = "Community",
                     tint = Color.White,
                     modifier = Modifier.size(40.dp)

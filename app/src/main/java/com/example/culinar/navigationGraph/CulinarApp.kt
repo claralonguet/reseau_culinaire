@@ -56,16 +56,16 @@ fun CulinarApp(
     // Determine if the top bar should be shown based on the current route
     val showTopBar = when (currentRoute) {
         Screen.Account.name -> false
-        CommunityScreens.MyCommunity.name -> false
-        CommunityScreens.Feed.name -> false
+        Screen.MyCommunity.name -> false
+        Screen.Feed.name -> false
         else -> true // Default to showing it
     }
 
     // Determine if the bottom navbar should be shown based on the current route
     val showBottomBar = when (currentRoute) {
         Screen.Account.name -> false
-        CommunityScreens.MyCommunity.name -> false
-        CommunityScreens.Feed.name -> false
+        Screen.MyCommunity.name -> false
+        Screen.Feed.name -> false
         else -> true // Default to showing it
     }
 

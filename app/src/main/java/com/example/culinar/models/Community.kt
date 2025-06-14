@@ -10,7 +10,7 @@ data class Community (
 	var description: String = "",
 	val author: String = "cd",
 	var creationDate: Date = Date(),
-	var members: List<User>? = null
+	var members: List<String>? = null
 ) {
 	constructor (name: String, description: String) : this() {
 		this.name = name

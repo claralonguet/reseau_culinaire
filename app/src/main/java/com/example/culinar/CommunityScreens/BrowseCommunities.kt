@@ -20,10 +20,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +45,7 @@ import com.example.culinar.models.viewModels.CommunityViewModel
 import com.example.culinar.ui.theme.darkGrey
 import com.example.culinar.ui.theme.grey
 import com.example.culinar.ui.theme.lightGrey
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 
@@ -101,14 +104,13 @@ fun BrowseCommunities(
 
 		}
 
+		Spacer(modifier = Modifier.height(10.dp))
 		for (community in communities) {
 			//val isMember = remember { mutableStateOf(false) }
 			CommunityCard(
 				modifier = Modifier.padding(
-					top = 20.dp,
-					bottom = 10.dp,
-					start = 10.dp,
-					end = 10.dp
+					horizontal = 5.dp,
+					vertical = 0.dp
 				),
 				community = community,
 				toCommunity = toCommunity,
@@ -123,15 +125,14 @@ fun BrowseCommunities(
 @Composable
 fun CommunityCard(modifier: Modifier = Modifier, community: Community, toCommunity: (Community) -> Unit = {}, viewModel: CommunityViewModel = viewModel()) {
 
-	var isMemberState by remember { mutableStateOf(false) }
-	runBlocking {
-		isMemberState = viewModel.checkMembership(community.id)
-	}
-	Log.d("CommunityCard", "isMemberState: $isMemberState")
+	val scope = rememberCoroutineScope()
+	val memberships = viewModel.isMember.collectAsState().value
+
+	Log.d("CommunityCard", "isMemberState: ${memberships[community.id]}")
 
 	TextButton(
 		onClick = {
-			if (isMemberState)
+			if (memberships[community.id] == true)
 				toCommunity(community)
 		},
 		colors = ButtonDefaults.buttonColors(
@@ -144,7 +145,7 @@ fun CommunityCard(modifier: Modifier = Modifier, community: Community, toCommuni
 			modifier = modifier
 				.fillMaxWidth()
 				.fillMaxWidth()
-				.height(80.dp)
+				.height(95.dp)
 				.border(width=2.dp, color = lightGrey, shape = CutCornerShape(3.dp))
 		) {
 			Column(modifier = Modifier.padding(5.dp)) {
@@ -156,37 +157,52 @@ fun CommunityCard(modifier: Modifier = Modifier, community: Community, toCommuni
 
 			}
 			Spacer(Modifier.weight(1f))
-			Column(modifier = Modifier.padding(5.dp)) {
+			Column(modifier = Modifier.padding(5.dp), horizontalAlignment = Alignment.End) {
 				// Number of members
-				val nbMembers = community.members?.size ?: 0
-				Text(text = " $nbMembers membres", style = MaterialTheme.typography.bodySmall)
+				val nbMembers = viewModel.allCommunities.collectAsState().value.find { it.id == community.id }?.members?.size ?: 0
+				Text(text = " $nbMembers membre" + if(nbMembers != 1) "s" else "", style = MaterialTheme.typography.bodySmall)
 
 				Spacer(Modifier.weight(1f))
 				// Join button
 				TextButton(
 					onClick = {
-						if (!isMemberState) {
+						if (memberships[community.id] == false) {
 							Log.d("CommunityCard", "Request to join community ${community.name}")
-							runBlocking {
-								isMemberState = viewModel.addMember(community.id)
+							scope.launch {
+								viewModel.addMember(community.id)
 							}
 
-							if (isMemberState) {
+							if (memberships[community.id] == true) {
 								Log.d(
 									"CommunityCard",
 									"Joined community ${community.name}"
+								)
+							}
+						} else {
+							Log.d("CommunityCard", "Request to leave community ${community.name}")
+							scope.launch {
+								viewModel.removeMember(community.id)
+							}
+							if (memberships[community.id] == false) {
+								Log.d(
+									"CommunityCard",
+									"Left community ${community.name}"
 								)
 							}
 						}
 							  },
 					shape = MaterialTheme.shapes.small,
 					colors = ButtonDefaults.buttonColors(
-						containerColor = if (isMemberState) Color.Gray else MaterialTheme.colorScheme.primary,
+						containerColor = if (memberships[community.id] == true) Color.Red else MaterialTheme.colorScheme.primary,
 						contentColor = MaterialTheme.colorScheme.onPrimary
 					)
 				)
 				{
-					Text(text = if(isMemberState) "Déjà membre" else "Rejoindre", style = MaterialTheme.typography.labelSmall)
+					Text(
+						text = if(memberships[community.id] == true) "Quitter" else "Rejoindre",
+						style = MaterialTheme.typography.labelSmall,
+						fontSize = 15.sp
+					)
 				}
 			}
 		}
