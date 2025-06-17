@@ -9,6 +9,7 @@ enum class Screen {
     Recipes,
     Community,
     Settings,
+    PendingExpertRequests,
 
     // Secondary screens
     // ... Home

@@ -14,7 +14,7 @@ import com.google.firebase.ktx.Firebase
 @Composable
 fun AccountScreen(
     modifier: Modifier = Modifier,
-    authAndNavigation: (String) -> Unit = {}
+    authAndNavigation: (userId: String, username: String) -> Unit = { _, _ -> }
 ) {
     var currentScreen by remember { mutableStateOf("login") }
 
@@ -30,10 +30,11 @@ fun AccountScreen(
     }
 }
 
+
 @Composable
 fun LoginScreen(
     changeScreen: (String) -> Unit,
-    authAndNavigation: (String) -> Unit
+    authAndNavigation: (String, String) -> Unit // id, username
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -75,7 +76,6 @@ fun LoginScreen(
                     errorMessage = "Veuillez remplir tous les champs"
                     return@Button
                 }
-                println("Tentative de connexion avec : $username")
 
                 db.collection("Utilisateur")
                     .whereEqualTo("username", username)
@@ -86,8 +86,8 @@ fun LoginScreen(
                             val storedPassword = userDoc.getString("password")
 
                             if (storedPassword == password) {
-                                // Passe le username, pas l'id
-                                authAndNavigation(username)
+                                val userId = userDoc.id
+                                authAndNavigation(userId, username)
                             } else {
                                 errorMessage = "Mot de passe incorrect"
                             }
@@ -120,5 +120,6 @@ fun LoginScreen(
         }
     }
 }
+
 
 // Tu peux ajouter ici SignupScreen et ProfileScreen si besoin, ou les importer.
