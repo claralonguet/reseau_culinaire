@@ -21,6 +21,7 @@ import com.example.culinar.CommunityScreens.CheckFeed
 import com.example.culinar.CommunityScreens.CommunityScreen
 import com.example.culinar.CommunityScreens.ConversationScreen
 import com.example.culinar.CommunityScreens.CreateCommunity
+import com.example.culinar.CommunityScreens.Feed
 import com.example.culinar.CommunityScreens.ListCommunities
 import com.example.culinar.CommunityScreens.MyCommunity
 import com.example.culinar.CommunityScreens.PhotoPreviewScreen
@@ -188,6 +189,8 @@ fun CulinarApp(
             composable(Screen.CreateCommunity.name) { CreateCommunity(communityViewModel = communityViewModel, navController = navController) }
             composable(Screen.ListCommunities.name) { ListCommunities(communityViewModel = communityViewModel, navController = navController) }
             composable(Screen.MyCommunity.name) { MyCommunity(communityViewModel = communityViewModel, navController = navController) }
+            composable(Screen.Feed.name) { Feed(goBack = { navController.popBackStack() }, communityViewModel = communityViewModel) }
+
 
         }
     }
