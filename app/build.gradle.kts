@@ -46,6 +46,8 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+
+    // Compose BOM and Compose UI dependencies
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
@@ -53,31 +55,39 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    // CameraX and Coil for image loading
     implementation(libs.androidx.exifinterface)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation("io.coil-kt:coil-compose:2.6.0")
-    implementation ("androidx.datastore:datastore-preferences:1.0.0")
 
-    // 🔥 Firebase
+    // DataStore preferences
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // Firebase BOM (manage versions automatically)
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+
+    // Firebase dependencies
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-database")
-    //implementation(libs.firebase.database) // (facultatif mais recommandé)
+    implementation("com.google.firebase:firebase-storage-ktx")
 
+
+    // Google Play Services (maps & location)
     implementation("com.google.android.gms:play-services-maps:19.2.0")
     implementation("com.google.android.gms:play-services-location:21.3.0")
 
-
-    // ✅ Tests
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
 
+    // Debug
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
