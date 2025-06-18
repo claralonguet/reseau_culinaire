@@ -7,6 +7,7 @@ import androidx.compose.ui.geometry.isEmpty
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.culinar.models.Community
+import com.example.culinar.models.Post
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,18 +22,21 @@ class CommunityViewModel : ViewModel() {
 
 	private val db = Firebase.firestore
 	/*TODO: Replace declaration using the actual user's id*/
-	private val userId = "one"
+	val userId = "one"
 	var allCommunities : MutableStateFlow<List<Community>> = MutableStateFlow<List<Community>>(listOf())
 	var myCommunity: MutableState<Community?> = mutableStateOf(null)
 	var selectedCommunity: Community? = null
 	var isMember: MutableStateFlow<MutableMap<String, Boolean>> = MutableStateFlow<MutableMap<String, Boolean>>(
 		mutableMapOf())
 	var myCommunities: MutableStateFlow<List<Community>> = MutableStateFlow<List<Community>>(listOf())
-	//var members: MutableStateFlow<List<String>> = MutableStateFlow<List<String>>(listOf())
+	var allPosts: MutableStateFlow<List<Post>> = MutableStateFlow<List<Post>>(listOf())
 
 	init {
 		refreshCommunities()
 	}
+
+
+	// Communities
 
 	fun refreshCommunities() {
 		getCommunities()
@@ -49,9 +53,10 @@ class CommunityViewModel : ViewModel() {
 		}
 	}
 
-
 	fun selectCommunity(community: Community) {
 		selectedCommunity = community
+		Log.d("CommunityViewModel", "Community selected: ${community.id}. Fetching posts.")
+		getPosts(community.id)
 	}
 
 	fun getCommunities() {
@@ -101,7 +106,6 @@ class CommunityViewModel : ViewModel() {
 			}
 
 	}
-
 
 	fun getMyCommunity() {
 
@@ -153,6 +157,9 @@ class CommunityViewModel : ViewModel() {
 		}
 	}
 
+
+	// Members
+
 	suspend fun getCommunityMembers(communityId: String): MutableList<String> {
 
 		val fetchedMembers = mutableListOf<String>()
@@ -164,7 +171,7 @@ class CommunityViewModel : ViewModel() {
 				for (document in result)
 					fetchedMembers.add(document.id)
 
-				Log.d("CommunityViewModel", "Retrieved ${fetchedMembers.size} members")
+				Log.d("CommunityViewModel", "Retrieved ${fetchedMembers.size} members in community $communityId")
 			}
 			.addOnFailureListener { exception ->
 				Log.e("CommunityViewModel", "Error getting members: $exception")
@@ -173,7 +180,7 @@ class CommunityViewModel : ViewModel() {
 		return fetchedMembers
 	}
 
-	 suspend fun checkMemberships(communitiesToScan: List<Community>) {
+	suspend fun checkMemberships(communitiesToScan: List<Community>) {
 
 		 if (communitiesToScan.isEmpty()) {
 			 Log.d("CommunityViewModel", "checkMembershipsInternal called with empty list.")
@@ -202,11 +209,13 @@ class CommunityViewModel : ViewModel() {
 					 }
 				 }
 				 currentMembership[community.id] = userIsMemberInThisCommunity
+				 /*
 				 if (userIsMemberInThisCommunity) {
 					 Log.d("CommunityViewModel", "Setting isMember for ${community.id} to true")
 				 } else {
 					 Log.d("CommunityViewModel", "Setting isMember for ${community.id} to false (or not found)")
 				 }
+				 */
 
 			 } catch (e: Exception) {
 				 Log.e("CommunityViewModel", "Error getting members for ${community.id}: $e")
@@ -214,10 +223,9 @@ class CommunityViewModel : ViewModel() {
 			 }
 		 }
 		 isMember.value = currentMembership // Assign the new map
-		 Log.d("CommunityViewModel", "isMemberState: ${isMember.value}")
+		 //Log.d("CommunityViewModel", "isMemberState: ${isMember.value}")
 
 	 }
-
 
 	suspend fun updateMembership(communityId: String, userId: String = this.userId) {
 
@@ -242,10 +250,6 @@ class CommunityViewModel : ViewModel() {
 				}
 				.await()
 		}
-	}
-
-	suspend fun getMembership(communityId: String): Boolean {
-		return isMember.value.toMutableMap()[communityId] ?: false
 	}
 
 	suspend fun addMember(communityId: String, userId: String = this.userId): Boolean {
@@ -309,5 +313,39 @@ class CommunityViewModel : ViewModel() {
 		Log.d("CommunityViewModel", "removeMember: $success")
 		return success
 	}
+
+
+	// Posts
+
+	fun getPosts(communityId: String) {
+		try {
+			viewModelScope.launch {
+				db.collection("Communauté")
+					.document(communityId)
+					.collection("posts")
+					.get()
+					.addOnSuccessListener { result ->
+						val fetchedPosts = mutableListOf<Post>()
+						for (document in result) {
+							fetchedPosts.add(document.toObject(Post::class.java))
+							fetchedPosts.last().id = document.id
+						}
+						Log.d("ViewModelGetPosts", "Fetched ${fetchedPosts.size} posts. IDs: ${fetchedPosts.map { it.id }}")
+						allPosts.value = fetchedPosts
+						Log.d("ViewModelGetPosts", "allPosts.value updated. New size: ${allPosts.value.size}. New IDs: ${allPosts.value.map { it.id }}")
+					}
+					.addOnFailureListener { exception ->
+						Log.e("CommunityViewModel", "Error getting documents: $exception")
+						allPosts.value = emptyList()
+					}
+					.await()
+			}
+		} catch (e: Exception) {
+			Log.e("CommunityViewModel", "Error getting posts: $e")
+			allPosts.value = emptyList() // Also good
+		}
+	}
+
+
 
 }
