@@ -31,8 +31,10 @@ enum class Screen {
 }
 
 
-enum class CommunityScreens {
-    ListCommunities,
-    MyCommunity,
-    Feed,
-}
+val communityRelatedScreens = setOf(
+    Screen.Community.name,
+    Screen.CreateCommunity.name,
+    Screen.ListCommunities.name,
+    Screen.MyCommunity.name,
+    Screen.Feed.name
+)

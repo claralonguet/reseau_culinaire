@@ -27,7 +27,6 @@ import com.example.culinar.CommunityScreens.MyCommunity
 import com.example.culinar.CommunityScreens.PhotoPreviewScreen
 import com.example.culinar.CommunityScreens.PostFeed
 import com.example.culinar.CommunityScreens.SendMessage
-import com.example.culinar.models.CommunityScreens
 import com.example.culinar.GroceriesScreens.Grocery
 import com.example.culinar.Home.BottomNavBar
 import com.example.culinar.Home.Home
@@ -39,6 +38,8 @@ import com.example.culinar.ui.screens.RecipeDetailScreen
 import com.example.culinar.ui.screens.RecipeListScreen
 import com.example.culinar.viewmodels.RecipeViewModel
 import com.example.culinar.viewmodels.SessionViewModel
+
+
 
 @Composable
 fun CulinarApp(
@@ -137,7 +138,13 @@ fun CulinarApp(
             composable(route = Screen.Calendar.name) {CalendarScreen() }
             composable(route = Screen.Groceries.name) { Grocery() }
             composable(route = Screen.Recipes.name) { RecipeListScreen(navController = navController, vm = viewModelRecipes) }
-            composable(route = Screen.Community.name) { CommunityScreen(communityViewModel = communityViewModel, navController = navController) }
+            composable(route = Screen.Community.name) {
+                CommunityScreen(
+                communityViewModel = communityViewModel,
+                navController = navController,
+
+                )
+            }
 
 
             // Secondary screens routes (accessible from within main screens)
