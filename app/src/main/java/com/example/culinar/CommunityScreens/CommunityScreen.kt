@@ -87,7 +87,10 @@ import com.example.culinar.ui.theme.mediumGreen
 fun CommunityScreen (
 	modifier: Modifier = Modifier,
 	communityViewModel: CommunityViewModel = CommunityViewModel(),
-	navController: NavController = NavController(LocalContext.current)
+	navController: NavController = NavController(LocalContext.current),
+	userId: String = "",
+	username: String = "",
+	isExpert: Boolean = false
 ) {
 
 	/*TODO: Replace declaration using the actual user status*/

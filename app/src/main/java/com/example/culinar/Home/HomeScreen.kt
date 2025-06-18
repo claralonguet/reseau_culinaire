@@ -19,6 +19,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.culinar.models.Screen
+import com.example.culinar.models.communityRelatedScreens
 import com.example.culinar.ui.theme.grey
 
 // Top bar
@@ -271,11 +272,7 @@ fun BottomNavBar(
         NavigationBarItem(
             icon = {
                 Icon(
-                    if (screenName == Screen.Community.name
-                        || screenName == Screen.CreateCommunity.name
-                        || screenName == Screen.ListCommunities.name
-                        || screenName == Screen.MyCommunity.name
-                        || screenName == Screen.Feed.name)
+                    if (screenName in communityRelatedScreens)
                         Icons.Default.Email else Icons.Outlined.Email,
                     contentDescription = "Community",
                     tint = Color.White,
