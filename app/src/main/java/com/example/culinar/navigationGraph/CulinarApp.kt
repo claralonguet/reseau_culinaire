@@ -21,6 +21,17 @@ import androidx.navigation.navArgument
 import com.example.culinar.AccountScreens.AccountScreen
 import com.example.culinar.CalendarScreens.CalendarScreen
 import com.example.culinar.CommunityScreens.*
+import com.example.culinar.CommunityScreens.AddFriends
+import com.example.culinar.CommunityScreens.CheckFeed
+import com.example.culinar.CommunityScreens.CommunityScreen
+import com.example.culinar.CommunityScreens.ConversationScreen
+import com.example.culinar.CommunityScreens.CreateCommunity
+import com.example.culinar.CommunityScreens.Feed
+import com.example.culinar.CommunityScreens.ListCommunities
+import com.example.culinar.CommunityScreens.MyCommunity
+import com.example.culinar.CommunityScreens.PhotoPreviewScreen
+import com.example.culinar.CommunityScreens.PostFeed
+import com.example.culinar.CommunityScreens.SendMessage
 import com.example.culinar.GroceriesScreens.Grocery
 import com.example.culinar.Home.BottomNavBar
 import com.example.culinar.Home.Home
@@ -227,6 +238,8 @@ fun CulinarApp(
             composable(Screen.CreateCommunity.name) { CreateCommunity(communityViewModel = communityViewModel, navController = navController) }
             composable(Screen.ListCommunities.name) { ListCommunities(communityViewModel = communityViewModel, navController = navController) }
             composable(Screen.MyCommunity.name) { MyCommunity(communityViewModel = communityViewModel, navController = navController) }
+            composable(Screen.Feed.name) { Feed(goBack = { navController.popBackStack() }, communityViewModel = communityViewModel) }
+
         }
     }
 }
