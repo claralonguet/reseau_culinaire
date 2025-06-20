@@ -25,6 +25,7 @@ import com.example.culinar.ui.theme.grey
 // Top bar
 @Composable
 fun TopBar(
+    isLoggedIn: Boolean = false,
     toAccount: () -> Unit = {},
     toSettings: () -> Unit = {},
     logout: () -> Unit = {}
@@ -88,30 +89,32 @@ fun TopBar(
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                TextButton(
-                    onClick = {
-                        toAccount()
-                        menuClicked = false
-                    },
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
-                    shape = CutCornerShape(3.dp),
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = Color.Black
-                    )
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            Icons.Outlined.AccountCircle,
-                            contentDescription = "Account",
-                            tint = Color.Black,
-                            modifier = Modifier.size(30.dp)
+                if(!isLoggedIn) {
+                    TextButton(
+                        onClick = {
+                            toAccount()
+                            menuClicked = false
+                        },
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape = CutCornerShape(3.dp),
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = Color.Black
                         )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text("Compte", style = MaterialTheme.typography.bodyMedium)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                Icons.Outlined.AccountCircle,
+                                contentDescription = "Se connecter",
+                                tint = Color.Black,
+                                modifier = Modifier.size(30.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text("Compte", style = MaterialTheme.typography.bodyMedium)
+                        }
                     }
                 }
                 TextButton(

@@ -187,7 +187,7 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 				onClick = {/* TODO: Implement liking the post */}
 			) {
 				Icon(
-					if(post.likes.contains(communityViewModel.userId))
+					if(communityViewModel.hasLiked(post))
 						Icons.Default.Favorite
 					else
 						Icons.Default.FavoriteBorder,

@@ -1,5 +1,6 @@
 package com.example.culinar.navigationGraph
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -61,6 +62,9 @@ fun CulinarApp(
     val isExpert by sessionViewModel.isExpert.collectAsState()
     val idConnect by sessionViewModel.id.collectAsState()
 
+    // Setting session id into viewModels
+    communityViewModel.setUserId(idConnect ?: "")
+
     val currentBackStackEntry = navController.currentBackStackEntryAsState().value
     val currentRoute = currentBackStackEntry?.destination?.route
 
@@ -99,6 +103,7 @@ fun CulinarApp(
         topBar = {
             if (showTopBar) {
                 TopBar(
+                    isLoggedIn = !username.isNullOrEmpty(),
                     toAccount = { onNavigate(Screen.Account.name, username) },
                     toSettings = { onNavigate(Screen.Settings.name, username) },
                     logout = {
@@ -124,10 +129,12 @@ fun CulinarApp(
             startDestination = Screen.Home.name,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(route = Screen.Account.name) {
-                AccountScreen(authAndNavigation = { id, username ->
+            composable(route = "${Screen.Account.name}?nextRoute={nextRoute}") { backStackEntry ->
+                val nextRoute = backStackEntry.arguments?.getString("nextRoute")
+
+                AccountScreen(authAndNavigation = {id, username ->
                     sessionViewModel.login(id, username)
-                    onNavigate(Screen.Home.name, username)
+                    onNavigate(if (nextRoute == null) Screen.Home.name else nextRoute, username)
                 })
             }
 
@@ -183,9 +190,30 @@ fun CulinarApp(
 
             // Autres routes inchangées ...
             composable(route = Screen.Calendar.name) { CalendarScreen() }
-            composable(route = Screen.Groceries.name) { Grocery() }
+            composable(route = Screen.Groceries.name) {
+                Grocery(
+                    sessionViewModel = sessionViewModel,
+                    onNavigate = onNavigate
+                )
+            }
             composable(route = Screen.Recipes.name) { RecipeListScreen(navController = navController, vm = viewModelRecipes) }
-            composable(route = Screen.Community.name) { CommunityScreen(communityViewModel = communityViewModel, navController = navController) }
+            composable(route = Screen.Community.name) {
+                // Check if there's a user ID in the session
+                if (idConnect == null) {
+                    Log.d("CommunityScreen", "No user ID found in the session.")
+                    CommunityScreen(
+                        communityViewModel = communityViewModel,
+                        onNavigate = onNavigate
+                    )
+                } else {
+                    Log.d("CommunityScreen", "User $idConnect is not logged in.")
+                    CommunityScreen(
+                        communityViewModel = communityViewModel,
+                        sessionViewModel = sessionViewModel,
+                        onNavigate = onNavigate
+                    )
+                }
+            }
             composable(route = Screen.PostFeed.name) { PostFeed(navController) }
             composable(route = Screen.CheckFeed.name) { CheckFeed() }
             composable("SendMessage") {
@@ -235,8 +263,8 @@ fun CulinarApp(
                     RecipeDetailScreen(recipe = recipe)
                 }
             }
-            composable(Screen.CreateCommunity.name) { CreateCommunity(communityViewModel = communityViewModel, navController = navController) }
-            composable(Screen.ListCommunities.name) { ListCommunities(communityViewModel = communityViewModel, navController = navController) }
+            composable(Screen.CreateCommunity.name) { CreateCommunity(communityViewModel = communityViewModel, onNavigate = onNavigate) }
+            composable(Screen.ListCommunities.name) { ListCommunities(communityViewModel = communityViewModel, onNavigate = onNavigate) }
             composable(Screen.MyCommunity.name) { MyCommunity(communityViewModel = communityViewModel, navController = navController) }
             composable(Screen.Feed.name) { Feed(goBack = { navController.popBackStack() }, communityViewModel = communityViewModel) }
 

@@ -42,6 +42,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -82,19 +83,24 @@ import com.example.culinar.models.viewModels.CommunityViewModel
 import com.example.culinar.ui.theme.darkGreen
 import com.example.culinar.ui.theme.lightGreen
 import com.example.culinar.ui.theme.mediumGreen
+import com.example.culinar.viewmodels.SessionViewModel
 
 @Composable
 fun CommunityScreen (
 	modifier: Modifier = Modifier,
 	communityViewModel: CommunityViewModel = CommunityViewModel(),
-	navController: NavController = NavController(LocalContext.current),
-	userId: String = "",
-	username: String = "",
-	isExpert: Boolean = false
+	sessionViewModel: SessionViewModel = viewModel(),
+	onNavigate: (String, String?) -> Unit = { _, _ -> },
 ) {
 
-	/*TODO: Replace declaration using the actual user status*/
-	val isExpert = true
+	val userId by sessionViewModel.id.collectAsState()
+	val isExpert by sessionViewModel.isExpert.collectAsState()
+
+	Log.d("CommunityScreen", "userId: $userId, ${if(isExpert == true) "is expert" else "is not expert"}")
+	// Setting session id into viewModels
+	communityViewModel.setUserId(userId ?: "")
+
+
 	// communityViewModel.refreshCommunities()
 
 	// Screen content
@@ -133,10 +139,7 @@ fun CommunityScreen (
 
 		// Screen description
 		Text(stringResource(R.string.community_space_description),
-			fontSize = 20.sp,
-			fontFamily = FontFamily.Serif,
-			textAlign = TextAlign.Center,
-			fontWeight = FontWeight.SemiBold,
+			style = MaterialTheme.typography.bodyLarge,
 			lineHeight = 50.sp,
 			modifier = modifier.padding(16.dp)
 		)
@@ -144,11 +147,11 @@ fun CommunityScreen (
 		Spacer(modifier = Modifier.height(40.dp))
 
 		// Options
-		if(isExpert) {
+		if(isExpert == true) {
 			if(communityViewModel.myCommunity.value != null) {
 				// ... My community
 				TextButton(
-					onClick = { navController.navigate(Screen.MyCommunity.name) },
+					onClick = { onNavigate(Screen.MyCommunity.name, null) },
 					shape = CutCornerShape(5.dp),
 					modifier = modifier.height(50.dp),
 					colors = ButtonColors(
@@ -168,7 +171,7 @@ fun CommunityScreen (
 			} else {
 				// ... Create a community
 				TextButton(
-					onClick = { navController.navigate(Screen.CreateCommunity.name) },
+					onClick = { onNavigate(Screen.CreateCommunity.name, null) },
 					shape = CutCornerShape(5.dp),
 					modifier = modifier.height(50.dp),
 					colors = ButtonColors(
@@ -192,9 +195,14 @@ fun CommunityScreen (
 
 		// ... Join a community
 		TextButton(
-			onClick = { navController.navigate(Screen.ListCommunities.name) },
+			onClick = {
+				if(userId != null)
+					onNavigate(Screen.ListCommunities.name, null)
+				else
+					onNavigate("${Screen.Account.name}?nextRoute=${Screen.Community.name}", null)
+					  },
 			shape = CutCornerShape(5.dp),
-			modifier = modifier.height(50.dp),
+			modifier = modifier.height(80.dp),
 			colors = ButtonColors(
 				containerColor = mediumGreen,
 				contentColor = Color.White,
@@ -203,7 +211,12 @@ fun CommunityScreen (
 			)
 		) {
 			Text(
-				text = "Rejoindre une communauté",
+				text =
+					if(userId != null)
+						stringResource(R.string.join_community_button_default)
+					else
+						stringResource(R.string.join_community_button_second)
+				,
 				fontSize = 20.sp,
 				fontFamily = FontFamily.Serif,
 				textAlign = TextAlign.Center,
@@ -218,7 +231,7 @@ fun CommunityScreen (
 
 
 @Composable
-fun CreateCommunity(modifier: Modifier = Modifier, navController: NavController = NavController(LocalContext.current), communityViewModel: CommunityViewModel = viewModel()) {
+fun CreateCommunity(modifier: Modifier = Modifier, onNavigate: (String, String?) -> Unit, communityViewModel: CommunityViewModel = viewModel()) {
 
 	var screenNumber by remember { mutableIntStateOf(0) }
 	val changeOnboardingScreen: (Int) -> Unit = { screenNumber = it }
@@ -239,7 +252,7 @@ fun CreateCommunity(modifier: Modifier = Modifier, navController: NavController 
 		) {
 			// Return button
 			TextButton(
-				onClick = { navController.navigate(Screen.Community.name) },
+				onClick = { onNavigate(Screen.Community.name, null) },
 				shape = CutCornerShape(3.dp),
 				colors = ButtonColors(
 					containerColor = Color(0x0059EA85),
@@ -277,7 +290,7 @@ fun CreateCommunity(modifier: Modifier = Modifier, navController: NavController 
 
 		when (screenNumber) {
 			0 -> CreateCommunityStart(changeOnboardingScreen = changeOnboardingScreen)
-			1 -> CreateCommunityDetails(communityViewModel = communityViewModel, navController = navController)
+			1 -> CreateCommunityDetails(communityViewModel = communityViewModel, onNavigate = onNavigate)
 		}
 	}
 
@@ -345,7 +358,7 @@ fun CreateCommunityStart(modifier: Modifier = Modifier, changeOnboardingScreen: 
 
 
 @Composable
-fun CreateCommunityDetails(modifier: Modifier = Modifier, communityViewModel: CommunityViewModel = CommunityViewModel(), navController: NavController) {
+fun CreateCommunityDetails(modifier: Modifier = Modifier, communityViewModel: CommunityViewModel = CommunityViewModel(), onNavigate: (String, String?) -> Unit) {
 
 	var creatable by remember { mutableStateOf(true) }
 	var acceptedTerms by remember { mutableStateOf(false) }
@@ -411,7 +424,7 @@ fun CreateCommunityDetails(modifier: Modifier = Modifier, communityViewModel: Co
 		Button(
 			onClick = {
 				communityViewModel.addCommunity(Community(name, description))
-				navController.navigate(Screen.Community.name)
+				onNavigate(Screen.Community.name, null)
 			},
 			enabled = acceptedTerms && creatable,
 			colors = ButtonDefaults.buttonColors(
@@ -435,13 +448,14 @@ fun MyCommunity(modifier: Modifier = Modifier, communityViewModel: CommunityView
 
 
 @Composable
-fun ListCommunities(modifier: Modifier = Modifier, navController: NavController = NavController(LocalContext.current), communityViewModel: CommunityViewModel = viewModel()) {
+fun ListCommunities(modifier: Modifier = Modifier, onNavigate: (String, String?) -> Unit, communityViewModel: CommunityViewModel = viewModel()) {
 	BrowseCommunities(
 		toCommunity = { community ->
 			communityViewModel.selectCommunity(community)
-			navController.navigate(Screen.Feed.name)
+			onNavigate(Screen.Feed.name, null)
 		},
-		backToHome = { navController.navigate(Screen.Community.name) }
+		communityViewModel = communityViewModel,
+		backToHome = { onNavigate(Screen.Community.name, null) }
 	)
 }
 

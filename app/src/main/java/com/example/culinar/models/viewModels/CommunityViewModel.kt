@@ -21,8 +21,8 @@ import java.util.Hashtable
 class CommunityViewModel : ViewModel() {
 
 	private val db = Firebase.firestore
-	/*TODO: Replace declaration using the actual user's id*/
-	val userId = "one"
+
+	private val userId : MutableStateFlow<String> = MutableStateFlow<String>("")
 	var allCommunities : MutableStateFlow<List<Community>> = MutableStateFlow<List<Community>>(listOf())
 	var myCommunity: MutableState<Community?> = mutableStateOf(null)
 	var selectedCommunity: Community? = null
@@ -32,9 +32,20 @@ class CommunityViewModel : ViewModel() {
 	var allPosts: MutableStateFlow<List<Post>> = MutableStateFlow<List<Post>>(listOf())
 
 	init {
-		refreshCommunities()
+		// Load communities when userId changes
+		viewModelScope.launch {
+			userId.collect {
+				// Update communities when userId is not null
+				if (it.isNotEmpty())
+					refreshCommunities()
+			}
+		}
 	}
 
+	// User session info setup
+	fun setUserId(id: String) {
+		userId.value = id
+	}
 
 	// Communities
 
@@ -69,20 +80,23 @@ class CommunityViewModel : ViewModel() {
 				val communities = mutableListOf<Community>()
 
 				for (document in result) {
-					toSort.add(document.toObject<Community>(Community::class.java))
-					toSort.last().id = document.id
+					if(document.id != userId.value) {
+						toSort.add(document.toObject<Community>(Community::class.java))
+						toSort.last().id = document.id
 
-					// Now, fetching member IDs for this community
-					runBlocking {
-						val memberIdsSnapshot = db.collection("Communauté")
-							.document(document.id)
-							.collection("members") // Members subcollection
-							.get()
-							.await()
 
-						val memberIds =
-							memberIdsSnapshot.documents.map { it.id } // Getting the IDs of the documents in the subcollection
-						toSort.last().members = memberIds // Assigning the list
+						// Now, fetching member IDs for this community
+						runBlocking {
+							val memberIdsSnapshot = db.collection("Communauté")
+								.document(document.id)
+								.collection("members") // Members subcollection
+								.get()
+								.await()
+
+							val memberIds =
+								memberIdsSnapshot.documents.map { it.id } // Getting the IDs of the documents in the subcollection
+							toSort.last().members = memberIds // Assigning the list
+						}
 					}
 				}
 
@@ -91,7 +105,7 @@ class CommunityViewModel : ViewModel() {
 				// Sorting communities (by membership)
 				runBlocking {
 					toSort.forEach { community ->
-						if (getCommunityMembers(community.id).contains(userId))
+						if (getCommunityMembers(community.id).contains(userId.value))
 							communities.add(0, community)
 						else
 							communities.add(community)
@@ -111,7 +125,7 @@ class CommunityViewModel : ViewModel() {
 
 		viewModelScope.launch {
 			db.collection("Communauté")
-				.document(userId)
+				.document(userId.value)
 				.get()
 				.addOnSuccessListener { result ->
 					myCommunity.value = result.toObject(Community::class.java)
@@ -128,7 +142,7 @@ class CommunityViewModel : ViewModel() {
 
 		viewModelScope.launch {
 			db.collection("Communauté")
-				.document(userId)
+				.document(userId.value)
 				.set(community)
 				.addOnSuccessListener {
 					Log.d("CommunityViewModel", "Community added successfully")
@@ -145,7 +159,7 @@ class CommunityViewModel : ViewModel() {
 
 		viewModelScope.launch {
 			db.collection("Communauté")
-				.document(userId)
+				.document(userId.value)
 				.set(community)
 				.addOnSuccessListener {
 					Log.d("CommunityViewModel", "Community updated successfully")
@@ -202,9 +216,9 @@ class CommunityViewModel : ViewModel() {
 
 				 var userIsMemberInThisCommunity = false
 				 for (memberDoc in membersSnapshot.documents) {
-					 if (memberDoc.id == userId) {
+					 if (memberDoc.id == userId.value) {
 						 userIsMemberInThisCommunity = true
-						 Log.d("CommunityViewModel", "User $userId is a member of ${community.id}!")
+						 Log.d("CommunityViewModel", "User $userId.value is a member of ${community.id}!")
 						 break
 					 }
 				 }
@@ -227,7 +241,7 @@ class CommunityViewModel : ViewModel() {
 
 	 }
 
-	suspend fun updateMembership(communityId: String, userId: String = this.userId) {
+	suspend fun updateMembership(communityId: String, userId: String = this.userId.value) {
 
 		viewModelScope.launch {
 			db.collection("Communauté")
@@ -252,7 +266,7 @@ class CommunityViewModel : ViewModel() {
 		}
 	}
 
-	suspend fun addMember(communityId: String, userId: String = this.userId): Boolean {
+	suspend fun addMember(communityId: String, userId: String = this.userId.value): Boolean {
 
 		var success = false
 		runBlocking {
@@ -277,13 +291,13 @@ class CommunityViewModel : ViewModel() {
 			} ?: allCommunities.value
 			allCommunities.value = currentCommunities
 
-			updateMembership(communityId)
+			updateMembership(communityId, userId)
 		}
 		Log.d("CommunityViewModel", "addMember: $success")
 		return success
 	}
 
-	suspend fun removeMember(communityId: String, userId: String = this.userId): Boolean {
+	suspend fun removeMember(communityId: String, userId: String = this.userId.value): Boolean {
 		var success = false
 		runBlocking {
 			db.collection("Communauté")
@@ -308,7 +322,7 @@ class CommunityViewModel : ViewModel() {
 			allCommunities.value = currentCommunities
 			}
 
-		updateMembership(communityId)
+		updateMembership(communityId, userId)
 
 		Log.d("CommunityViewModel", "removeMember: $success")
 		return success
@@ -344,6 +358,11 @@ class CommunityViewModel : ViewModel() {
 			Log.e("CommunityViewModel", "Error getting posts: $e")
 			allPosts.value = emptyList() // Also good
 		}
+	}
+
+
+	fun hasLiked(post: Post): Boolean {
+		return post.likes.contains(userId.value)
 	}
 
 

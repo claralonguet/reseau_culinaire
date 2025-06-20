@@ -1,5 +1,21 @@
 <resources>
     <string name="app_name">Culinary</string>
+
+    // Groceries strings
+    <string name="grocery_list_title">Ma liste de courses</string>
+    <string name="grocery_add_button">Ajouter</string>
+    <string name="grocery_search_placeholder">Rechercher un aliment</string>
+    <string name="grocery_search_button">Rechercher</string>
+    <string name="grocery_item_delete_button">Supprimer</string>
+    <string name="grocery_screen_description">
+        Bienvenue sur votre liste de courses.
+        Vous pouvez y ajouter des produits et les supprimer.
+        Connectez-vous pour accéder à votre liste.
+    </string>
+
+
+
+    // Community space strings
     <string name="expert_terms_and_conditions">
         lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
         \n
@@ -9,4 +25,11 @@
         Bienvenue sur L\'espace communautaire !\n
         Vous pourrez y partagez vos expériences culinaires et expérimentez celles d\'experts du domaine.
     </string>
+    <string name="join_community_button_default">
+        Accéder à nos communautés
+    </string>
+    <string name="join_community_button_second">
+        Connectez vous!
+    </string>
+
 </resources>

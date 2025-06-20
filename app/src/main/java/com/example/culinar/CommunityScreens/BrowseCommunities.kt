@@ -46,10 +46,12 @@ import kotlinx.coroutines.launch
 fun BrowseCommunities(
 	toCommunity: (Community) -> Unit = {},
 	backToHome: () -> Unit = {},
-	viewModel: CommunityViewModel = viewModel()
+	communityViewModel: CommunityViewModel = viewModel()
 ) {
 
-	val communities = viewModel.allCommunities.collectAsState().value
+	Log.d("CommunityScreen", "Composing BrowseCommunities")
+
+	val communities = communityViewModel.allCommunities.collectAsState().value
 	Column {
 		// Screen title and options
 		Row(
@@ -102,7 +104,7 @@ fun BrowseCommunities(
 			LazyColumn {
 
 				items (communities) { community ->
-					//val isMember = remember { mutableStateOf(false) }
+
 					CommunityCard(
 						modifier = Modifier.padding(
 							horizontal = 5.dp,
@@ -110,7 +112,7 @@ fun BrowseCommunities(
 						),
 						community = community,
 						toCommunity = toCommunity,
-						viewModel = viewModel
+						viewModel = communityViewModel
 					)
 				}
 			}
