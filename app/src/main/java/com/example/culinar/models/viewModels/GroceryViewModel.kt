@@ -44,7 +44,7 @@ class GroceryViewModel: ViewModel() {
 	fun loadFoodItems() {
 		// Loading every food item from the database
 		allFoodItems.clear()
-		db.collection("Aliment")
+		db.collection(FOOD_ITEMS_FIREBASE_COLLECTION)
 			.get()
 			.addOnSuccessListener { aliments ->
 				if (aliments != null) {
@@ -66,7 +66,7 @@ class GroceryViewModel: ViewModel() {
 			}
 
 
-		db.collection("GroceryList").document(userId.value).collection("items")
+		db.collection(GROCERY_LIST_FIREBASE_COLLECTION).document(userId.value).collection("items")
 			.get()
 			.addOnSuccessListener { aliments ->
 				if (aliments != null) {
@@ -101,7 +101,7 @@ class GroceryViewModel: ViewModel() {
 			"details" to item.toMap()
 		)
 		try {
-			db.collection("GroceryList")
+			db.collection(GROCERY_LIST_FIREBASE_COLLECTION)
 				.document(userId.value)
 				.collection("items")
 				.document(item.name) // Use aliment name as document ID
@@ -117,12 +117,12 @@ class GroceryViewModel: ViewModel() {
 			Log.e("GroceryViewModel", "Error writing item '${item.name}' to Firestore", e)
 		}
 
-		//db.collection("GroceryList").document(userId).collection("items").document(item.name).set(documentData)
+		//db.collection(GROCERY_LIST_FIREBASE_COLLECTION).document(userId).collection("items").document(item.name).set(documentData)
     }
 
     fun removeItemToGroceryList(item: Aliment) {
 		groceryItems.value = groceryItems.value.filter { it.name != item.name }
-		db.collection("GroceryList").document(userId.value).collection("items").document(item.name).delete()
+		db.collection(GROCERY_LIST_FIREBASE_COLLECTION).document(userId.value).collection("items").document(item.name).delete()
 			.addOnFailureListener {
 				Log.d("GroceryViewModel", "Error deleting item '${item.name}' in Firestore.")
 			}
@@ -131,7 +131,7 @@ class GroceryViewModel: ViewModel() {
 
 	fun modifyItemToGroceryList(item: Aliment) {
 		groceryItems.value = groceryItems.value.filter { it.name != item.name } + item
-		db.collection("GroceryList").document(userId.value).collection("items").document(item.name).update("details", item.toMap())
+		db.collection(GROCERY_LIST_FIREBASE_COLLECTION).document(userId.value).collection("items").document(item.name).update("details", item.toMap())
 			.addOnFailureListener {
 				Log.d("GroceryViewModel", "Error modifying item '${item.name}' in Firestore.")
 			}

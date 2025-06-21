@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -38,6 +39,7 @@ import com.example.culinar.models.Post
 import com.example.culinar.models.viewModels.CommunityViewModel
 import com.example.culinar.ui.theme.lightGrey
 import androidx.compose.material.icons.filled.Comment
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
@@ -92,7 +94,7 @@ fun ToolBar(
 			)
 		) {
 			Icon(
-				Icons.Default.KeyboardArrowLeft,
+				Icons.AutoMirrored.Filled.KeyboardArrowLeft,
 				contentDescription = "Back",
 				tint = Color.White,
 				modifier = Modifier.size(36.dp)

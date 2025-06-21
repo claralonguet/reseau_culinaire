@@ -218,7 +218,7 @@ fun StandardPost(
 	// Field values
 	var name by rememberSaveable { mutableStateOf("") }
 	var content by rememberSaveable { mutableStateOf("") }
-	var private by rememberSaveable { mutableStateOf(false) }
+	var private by rememberSaveable { mutableStateOf(true) }
 
 	// State for the selected image URI
 	var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) } // Uri type
@@ -319,9 +319,9 @@ fun StandardPost(
 				Text(
 					text =
 						if(private)
-							stringResource(R.string.create_post_private_label_2)
-						else
 							stringResource(R.string.create_post_private_label_1)
+						else
+							stringResource(R.string.create_post_private_label_2)
 					,
 					style = MaterialTheme.typography.bodyMedium,
 					modifier = Modifier.align(Alignment.CenterVertically)

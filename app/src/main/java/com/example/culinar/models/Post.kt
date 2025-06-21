@@ -11,7 +11,21 @@ data class Post(
 	var likes: List<String> = listOf(),
 	val date: Date = Date(),
 	val imageUri: String = "",
-	val authorId: String = "",
+	var authorId: String = "",
 	val isPrivate: Boolean = true,
-	val communityId: String = "",
-)
+	var communityId: String = "",
+) {
+	fun toMap(): HashMap<String, Any?> {
+		return hashMapOf(
+			"id" to id,
+			"name" to name,
+			"content" to content,
+			"likes" to likes,
+			"date" to date,
+			"imageUri" to imageUri,
+			"authorId" to authorId,
+			"isPrivate" to isPrivate,
+			"communityId" to communityId,
+		)
+	}
+}

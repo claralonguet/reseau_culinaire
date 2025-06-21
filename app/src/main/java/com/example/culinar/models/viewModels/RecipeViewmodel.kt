@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.culinar.models.Recipe
+import com.example.culinar.models.viewModels.RECIPES_FIREBASE_COLLECTION
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore// ajout pour communication avec la base de donnée
 import com.google.firebase.ktx.Firebase //ajout pour communication avec la base de donnée
@@ -45,7 +46,7 @@ class RecipeViewModel : ViewModel() {
     }
 
     private fun fetchRecipesFromFirestore() {
-        db.collection("Recette")
+        db.collection(RECIPES_FIREBASE_COLLECTION)
             .get()
             .addOnSuccessListener { result ->
                 recipes.clear()

@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.culinar.datastore.DataStoreManager
+import com.example.culinar.models.viewModels.USER_FIREBASE_COLLECTION
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -71,7 +72,7 @@ class SessionViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private fun fetchIsExpert(username: String) {
-        db.collection("Utilisateur")
+        db.collection(USER_FIREBASE_COLLECTION)
             .whereEqualTo("username", username)
             .get()
             .addOnSuccessListener { documents ->
@@ -92,7 +93,7 @@ class SessionViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private fun fetchIsAdmin(username: String) { // 👈 Nouvelle méthode
-        db.collection("Utilisateur")
+        db.collection(USER_FIREBASE_COLLECTION)
             .whereEqualTo("username", username)
             .get()
             .addOnSuccessListener { documents ->
@@ -127,7 +128,7 @@ class SessionViewModel(application: Application) : AndroidViewModel(application)
         username: String
     ): String? {
         return try {
-            val result = db.collection("Utilisateur")
+            val result = db.collection(USER_FIREBASE_COLLECTION)
                 .whereEqualTo("username", username)
                 .get()
                 .await()
