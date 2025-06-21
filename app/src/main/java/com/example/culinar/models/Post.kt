@@ -11,5 +11,6 @@ data class Post(
 	var likes: List<String> = listOf(),
 	val date: Date = Date(),
 	val imageUri: String = "",
-	val authorId: String = ""
+	val authorId: String = "",
+	val private: Boolean = true,
 )

@@ -136,8 +136,8 @@ fun CommunityCard(modifier: Modifier = Modifier, community: Community, toCommuni
 				toCommunity(community)
 		},
 		colors = ButtonDefaults.buttonColors(
-			containerColor = Color.White,
-			contentColor = Color.Black
+			containerColor = Color(0x00FFFFFF),
+			contentColor = MaterialTheme.colorScheme.onBackground
 		),
 
 	) {
@@ -153,7 +153,7 @@ fun CommunityCard(modifier: Modifier = Modifier, community: Community, toCommuni
 				Text(text = community.name, style = MaterialTheme.typography.titleMedium)
 				Spacer(Modifier.weight(1f))
 				// Description of the community
-				Text(text = community.description, style = MaterialTheme.typography.bodySmall)
+				Text(text = if(community.description.length < 20) community.description else community.description.substring(0, 20) + "...", style = MaterialTheme.typography.bodySmall)
 
 			}
 			Spacer(Modifier.weight(1f))

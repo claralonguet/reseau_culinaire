@@ -13,11 +13,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.culinar.R
 import com.example.culinar.models.Screen
 import com.example.culinar.models.communityRelatedScreens
 import com.example.culinar.ui.theme.grey
@@ -50,7 +52,7 @@ fun TopBar(
         ) {
 
             Text(
-                text = "Culinary",
+                text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.headlineLarge,
                 textAlign = TextAlign.Center,
                 color = Color.White,
@@ -89,6 +91,7 @@ fun TopBar(
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Log in button
                 if(!isLoggedIn) {
                     TextButton(
                         onClick = {
@@ -117,6 +120,8 @@ fun TopBar(
                         }
                     }
                 }
+
+                // Settings button
                 TextButton(
                     onClick = {
                         toSettings()
@@ -143,28 +148,32 @@ fun TopBar(
                         Text("Paramètres", style = MaterialTheme.typography.bodyMedium)
                     }
                 }
-                TextButton(
-                    onClick = {
-                        logout()
-                        menuClicked = false
-                    },
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
-                    shape = CutCornerShape(3.dp),
-                    colors = ButtonDefaults.textButtonColors(contentColor = Color.Black)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
+
+                // Logout button
+                if(isLoggedIn) {
+                    TextButton(
+                        onClick = {
+                            logout()
+                            menuClicked = false
+                        },
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape = CutCornerShape(3.dp),
+                        colors = ButtonDefaults.textButtonColors(contentColor = Color.Black)
                     ) {
-                        Icon(
-                            Icons.AutoMirrored.Default.ExitToApp,
-                            contentDescription = "Logout",
-                            tint = Color.Black,
-                            modifier = Modifier.size(30.dp).graphicsLayer { rotationZ = 180f }
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text("Déconnexion", style = MaterialTheme.typography.bodyMedium)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Default.ExitToApp,
+                                contentDescription = "Logout",
+                                tint = Color.Black,
+                                modifier = Modifier.size(30.dp).graphicsLayer { rotationZ = 180f }
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text("Déconnexion", style = MaterialTheme.typography.bodyMedium)
+                        }
                     }
                 }
 

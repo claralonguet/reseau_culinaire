@@ -95,11 +95,31 @@ fun Grocery(
 @Composable
 fun ToLogin(onNavigate: (String, String?) -> Unit) {
 
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Column (
         modifier = Modifier.fillMaxSize()
     ) {
+
+        // Title of the subscreen
+        Row (
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .background(color = grey)
+        ) {
+            Text(
+                text = "Ma liste de courses",
+                style = Typography.titleLarge,
+                fontSize = 30.sp,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxSize()
+        ) {
         Text(
             text = stringResource(R.string.grocery_screen_description),
             style = MaterialTheme.typography.bodyLarge,
@@ -132,6 +152,7 @@ fun ToLogin(onNavigate: (String, String?) -> Unit) {
             Spacer(modifier = Modifier.width(10.dp))
             Text(text = "Connectez vous", style = Typography.labelSmall)
         }
+    }
     }
 
 }

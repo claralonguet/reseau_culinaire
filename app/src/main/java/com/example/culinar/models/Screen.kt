@@ -29,6 +29,7 @@ enum class Screen {
     ListCommunities,
     MyCommunity,
     Feed,
+    CreatePost,
 }
 
 
@@ -37,5 +38,7 @@ val communityRelatedScreens = setOf(
     Screen.CreateCommunity.name,
     Screen.ListCommunities.name,
     Screen.MyCommunity.name,
-    Screen.Feed.name
+    Screen.Feed.name,
+    Screen.CreatePost.name,
+
 )

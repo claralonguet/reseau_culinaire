@@ -141,17 +141,21 @@ fun CommunityScreen (
 		Text(stringResource(R.string.community_space_description),
 			style = MaterialTheme.typography.bodyLarge,
 			lineHeight = 50.sp,
+			textAlign = TextAlign.Center,
 			modifier = modifier.padding(16.dp)
 		)
 
 		Spacer(modifier = Modifier.height(40.dp))
 
-		// Options
+		// Community options
 		if(isExpert == true) {
 			if(communityViewModel.myCommunity.value != null) {
 				// ... My community
 				TextButton(
-					onClick = { onNavigate(Screen.MyCommunity.name, null) },
+					onClick = {
+						communityViewModel.selectCommunity(communityViewModel.myCommunity.value!!)
+						onNavigate(Screen.MyCommunity.name, null)
+							  },
 					shape = CutCornerShape(5.dp),
 					modifier = modifier.height(50.dp),
 					colors = ButtonColors(
@@ -162,13 +166,14 @@ fun CommunityScreen (
 					)
 				) {
 					Text(
-						text = "Ma communauté",
+						text = stringResource(R.string.my_community_button),
 						fontSize = 20.sp,
 						fontFamily = FontFamily.Serif,
 						textAlign = TextAlign.Center,
 					)
 				}
-			} else {
+			}
+			else {
 				// ... Create a community
 				TextButton(
 					onClick = { onNavigate(Screen.CreateCommunity.name, null) },
@@ -182,7 +187,7 @@ fun CommunityScreen (
 					)
 				) {
 					Text(
-						text = "Créer une communauté",
+						text = stringResource(R.string.create_community_button),
 						fontSize = 20.sp,
 						fontFamily = FontFamily.Serif,
 						textAlign = TextAlign.Center,
@@ -395,11 +400,11 @@ fun CreateCommunityDetails(modifier: Modifier = Modifier, communityViewModel: Co
 			onValueChange = { description = it },
 			label = {
 				Text(
-					"Nom de la communauté",
+					"Description de la communauté",
 					fontWeight = FontWeight.Bold
 				)
 			},
-			modifier = modifier.padding(16.dp).height(60.dp)
+			modifier = modifier.padding(16.dp).height(200.dp)
 		)
 		Spacer(modifier = Modifier.height(16.dp))
 
@@ -441,7 +446,24 @@ fun CreateCommunityDetails(modifier: Modifier = Modifier, communityViewModel: Co
 
 
 @Composable
-fun MyCommunity(modifier: Modifier = Modifier, communityViewModel: CommunityViewModel = viewModel(), navController: NavController = NavController(LocalContext.current)) {
+fun MyCommunity(
+	modifier: Modifier = Modifier,
+	communityViewModel: CommunityViewModel = viewModel(),
+	goBack: () -> Unit,
+	createPost: () -> Unit,
+) {
+
+	val selectedCommunity = communityViewModel.selectedCommunity
+
+	Column {
+		ToolBar(goBack = { goBack() }, community = selectedCommunity, createPost = createPost)
+		Spacer(modifier.height(10.dp))
+		if (selectedCommunity != null) {
+			PostFeed(communityViewModel = communityViewModel)
+		} else {
+			Text(text = "No community selected")
+		}
+	}
 
 }
 

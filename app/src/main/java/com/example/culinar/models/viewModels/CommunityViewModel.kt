@@ -129,6 +129,8 @@ class CommunityViewModel : ViewModel() {
 				.get()
 				.addOnSuccessListener { result ->
 					myCommunity.value = result.toObject(Community::class.java)
+					myCommunity.value?.id = userId.value
+					Log.d("CommunityViewModel", "Retrieved my community")
 				}
 				.addOnFailureListener { exception ->
 					Log.e("CommunityViewModel", "Error getting documents: $exception")
@@ -151,6 +153,7 @@ class CommunityViewModel : ViewModel() {
 					Log.e("CommunityViewModel", "Error adding community: $exception")
 				}
 				.await()
+			addMember(community.id)
 			refreshCommunities()
 		}
 	}
@@ -360,9 +363,26 @@ class CommunityViewModel : ViewModel() {
 		}
 	}
 
-
 	fun hasLiked(post: Post): Boolean {
 		return post.likes.contains(userId.value)
+	}
+
+	fun createPost(post: Post, communityId: String = this.myCommunity.value?.id ?: "") {
+		viewModelScope.launch {
+			db.collection("Communauté")
+				.document(communityId)
+				.collection("posts")
+				.add(post)
+				.addOnSuccessListener {
+					Log.d("CommunityViewModel", "Post added successfully")
+				}
+				.addOnFailureListener { exception ->
+					Log.e("CommunityViewModel", "Error adding post: $exception")
+					}
+				.await()
+			getPosts(communityId)
+
+		}
 	}
 
 

@@ -2,13 +2,13 @@
     <string name="app_name">Culinary</string>
 
     // Groceries strings
-    <string name="grocery_list_title">Ma liste de courses</string>
-    <string name="grocery_add_button">Ajouter</string>
-    <string name="grocery_search_placeholder">Rechercher un aliment</string>
-    <string name="grocery_search_button">Rechercher</string>
-    <string name="grocery_item_delete_button">Supprimer</string>
-    <string name="grocery_screen_description">
-        Bienvenue sur votre liste de courses.
+    <string name="grocery_list_title" translatable="true">Ma liste de courses</string>
+    <string name="grocery_add_button" translatable="true">Ajouter</string>
+    <string name="grocery_search_placeholder" translatable="true">Rechercher un aliment</string>
+    <string name="grocery_search_button" translatable="true">Rechercher</string>
+    <string name="grocery_item_delete_button" translatable="true">Supprimer</string>
+    <string name="grocery_screen_description" translatable="true">
+        Bienvenue sur votre liste de courses!
         Vous pouvez y ajouter des produits et les supprimer.
         Connectez-vous pour accéder à votre liste.
     </string>
@@ -16,20 +16,27 @@
 
 
     // Community space strings
-    <string name="expert_terms_and_conditions">
+    <string name="expert_terms_and_conditions" translatable="true">
         lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
         \n
         lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
     </string>
-    <string name="community_space_description">
+    <string name="community_space_description" translatable="true">
         Bienvenue sur L\'espace communautaire !\n
         Vous pourrez y partagez vos expériences culinaires et expérimentez celles d\'experts du domaine.
     </string>
-    <string name="join_community_button_default">
+    <string name="join_community_button_default" translatable="true">
         Accéder à nos communautés
     </string>
-    <string name="join_community_button_second">
-        Connectez vous!
+    <string name="join_community_button_second" translatable="true">
+        Connectez vous
     </string>
+    <string name="create_community_button" translatable="true">
+        Créer une communauté
+    </string>
+    <string name="my_community_button" translatable="true">
+        Ma communauté
+    </string>
+
 
 </resources>

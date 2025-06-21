@@ -206,7 +206,7 @@ fun CulinarApp(
                         onNavigate = onNavigate
                     )
                 } else {
-                    Log.d("CommunityScreen", "User $idConnect is not logged in.")
+                    Log.d("CommunityScreen", "User $idConnect is logged in.")
                     CommunityScreen(
                         communityViewModel = communityViewModel,
                         sessionViewModel = sessionViewModel,
@@ -265,8 +265,23 @@ fun CulinarApp(
             }
             composable(Screen.CreateCommunity.name) { CreateCommunity(communityViewModel = communityViewModel, onNavigate = onNavigate) }
             composable(Screen.ListCommunities.name) { ListCommunities(communityViewModel = communityViewModel, onNavigate = onNavigate) }
-            composable(Screen.MyCommunity.name) { MyCommunity(communityViewModel = communityViewModel, navController = navController) }
-            composable(Screen.Feed.name) { Feed(goBack = { navController.popBackStack() }, communityViewModel = communityViewModel) }
+            composable(Screen.MyCommunity.name) { MyCommunity(communityViewModel = communityViewModel, goBack = { navController.popBackStack() }, createPost = { navController.navigate(Screen.CreatePost.name) }) }
+            composable(Screen.Feed.name) { Feed(communityViewModel = communityViewModel, goBack = { navController.popBackStack() }) }
+            composable(Screen.CreatePost.name) {
+                CreatePost(
+                    communityViewModel = communityViewModel,
+                    createPost = { post ->
+                        if (communityViewModel.selectedCommunity == null) return@CreatePost
+                        Log.d("CulinarApp", "Creating post in community ${communityViewModel.selectedCommunity?.id}")
+                        communityViewModel.createPost(post, communityViewModel.selectedCommunity?.id ?: "")
+                        Log.d("CulinarApp", "Post created successfully")
+                                 },
+                    createRecipe = { recipe ->
+                        // communityViewModel.createRecipe(recipe)
+                    },
+                    goBack = { navController.popBackStack() }
+                )
+            }
 
         }
     }

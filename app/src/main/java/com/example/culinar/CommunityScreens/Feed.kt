@@ -70,7 +70,7 @@ fun Feed(goBack : () -> Unit, communityViewModel: CommunityViewModel = viewModel
 
 
 @Composable
-fun ToolBar(goBack: () -> Unit, addPost: () -> Unit = {}, communityViewModel: CommunityViewModel = viewModel(), community: Community?) {
+fun ToolBar(goBack: () -> Unit, community: Community?, createPost : (() -> Unit)? = null) {
 
 	// Screen title and options
 	Row(
@@ -117,22 +117,24 @@ fun ToolBar(goBack: () -> Unit, addPost: () -> Unit = {}, communityViewModel: Co
 		)
 
 		Spacer(Modifier.weight(1f))
-		TextButton(
-			onClick = { addPost() },
-			shape = CutCornerShape(3.dp),
-			colors = ButtonColors(
-				containerColor = Color(0x0059EA85),
-				contentColor = Color.White,
-				disabledContainerColor = Color(0xFF59EA85),
-				disabledContentColor = Color.White
-			)
-		){
-			Icon(
-				Icons.Default.Add,
-				contentDescription = "Cancel",
-				tint = lightGrey,
-				modifier = Modifier.height(100.dp).width(45.dp)
-			)
+		if (createPost != null) {
+			TextButton(
+				onClick = { createPost() },
+				shape = CutCornerShape(3.dp),
+				colors = ButtonColors(
+					containerColor = Color(0x0059EA85),
+					contentColor = Color.White,
+					disabledContainerColor = Color(0xFF59EA85),
+					disabledContentColor = Color.White
+				)
+			) {
+				Icon(
+					Icons.Default.Add,
+					contentDescription = "Post something",
+					tint = lightGrey,
+					modifier = Modifier.height(100.dp).width(45.dp)
+				)
+			}
 		}
 
 	}
