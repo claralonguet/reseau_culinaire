@@ -258,6 +258,9 @@ class CommunityViewModel : ViewModel() {
 					post?.id = doc.id
 					post
 				}
+					// Sorting in reverse chronological order
+					.sortedByDescending { it.date }
+
 				allPosts.value = fetchedPosts
 				Log.d("CommunityViewModel", "Posts loaded for $communityId, count: ${fetchedPosts.size}")
 			} catch (e: Exception) {
@@ -294,20 +297,21 @@ class CommunityViewModel : ViewModel() {
 				post.id = postRef.id
 				getPosts(communityId)
 				Log.d("CommunityViewModel", "Post created in $communityId")
+
+				// If the post is set to public, add it to the public feed
+				if (!post.isPrivate) {
+					try {
+						db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
+							.document(postRef.id).set(post.toMap())
+							.await()
+						Log.d("CommunityViewModel", "Post added to public feed")
+					} catch (e: Exception) {
+						Log.d("CommunityViewModel", "Error adding post to public feed: $e")
+					}
+				}
+
 			} catch (e: Exception) {
 				Log.d("CommunityViewModel", "Error creating post in $communityId: $e")
-			}
-
-			// If the post is set to public, add it to the public feed
-			if (!post.isPrivate) {
-				try {
-					db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
-						.document(post.id).set(post.toMap())
-						.await()
-					Log.d("CommunityViewModel", "Post added to public feed")
-				} catch (e: Exception) {
-					Log.d("CommunityViewModel", "Error adding post to public feed: $e")
-				}
 			}
 
 		}
@@ -316,8 +320,6 @@ class CommunityViewModel : ViewModel() {
 
 	// --- Nouvelle fonction : ajoute un like au post ---
 	fun likePost(post: Post, userId: String) {
-
-		val updatedLikes = mutableListOf<String>()
 
 		viewModelScope.launch {
 			try {
@@ -334,30 +336,31 @@ class CommunityViewModel : ViewModel() {
 				// Met à jour localement le post dans allPosts
 				updateLocalPostLikes(post.id, updatedLikes)
 				Log.d("CommunityViewModel", "Post liked by $userId")
+
+				// If the post is public, update likes of the public version (on the public feed)
+				if (!post.isPrivate) {
+					try {
+						db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
+							.document(post.id)
+							.update("likes", updatedLikes)
+							.await()
+						Log.d("CommunityViewModel", "Post likes updated in public feed")
+					} catch (e: Exception) {
+						Log.d("CommunityViewModel", "Error updating post likes in public feed: $e")
+
+					}
+				}
+
 			} catch (e: Exception) {
 				Log.d("CommunityViewModel", "Error liking post: $e")
 			}
 
-			// If the post is public, update likes of the public version (on the public feed)
-			if (post.isPrivate == false) {
-				try {
-					db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
-						.document(post.id)
-						.update("likes", updatedLikes)
-						.await()
-					Log.d("CommunityViewModel", "Post likes updated in public feed")
-				} catch (e: Exception) {
-					Log.d("CommunityViewModel", "Error updating post likes in public feed: $e")
 
-				}
-			}
 		}
 	}
 
 	// --- Nouvelle fonction : enlève un like au post ---
 	fun unlikePost(post: Post, userId: String) {
-
-		val updatedLikes = mutableListOf<String>()
 
 		viewModelScope.launch {
 			try {
@@ -374,22 +377,24 @@ class CommunityViewModel : ViewModel() {
 				// Met à jour localement le post dans allPosts
 				updateLocalPostLikes(post.id, updatedLikes)
 				Log.d("CommunityViewModel", "Post unliked by $userId")
-			} catch (e: Exception) {
-				Log.d("CommunityViewModel", "Error unliking post: $e")
-			}
 
-			// If the post is public, update likes of the public version (on the public feed)
-			if (!post.isPrivate) {
-				try {
-					db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
-						.document(post.id)
-						.update("likes", updatedLikes)
-						.await()
-					Log.d("CommunityViewModel", "Post likes updated in public feed")
-				} catch (e: Exception) {
-					Log.d("CommunityViewModel", "Error updating post likes in public feed: $e")
+				// If the post is public, update likes of the public version (on the public feed)
+				if (!post.isPrivate) {
+					try {
+						db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
+							.document(post.id)
+							.update("likes", updatedLikes)
+							.await()
+						Log.d("CommunityViewModel", "Post likes updated in public feed")
+					}
+					catch (e: Exception) {
+						Log.d("CommunityViewModel", "Error updating post likes in public feed: $e")
 
 					}
+				}
+
+			} catch (e: Exception) {
+				Log.d("CommunityViewModel", "Error unliking post: $e")
 			}
 
 		}
