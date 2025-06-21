@@ -1,11 +1,8 @@
 package com.example.culinar.CommunityScreens
 
 import android.util.Log
-import android.widget.Toolbar
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -46,8 +43,6 @@ import coil.compose.AsyncImage
 import com.example.culinar.models.Community
 import com.example.culinar.models.Post
 import com.example.culinar.models.viewModels.CommunityViewModel
-import com.example.culinar.ui.theme.darkGrey
-import com.example.culinar.ui.theme.grey
 import com.example.culinar.ui.theme.lightGrey
 
 

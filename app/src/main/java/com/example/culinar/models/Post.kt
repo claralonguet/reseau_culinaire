@@ -12,5 +12,6 @@ data class Post(
 	val date: Date = Date(),
 	val imageUri: String = "",
 	val authorId: String = "",
-	val private: Boolean = true,
+	val isPrivate: Boolean = true,
+	val communityId: String = "",
 )

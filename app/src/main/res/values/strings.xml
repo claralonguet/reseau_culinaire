@@ -25,18 +25,28 @@
         Bienvenue sur L\'espace communautaire !\n
         Vous pourrez y partagez vos expériences culinaires et expérimentez celles d\'experts du domaine.
     </string>
-    <string name="join_community_button_default" translatable="true">
-        Accéder à nos communautés
-    </string>
-    <string name="join_community_button_second" translatable="true">
-        Connectez vous
-    </string>
-    <string name="create_community_button" translatable="true">
-        Créer une communauté
-    </string>
-    <string name="my_community_button" translatable="true">
-        Ma communauté
-    </string>
+    <string name="join_community_button_default" translatable="true">Accéder à nos communautés</string>
+    <string name="join_community_button_second" translatable="true">Connectez vous</string>
+    <string name="create_community_button" translatable="true">Créer une communauté</string>
+    <string name="my_community_button" translatable="true">Ma communauté</string>
+    <string name="community_list_title" translatable="true">Liste des communautés</string>
+
+    // Create post strings
+    <string name="create_post_type" translatable="true">Que voulez-vous publier?</string>
+    <string name="create_post_standard" translatable="true">Publication standarde</string>
+    <string name="create_post_standard_details" translatable="true">Nom, contenu, image</string>
+    <string name="create_post_recipe" translatable="true">Publication de recette</string>
+    <string name="create_post_recipe_details" translatable="true">Nom, ingredients, steps, image</string>
+    <string name="create_post_continue_button" translatable="true">Continuer</string>
+    <string name="create_post_title" translatable="true">Faire une publication</string>
+    <string name="create_post_button" translatable="true">Publier</string>
+    <string name="create_post_name_label" translatable="true">Nom</string>
+    <string name="create_post_content_label" translatable="true">Contenu</string>
+    <string name="create_post_image_picking_button" translatable="true">Sélectionner une image</string>
+    <string name="create_post_image_picking_message" translatable="true">Aucune image sélectionnée</string>
+    <string name="create_post_private_label_1" translatable="true">Cette publication ne sera visible que dans la communauté</string>
+    <string name="create_post_private_label_2" translatable="true">Cette publication sera visible hors de la communauté</string>
+
 
 
 </resources>
