@@ -48,8 +48,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
@@ -58,7 +56,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -84,6 +81,30 @@ import com.example.culinar.ui.theme.darkGreen
 import com.example.culinar.ui.theme.lightGreen
 import com.example.culinar.ui.theme.mediumGreen
 import com.example.culinar.viewmodels.SessionViewModel
+import android.widget.Toast
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Comment
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.Query
+import com.google.firebase.Timestamp
+
 
 @Composable
 fun CommunityScreen (
@@ -679,19 +700,324 @@ fun PhotoPreviewScreen(imageUriString: String?) {
 }
 
 
+data class Post(
+	val id: String,
+	val idAuthor: String,
+	val title: String,
+	val content: String,
+	val username: String,
+	val timestamp: Date? = null,
+	val likes: List<String> = emptyList() // userIds qui ont liké
+)
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CheckFeed() {
-	Surface(
-		modifier = Modifier.fillMaxSize(),
-		color = Color(0xFFD1C4E9)
-	) {
-		Box(
-			contentAlignment = Alignment.Center
+fun CheckFeed(
+	navController: NavController,
+	sessionViewModel: SessionViewModel = viewModel()
+) {
+	val db = FirebaseFirestore.getInstance()
+	val context = LocalContext.current
+	val posts = remember { mutableStateListOf<Post>() }
+	val coroutineScope = rememberCoroutineScope()
+
+	val idConnect by sessionViewModel.id.collectAsState()
+
+	var listenerRegistration by remember { mutableStateOf<ListenerRegistration?>(null) }
+
+	DisposableEffect(Unit) {
+		listenerRegistration = db.collection("Post")
+			.addSnapshotListener { snapshot, error ->
+				if (error != null) {
+					Toast.makeText(context, "Erreur : ${error.message}", Toast.LENGTH_SHORT).show()
+					return@addSnapshotListener
+				}
+
+				val documents = snapshot?.documents ?: return@addSnapshotListener
+
+				coroutineScope.launch {
+					val tempPosts = mutableListOf<Post>()
+					for (doc in documents) {
+						val id = doc.id
+						val idAuthor = doc.getString("id_author") ?: continue
+						val title = doc.getString("title") ?: ""
+						val content = doc.getString("content") ?: ""
+						val timestamp = doc.getTimestamp("timestamp")?.toDate()
+						val likes = doc.get("likes") as? List<String> ?: emptyList()
+
+						val userDoc = db.collection("Utilisateur").document(idAuthor).get().await()
+						val username = userDoc.getString("username") ?: "Utilisateur inconnu"
+
+						tempPosts.add(Post(id, idAuthor, title, content, username, timestamp, likes))
+					}
+
+					posts.clear()
+					posts.addAll(tempPosts.sortedByDescending { it.timestamp })
+				}
+			}
+
+		onDispose {
+			listenerRegistration?.remove()
+		}
+	}
+
+	Scaffold(
+		topBar = {
+			TopAppBar(
+				title = {
+					Text("Fil d’actualité", style = MaterialTheme.typography.titleLarge)
+				},
+				colors = TopAppBarDefaults.topAppBarColors(
+					containerColor = MaterialTheme.colorScheme.primary,
+					titleContentColor = MaterialTheme.colorScheme.onPrimary
+				)
+			)
+		}
+	) { padding ->
+		LazyColumn(
+			modifier = Modifier
+				.padding(padding)
+				.fillMaxSize()
+				.background(MaterialTheme.colorScheme.background),
+			verticalArrangement = Arrangement.spacedBy(12.dp),
+			contentPadding = PaddingValues(16.dp)
 		) {
-			Text(text = "Accéder à mon feed", style = MaterialTheme.typography.headlineMedium)
+			items(posts) { post ->
+				val isLiked = idConnect != null && idConnect in post.likes
+
+				Card(
+					modifier = Modifier.fillMaxWidth(),
+					shape = RoundedCornerShape(16.dp),
+					colors = CardDefaults.cardColors(
+						containerColor = MaterialTheme.colorScheme.surface
+					),
+					elevation = CardDefaults.cardElevation(4.dp)
+				) {
+					Column(modifier = Modifier.padding(16.dp)) {
+						Text(
+							text = post.username,
+							style = MaterialTheme.typography.bodyLarge.copy(
+								color = MaterialTheme.colorScheme.primary
+							)
+						)
+						Spacer(modifier = Modifier.height(6.dp))
+						Text(
+							text = post.title,
+							style = MaterialTheme.typography.titleMedium.copy(
+								color = MaterialTheme.colorScheme.onSurface
+							)
+						)
+						post.timestamp?.let {
+							val dateFormatted = SimpleDateFormat("dd MMM yyyy à HH:mm", Locale.getDefault()).format(it)
+							Spacer(modifier = Modifier.height(4.dp))
+							Text(
+								text = dateFormatted,
+								style = MaterialTheme.typography.bodySmall.copy(
+									color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+								)
+							)
+						}
+						Spacer(modifier = Modifier.height(8.dp))
+						Text(
+							text = post.content,
+							style = MaterialTheme.typography.bodySmall.copy(
+								color = MaterialTheme.colorScheme.onSurface
+							)
+						)
+						Spacer(modifier = Modifier.height(12.dp))
+						Row(
+							horizontalArrangement = Arrangement.spacedBy(16.dp),
+							modifier = Modifier.fillMaxWidth()
+						) {
+							IconButton(
+								onClick = {
+									if (idConnect == null) {
+										Toast.makeText(context, "Connectez-vous pour liker", Toast.LENGTH_SHORT).show()
+										return@IconButton
+									}
+
+									val postRef = db.collection("Post").document(post.id)
+									if (isLiked) {
+										postRef.update("likes", FieldValue.arrayRemove(idConnect))
+									} else {
+										postRef.update("likes", FieldValue.arrayUnion(idConnect))
+									}
+								}
+							) {
+								Icon(
+									imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Default.FavoriteBorder,
+									contentDescription = "Like",
+									tint = if (isLiked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+								)
+							}
+							IconButton(onClick = {
+								navController.navigate("comments/${post.id}")
+							}) {
+								Icon(
+									imageVector = Icons.Default.Comment,
+									contentDescription = "Commentaire",
+									tint = MaterialTheme.colorScheme.secondary
+								)
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 }
+
+data class Comment(
+	val id: String,
+	val idAuthor: String,
+	val content: String,
+	val timestamp: Date?,
+	val username: String = "Utilisateur inconnu"  // nouveau champ
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CommentsScreen(
+	postId: String,
+	navController: NavController,
+	sessionViewModel: SessionViewModel = viewModel()
+) {
+	val db = FirebaseFirestore.getInstance()
+	val context = LocalContext.current
+	val comments = remember { mutableStateListOf<Comment>() }
+	val coroutineScope = rememberCoroutineScope()
+	val idConnect by sessionViewModel.id.collectAsState()
+
+	var newComment by remember { mutableStateOf("") }
+	var listenerRegistration by remember { mutableStateOf<ListenerRegistration?>(null) }
+
+	DisposableEffect(postId) {
+		listenerRegistration = db.collection("Post").document(postId)
+			.collection("Comments")
+			.orderBy("timestamp", Query.Direction.ASCENDING)
+			.addSnapshotListener { snapshot, error ->
+				if (error != null) {
+					Toast.makeText(context, "Erreur : ${error.message}", Toast.LENGTH_SHORT).show()
+					return@addSnapshotListener
+				}
+				val docs = snapshot?.documents ?: return@addSnapshotListener
+
+				coroutineScope.launch {
+					val tempComments = mutableListOf<Comment>()
+					for (doc in docs) {
+						val id = doc.id
+						val idAuthor = doc.getString("idAuthor") ?: continue
+						val content = doc.getString("content") ?: ""
+						val timestamp = doc.getTimestamp("timestamp")?.toDate()
+
+						// Récupérer le username dans la collection Utilisateur
+						val userDoc = db.collection("Utilisateur").document(idAuthor).get().await()
+						val username = userDoc.getString("username") ?: "Utilisateur inconnu"
+
+						tempComments.add(Comment(id, idAuthor, content, timestamp, username))
+					}
+					comments.clear()
+					comments.addAll(tempComments)
+				}
+			}
+
+		onDispose {
+			listenerRegistration?.remove()
+		}
+	}
+
+	Scaffold(
+		topBar = {
+			TopAppBar(
+				title = { Text("Commentaires") },
+				navigationIcon = {
+					IconButton(onClick = { navController.popBackStack() }) {
+						Icon(Icons.Default.ArrowBack, contentDescription = "Retour")
+					}
+				}
+			)
+		}
+	) { padding ->
+		Column(
+			modifier = Modifier
+				.fillMaxSize()
+				.padding(padding)
+				.padding(16.dp)
+		) {
+			LazyColumn(
+				modifier = Modifier.weight(1f),
+				verticalArrangement = Arrangement.spacedBy(8.dp)
+			) {
+				items(comments) { comment ->
+					CommentItem(comment)
+				}
+			}
+
+			Row(verticalAlignment = Alignment.CenterVertically) {
+				TextField(
+					modifier = Modifier.weight(1f),
+					value = newComment,
+					onValueChange = { newComment = it },
+					placeholder = { Text("Écrire un commentaire...") },
+					maxLines = 3
+				)
+				Spacer(Modifier.width(8.dp))
+				Button(
+					onClick = {
+						if (newComment.isNotBlank()) {
+							val commentData = hashMapOf(
+								"idAuthor" to idConnect,
+								"content" to newComment,
+								"timestamp" to com.google.firebase.Timestamp.now()
+							)
+							db.collection("Post").document(postId)
+								.collection("Comments")
+								.add(commentData)
+								.addOnSuccessListener {
+									newComment = ""
+								}
+								.addOnFailureListener {
+									Toast.makeText(context, "Erreur lors de l'envoi", Toast.LENGTH_SHORT).show()
+								}
+						}
+					}
+				) {
+					Text("Envoyer")
+				}
+			}
+		}
+	}
+}
+
+@Composable
+fun CommentItem(comment: Comment) {
+	Column {
+		Text(
+			text = comment.username,
+			style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+			color = MaterialTheme.colorScheme.primary
+		)
+		Spacer(modifier = Modifier.height(2.dp))
+		Text(
+			text = comment.content,
+			style = MaterialTheme.typography.bodyMedium
+		)
+		comment.timestamp?.let {
+			val formattedDate = SimpleDateFormat("dd MMM yyyy à HH:mm", Locale.getDefault()).format(it)
+			Text(
+				text = formattedDate,
+				style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+			)
+		}
+		Spacer(modifier = Modifier.height(4.dp))
+	}
+}
+
+
+
+
 
 fun createImageFile(context: Context): File {
 	val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())

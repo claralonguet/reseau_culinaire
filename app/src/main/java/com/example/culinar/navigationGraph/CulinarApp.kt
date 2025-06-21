@@ -215,7 +215,16 @@ fun CulinarApp(
                 }
             }
             composable(route = Screen.PostFeed.name) { PostFeed(navController) }
-            composable(route = Screen.CheckFeed.name) { CheckFeed() }
+            composable(route = Screen.CheckFeed.name) {
+                CheckFeed(navController = navController)
+            }
+            composable(
+                route = "comments/{postId}",
+                arguments = listOf(navArgument("postId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val postId = backStackEntry.arguments?.getString("postId") ?: ""
+                CommentsScreen(postId = postId, navController = navController)
+            }
             composable("SendMessage") {
                 val userId = idConnect
                 if (userId == null) return@composable

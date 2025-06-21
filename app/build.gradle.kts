@@ -46,6 +46,8 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.material3)
+    implementation("androidx.compose.material:material-icons-extended")
 
     // Compose BOM and Compose UI dependencies
     implementation(platform(libs.androidx.compose.bom))
