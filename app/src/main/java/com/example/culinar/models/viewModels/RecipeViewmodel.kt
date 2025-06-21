@@ -1,15 +1,21 @@
 package com.example.culinar.viewmodels
 
 
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.culinar.models.Recipe
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore// ajout pour communication avec la base de donnée
 import com.google.firebase.ktx.Firebase //ajout pour communication avec la base de donnée
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.storage.FirebaseStorage
+import java.util.UUID
 
 
 enum class Filter { ALL, DAILY, SEARCH, FAVORITES, HISTORY }
@@ -36,13 +42,55 @@ class RecipeViewModel : ViewModel() {
     fun UpdateSearchRecipes(query: String) {
         searchRecipes = query
     }
+//recup des infos de l'user
+    private val _username = mutableStateOf<String?>(null)
+    val username: String?
+        get() = _username.value
+
+    private val _userId = mutableStateOf<String?>(null)
+    val userId: String?
+        get() = _userId.value
+
+    private val _isAdmin = mutableStateOf<Boolean>(false)
+    val isAdmin: Boolean
+        get() = _isAdmin.value
+
+
+    private fun fetchUserData(username: String) {
+        db.collection("Utilisateur")
+            .whereEqualTo("username", username)
+            .get()
+            .addOnSuccessListener { documents ->
+                if (!documents.isEmpty) {
+                    val userDoc = documents.documents[0]
+
+                    // Stocker les infos
+                    _userId.value = userDoc.id
+                    _isAdmin.value = userDoc.getBoolean("admin") ?: false
+                    _username.value = username
+                }
+            }
+            .addOnFailureListener {
+                println("Erreur lors de la récupération de l'utilisateur : ${it.message}")
+            }
+    }
+
+
 
 
 
     init {
 
         fetchRecipesFromFirestore()
+
+        val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+        val displayName = currentUser?.displayName ?: currentUser?.email?.substringBefore("@")
+
+        if (displayName != null) {
+            fetchUserData(displayName)
+        }
     }
+
 
     private fun fetchRecipesFromFirestore() {
         db.collection("Recette")
