@@ -27,7 +27,6 @@ import com.example.culinar.CommunityScreens.CheckFeed
 import com.example.culinar.CommunityScreens.CommunityScreen
 import com.example.culinar.CommunityScreens.ConversationScreen
 import com.example.culinar.CommunityScreens.CreateCommunity
-import com.example.culinar.CommunityScreens.Feed
 import com.example.culinar.CommunityScreens.ListCommunities
 import com.example.culinar.CommunityScreens.MyCommunity
 import com.example.culinar.CommunityScreens.PhotoPreviewScreen
