@@ -63,18 +63,16 @@ class GeneralPostViewModel: ViewModel()  {
 
 	// --- Ajoute un post ---
 	fun createPost(post: Post) {
-		_allPosts.value += post
 
 		post.authorId = _userId.value
 		viewModelScope.launch {
-			db.collection("Posts")
+			db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
 				.add(post)
 				.addOnSuccessListener {
 					Log.d("GeneralPostViewModel", "Post added successfully")
 				}
 				.addOnFailureListener { exception ->
 					Log.d("GeneralPostViewModel", "There was an error adding post", exception)
-					_allPosts.value -= post
 				}
 				.await()
 

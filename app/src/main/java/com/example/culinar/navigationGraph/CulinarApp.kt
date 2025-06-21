@@ -40,6 +40,7 @@ import com.example.culinar.Home.TopBar
 import com.example.culinar.models.Screen
 import com.example.culinar.models.viewModels.CommunityViewModel
 import com.example.culinar.models.viewModels.FriendViewModel
+import com.example.culinar.models.viewModels.GeneralPostViewModel
 import com.example.culinar.settings.ExpertRequestsScreen
 import com.example.culinar.settings.SettingScreen
 import com.example.culinar.ui.screens.RecipeDetailScreen
@@ -53,7 +54,8 @@ fun CulinarApp(
     friendViewModel: FriendViewModel = viewModel(),
     viewModelRecipes: RecipeViewModel = viewModel(),
     communityViewModel: CommunityViewModel = viewModel(),
-    sessionViewModel: SessionViewModel = viewModel()
+    sessionViewModel: SessionViewModel = viewModel(),
+    generalPostViewModel: GeneralPostViewModel = viewModel()
 ) {
     val navController = rememberNavController()
 
@@ -63,6 +65,7 @@ fun CulinarApp(
 
     // Setting session id into viewModels
     communityViewModel.setUserId(idConnect ?: "")
+    generalPostViewModel.setUserId(idConnect ?: "")
 
     val currentBackStackEntry = navController.currentBackStackEntryAsState().value
     val currentRoute = currentBackStackEntry?.destination?.route
@@ -213,7 +216,20 @@ fun CulinarApp(
                     )
                 }
             }
-            composable(route = Screen.PostFeed.name) { PostFeed(navController) }
+            composable(route = Screen.PostFeed.name) {
+                // PostFeed(navController)
+                CreateGeneralFeedPost(
+                    generalPostViewModel = generalPostViewModel,
+                    createPost = { post ->
+                        generalPostViewModel.setUserId(idConnect ?: "")
+
+                        Log.d("CulinarApp", "Creating post in public feed.")
+                        generalPostViewModel.createPost(post)
+                        Log.d("CulinarApp", "Post created successfully")
+                    },
+                    goBack = { navController.popBackStack() }
+                )
+            }
             composable(route = Screen.CheckFeed.name) {
                 CheckFeed(navController = navController)
             }

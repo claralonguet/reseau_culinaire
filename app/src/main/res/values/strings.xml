@@ -1,6 +1,14 @@
 <resources>
     <string name="app_name">Culinary</string>
 
+    // Home strings
+    <string name="home_title" translatable="true">Accueil</string>
+
+
+    // Public feed
+    <string name="feed_title" translatable="true">Feed</string>
+    <string name="feed_post_screen_title" translatable="true">Publier</string>
+
     // Groceries strings
     <string name="grocery_list_title" translatable="true">Ma liste de courses</string>
     <string name="grocery_add_button" translatable="true">Ajouter</string>

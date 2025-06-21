@@ -19,7 +19,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -48,8 +47,10 @@ import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.res.stringResource
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.example.culinar.R
 
 
 @Composable
@@ -132,6 +133,49 @@ fun ToolBar(
 		}
 	}
 }
+
+@Composable
+fun ToolBarGeneralFeed(
+	goBack: () -> Unit,
+) {
+	Row(
+		verticalAlignment = Alignment.CenterVertically,
+		modifier = Modifier
+			.height(80.dp)
+			.fillMaxWidth()
+			.background(MaterialTheme.colorScheme.primary)
+			.padding(horizontal = 8.dp)
+	) {
+		TextButton(
+			onClick = goBack,
+			shape = CutCornerShape(3.dp),
+			colors = ButtonDefaults.textButtonColors(
+				containerColor = Color.Transparent,
+				contentColor = Color.White
+			)
+		) {
+			Icon(
+				Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+				contentDescription = "Back",
+				tint = Color.White,
+				modifier = Modifier.size(36.dp)
+			)
+		}
+
+		Spacer(Modifier.width(16.dp))
+
+		Text(
+			text = stringResource(R.string.feed_post_screen_title),
+			fontSize = 20.sp,
+			fontFamily = FontFamily.Serif,
+			fontWeight = FontWeight.Bold,
+			color = Color.White,
+			modifier = Modifier.weight(1f),
+			textAlign = TextAlign.Center
+		)
+	}
+}
+
 
 @Composable
 fun PostFeed(
