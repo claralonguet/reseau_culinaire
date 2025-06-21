@@ -46,6 +46,11 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.material3)
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.compose.runtime:runtime-saveable")
+    implementation ("com.google.accompanist:accompanist-swiperefresh:0.30.1")
+
 
     // Compose BOM and Compose UI dependencies
     implementation(platform(libs.androidx.compose.bom))

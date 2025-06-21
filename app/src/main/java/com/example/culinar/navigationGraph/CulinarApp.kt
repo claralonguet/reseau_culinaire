@@ -27,7 +27,6 @@ import com.example.culinar.CommunityScreens.CheckFeed
 import com.example.culinar.CommunityScreens.CommunityScreen
 import com.example.culinar.CommunityScreens.ConversationScreen
 import com.example.culinar.CommunityScreens.CreateCommunity
-import com.example.culinar.CommunityScreens.Feed
 import com.example.culinar.CommunityScreens.ListCommunities
 import com.example.culinar.CommunityScreens.MyCommunity
 import com.example.culinar.CommunityScreens.PhotoPreviewScreen
@@ -215,7 +214,16 @@ fun CulinarApp(
                 }
             }
             composable(route = Screen.PostFeed.name) { PostFeed(navController) }
-            composable(route = Screen.CheckFeed.name) { CheckFeed() }
+            composable(route = Screen.CheckFeed.name) {
+                CheckFeed(navController = navController)
+            }
+            composable(
+                route = "comments/{postId}",
+                arguments = listOf(navArgument("postId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val postId = backStackEntry.arguments?.getString("postId") ?: ""
+                CommentsScreen(postId = postId, navController = navController)
+            }
             composable("SendMessage") {
                 val userId = idConnect
                 if (userId == null) return@composable

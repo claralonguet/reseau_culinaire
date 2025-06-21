@@ -3,6 +3,7 @@ package com.example.culinar.CommunityScreens
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,7 +16,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -41,14 +41,12 @@ import com.example.culinar.ui.theme.grey
 import com.example.culinar.ui.theme.lightGrey
 import kotlinx.coroutines.launch
 
-
 @Composable
 fun BrowseCommunities(
 	toCommunity: (Community) -> Unit = {},
 	backToHome: () -> Unit = {},
 	communityViewModel: CommunityViewModel = viewModel()
 ) {
-
 	Log.d("CommunityScreen", "Composing BrowseCommunities")
 
 	val communities = communityViewModel.allCommunities.collectAsState().value
@@ -64,7 +62,7 @@ fun BrowseCommunities(
 			TextButton(
 				onClick = { backToHome() },
 				shape = CutCornerShape(3.dp),
-				colors = ButtonColors(
+				colors = ButtonDefaults.buttonColors(
 					containerColor = Color(0x0059EA85),
 					contentColor = Color.White,
 					disabledContainerColor = Color(0xFF59EA85),
@@ -77,7 +75,6 @@ fun BrowseCommunities(
 					tint = darkGrey,
 					modifier = Modifier.height(100.dp).width(45.dp)
 				)
-
 			}
 
 			Spacer(Modifier.width(35.dp))
@@ -96,15 +93,13 @@ fun BrowseCommunities(
 					.height(50.dp)
 					.background(color = grey)
 			)
-
 		}
 
 		Spacer(modifier = Modifier.height(10.dp))
+
 		Column {
 			LazyColumn {
-
-				items (communities) { community ->
-
+				items(communities) { community ->
 					CommunityCard(
 						modifier = Modifier.padding(
 							horizontal = 5.dp,
@@ -120,99 +115,112 @@ fun BrowseCommunities(
 	}
 }
 
-
-
 @Composable
-fun CommunityCard(modifier: Modifier = Modifier, community: Community, toCommunity: (Community) -> Unit = {}, viewModel: CommunityViewModel = viewModel()) {
-
+fun CommunityCard(
+	modifier: Modifier = Modifier,
+	community: Community,
+	toCommunity: (Community) -> Unit = {},
+	viewModel: CommunityViewModel = viewModel()
+) {
 	val scope = rememberCoroutineScope()
 	val memberships = viewModel.isMember.collectAsState().value
 
-	//Log.d("CommunityCard", "isMemberState: ${memberships[community.id]}")
-
 	TextButton(
 		onClick = {
-			if (memberships[community.id] == true)
-				toCommunity(community)
+			// Ne navigue plus en cliquant sur toute la carte,
+			// navigation uniquement via le bouton "Accéder"
 		},
 		colors = ButtonDefaults.buttonColors(
 			containerColor = Color(0x00FFFFFF),
 			contentColor = MaterialTheme.colorScheme.onBackground
 		),
-
 	) {
-		Row (
+		Row(
 			modifier = modifier
 				.fillMaxWidth()
-				.fillMaxWidth()
 				.height(95.dp)
-				.border(width=2.dp, color = lightGrey, shape = CutCornerShape(3.dp))
+				.border(width = 2.dp, color = lightGrey, shape = CutCornerShape(3.dp))
+				.padding(5.dp),
+			verticalAlignment = Alignment.CenterVertically
 		) {
-			Column(modifier = Modifier.padding(5.dp)) {
-				// Name of the community
+			Column(modifier = Modifier.weight(1f)) {
+				// Nom de la communauté
 				Text(text = community.name, style = MaterialTheme.typography.titleMedium)
-				Spacer(Modifier.weight(1f))
-				// Description of the community
-				Text(text = if(community.description.length < 20) community.description else community.description.substring(0, 20) + "...", style = MaterialTheme.typography.bodySmall)
-
-			}
-			Spacer(Modifier.weight(1f))
-			Column(modifier = Modifier.padding(5.dp), horizontalAlignment = Alignment.End) {
-				// Number of members
-				val nbMembers = viewModel.allCommunities.collectAsState().value.find { it.id == community.id }?.members?.size ?: 0
-				Text(text = " $nbMembers membre" + if(nbMembers != 1) "s" else "", style = MaterialTheme.typography.bodySmall)
-
-				Spacer(Modifier.weight(1f))
-				// Join button
-				TextButton(
-					onClick = {
-						if (memberships[community.id] == false) {
-							Log.d("CommunityCard", "Request to join community ${community.name}")
-							scope.launch {
-								viewModel.addMember(community.id)
-							}
-
-							if (memberships[community.id] == true) {
-								Log.d(
-									"CommunityCard",
-									"Joined community ${community.name}"
-								)
-							}
-						} else {
-							Log.d("CommunityCard", "Request to leave community ${community.name}")
-							scope.launch {
-								viewModel.removeMember(community.id)
-							}
-							if (memberships[community.id] == false) {
-								Log.d(
-									"CommunityCard",
-									"Left community ${community.name}"
-								)
-							}
-						}
-							  },
-					shape = MaterialTheme.shapes.small,
-					colors = ButtonDefaults.buttonColors(
-						containerColor = if (memberships[community.id] == true) Color.Red else MaterialTheme.colorScheme.primary,
-						contentColor = MaterialTheme.colorScheme.onPrimary
-					)
+				Spacer(Modifier.height(4.dp))
+				// Description tronquée
+				Text(
+					text = if (community.description.length < 20) community.description
+					else community.description.substring(0, 20) + "...",
+					style = MaterialTheme.typography.bodySmall
 				)
-				{
-					Text(
-						text = if(memberships[community.id] == true) "Quitter" else "Rejoindre",
-						style = MaterialTheme.typography.labelSmall,
-						fontSize = 15.sp
-					)
+			}
+
+			Column(
+				horizontalAlignment = Alignment.End,
+				verticalArrangement = Arrangement.SpaceBetween,
+				modifier = Modifier.padding(start = 8.dp)
+			) {
+				// Nombre de membres
+				val nbMembers =
+					viewModel.allCommunities.collectAsState().value.find { it.id == community.id }?.members?.size
+						?: 0
+				Text(
+					text = "$nbMembers membre${if (nbMembers != 1) "s" else ""}",
+					style = MaterialTheme.typography.bodySmall
+				)
+
+				Spacer(Modifier.height(6.dp))
+
+				Row {
+					// Bouton Rejoindre / Quitter
+					TextButton(
+						onClick = {
+							scope.launch {
+								if (memberships[community.id] == true) {
+									Log.d("CommunityCard", "Request to leave community ${community.name}")
+									viewModel.removeMember(community.id)
+								} else {
+									Log.d("CommunityCard", "Request to join community ${community.name}")
+									viewModel.addMember(community.id)
+								}
+							}
+						},
+						shape = MaterialTheme.shapes.small,
+						colors = ButtonDefaults.buttonColors(
+							containerColor = if (memberships[community.id] == true) Color.Red else MaterialTheme.colorScheme.primary,
+							contentColor = MaterialTheme.colorScheme.onPrimary
+						)
+					) {
+						Text(
+							text = if (memberships[community.id] == true) "Quitter" else "Rejoindre",
+							style = MaterialTheme.typography.labelSmall,
+							fontSize = 15.sp
+						)
+					}
+
+					// Bouton "Accéder" visible uniquement si membre
+					if (memberships[community.id] == true) {
+						Spacer(Modifier.width(8.dp))
+						TextButton(
+							onClick = { toCommunity(community) },
+							shape = MaterialTheme.shapes.small,
+							colors = ButtonDefaults.buttonColors(
+								containerColor = MaterialTheme.colorScheme.secondary,
+								contentColor = MaterialTheme.colorScheme.onSecondary
+							)
+						) {
+							Text(
+								text = "Accéder",
+								style = MaterialTheme.typography.labelSmall,
+								fontSize = 15.sp
+							)
+						}
+					}
 				}
 			}
 		}
 	}
-
 }
-
-
-
-
 
 @Preview(showBackground = true)
 @Composable
