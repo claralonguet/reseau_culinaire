@@ -43,11 +43,12 @@ class GeneralPostViewModel : ViewModel() {
 		_userId.value = id
 	}
 
-	// Nouvelle fonction pour charger les posts ET récupérer les usernames associés
 	private fun getAllPosts() {
 		viewModelScope.launch {
 			_loading.value = true
 			try {
+				Log.d("GeneralPostViewModel", "Début récupération des posts...")
+
 				val postsResult = db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
 					.orderBy("date", com.google.firebase.firestore.Query.Direction.DESCENDING)
 					.get()
@@ -57,49 +58,72 @@ class GeneralPostViewModel : ViewModel() {
 					it.toObject(Post::class.java).apply { id = it.id }
 				}
 
+				Log.d("GeneralPostViewModel", "Posts récupérés: ${rawPosts.size}")
+				rawPosts.forEach { Log.d("GeneralPostViewModel", "Post brut: $it") }
+
 				if (rawPosts.isEmpty()) {
+					Log.d("GeneralPostViewModel", "Aucun post trouvé.")
 					_allPosts.value = emptyList()
 					_loading.value = false
 					return@launch
 				}
 
-				val uniqueUserIds = rawPosts.map { it.authorId }.toSet()
+				val uniqueUserIds = rawPosts.map { it.authorId }.filter { it.isNotBlank() }.toSet()
+				Log.d("GeneralPostViewModel", "IDs utilisateurs uniques: $uniqueUserIds")
+
 				if (uniqueUserIds.isEmpty()) {
+					Log.w("GeneralPostViewModel", "Aucun authorId valide trouvé dans les posts.")
 					_allPosts.value = rawPosts
 					_loading.value = false
 					return@launch
 				}
 
 				val userMap = mutableMapOf<String, String>()
-				val usersRef = db.collection(USERS_FIREBASE_COLLECTION)
+				val usersRef = db.collection("Utilisateur") // <-- Modifié ici
 
-				// Lance toutes les requêtes en parallèle et attends leur fin
 				uniqueUserIds.map { userId ->
 					async {
 						try {
+							Log.d("GeneralPostViewModel", "Récupération username pour userId: $userId")
 							val userDoc = usersRef.document(userId).get().await()
-							userMap[userId] = userDoc.getString("username") ?: "Utilisateur inconnu"
+							val username = userDoc.getString("username") ?: "Utilisateur inconnu"
+							userMap[userId] = username
+							Log.d("GeneralPostViewModel", "Username trouvé pour $userId: $username")
 						} catch (e: Exception) {
-							Log.e("GeneralPostViewModel", "Erreur fetch username for $userId", e)
+							Log.e("GeneralPostViewModel", "Erreur récupération username pour $userId", e)
 							userMap[userId] = "Utilisateur inconnu"
 						}
 					}
 				}.awaitAll()
 
+				Log.d("GeneralPostViewModel", "Mapping userId -> username complété: $userMap")
+
 				val enrichedPosts = rawPosts.map { post ->
-					post.copy(username = userMap[post.authorId] ?: "Utilisateur inconnu")
+					post.apply {
+						username = userMap[authorId] ?: "Utilisateur inconnu"
+					}
 				}
+
+				Log.d("GeneralPostViewModel", "Posts enrichis avec username:")
+				enrichedPosts.forEach { Log.d("GeneralPostViewModel", it.toString()) }
 
 				_allPosts.value = enrichedPosts
 
 			} catch (e: Exception) {
 				_error.value = e.message
-				Log.e("GeneralPostViewModel", "Failed to fetch posts with usernames", e)
+				Log.e("GeneralPostViewModel", "Erreur lors de la récupération des posts et usernames", e)
 			} finally {
 				_loading.value = false
+				Log.d("GeneralPostViewModel", "Fin de la récupération des posts")
 			}
 		}
 	}
+
+
+
+
+
+
 
 	fun createPost(post: Post) {
 		post.authorId = _userId.value
@@ -177,8 +201,25 @@ class GeneralPostViewModel : ViewModel() {
 	}
 
 	private fun updateLocalPostLikes(postId: String, updatedLikes: List<String>) {
-		_allPosts.value = _allPosts.value.map {
-			if (it.id == postId) it.copy(likes = updatedLikes) else it
+		_allPosts.value = _allPosts.value.map { post ->
+			if (post.id == postId) {
+				Post(
+					id = post.id,
+					name = post.name,
+					content = post.content,
+					likes = updatedLikes,
+					date = post.date,
+					imageUri = post.imageUri,
+					authorId = post.authorId,
+					isPrivate = post.isPrivate,
+					communityId = post.communityId
+				).also {
+					it.username = post.username  // on conserve le username
+				}
+			} else {
+				post
+			}
 		}
 	}
+
 }
