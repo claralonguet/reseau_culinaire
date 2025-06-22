@@ -312,6 +312,10 @@ fun GroceryList(
                         changeOnboardingScreen = changeOnboardingScreen,
                         deleteItem = {
                             groceryViewModel.removeItemToGroceryList(item)
+                        },
+                        onModify = {
+                            toModify = it.name
+                            changeOnboardingScreen(3)
                         }
                     )
                 }
@@ -415,8 +419,7 @@ fun GroceryItem(
             // Modify button outlined in blue
             TextButton(
                 onClick = {
-                    changeOnboardingScreen(3)  // Navigate to modify screen
-                    onModify(item)              // Pass the current item for modification
+                    onModify(item)              // Pass the current item for modification and navigate to the modification screen
                 },
                 modifier = Modifier
                     .width(65.dp)
@@ -493,7 +496,55 @@ fun GroceryAddItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxSize()
     ) {
-        // Header omitted for brevity...
+        // Screen title and options
+        Row (
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dp)
+                .background(color = grey)
+        ) {
+            // Return button
+            TextButton(
+                onClick = {changeOnboardingScreen(1)},
+                shape = CutCornerShape(3.dp),
+                colors = ButtonColors(
+                    containerColor = Color(0x0059EA85),
+                    contentColor = Color.White,
+                    disabledContainerColor = Color(0xFF59EA85),
+                    disabledContentColor = Color.White
+                )
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Default.KeyboardArrowLeft,
+                    contentDescription = "Cancel",
+                    tint = Color.Red,
+                    modifier = modifier
+                        .height(100.dp)
+                        .width(60.dp)
+                )
+
+            }
+
+            Spacer(modifier = modifier.width(15.dp))
+
+            // Title of the subscreen
+            Text(
+                text = if (toModify != "") "Modifier $toModify" else "Ajouter à ma liste",
+                fontSize = 25.sp,
+                fontFamily = FontFamily.Serif,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold,
+                lineHeight = 50.sp,
+                color = Color(0xFF3CB460),
+
+                modifier = modifier
+                    .height(50.dp)
+                    .background(color = grey)
+            )
+
+            Spacer(modifier = modifier.weight(5f))
+        }
 
         Column(
             verticalArrangement = Arrangement.SpaceEvenly,

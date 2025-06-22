@@ -336,15 +336,13 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 			.padding(16.dp)
 	) {
 		// Post image loaded asynchronously from URI
-		if (post.imageUri.isNotEmpty()) {
-			AsyncImage(
-				model = post.imageUri,
-				contentDescription = "Post image",
-				modifier = Modifier
-					.fillMaxWidth()
-					.height(200.dp)
-			)
-		}
+		AsyncImage(
+			model = post.imageUri,
+			contentDescription = "Post image",
+			modifier = Modifier
+				.fillMaxWidth()
+				.height(200.dp)
+		)
 
 		Spacer(modifier = Modifier.height(8.dp))
 
