@@ -1,8 +1,6 @@
 package com.example.culinar.models.viewModels
 
 import android.util.Log
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.culinar.models.Community
@@ -15,42 +13,26 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-/**
- * ViewModel responsible for managing community-related operations such as:
- * - Fetching all communities and the user's own community
- * - Managing user membership (add/remove/check)
- * - Selecting a community and fetching its posts
- * - Creating and liking/unliking posts in communities
- *
- * Firebase Firestore is used as the backend storage.
- */
 class CommunityViewModel : ViewModel() {
 
 	private val db = Firebase.firestore
 
-	// userId exposé en lecture seule (StateFlow)
 	private val _userId = MutableStateFlow("")
 	val userId: StateFlow<String> get() = _userId
 
-	// Toutes les communautés disponibles dans la base
 	var allCommunities: MutableStateFlow<List<Community>> = MutableStateFlow(emptyList())
 
-	// Ma propre communauté (celle dont l'ID est égal à mon userId)
 	private val _myCommunity = MutableStateFlow<Community?>(null)
-	val myCommunity: StateFlow<Community?> = _myCommunity.asStateFlow()
+	val myCommunity: StateFlow<Community?> get() = _myCommunity
 
-	// Communauté actuellement sélectionnée par l'utilisateur
 	private val _selectedCommunity = MutableStateFlow<Community?>(null)
-	var selectedCommunity: MutableStateFlow<Community?> = MutableStateFlow(null)
+	val selectedCommunity: StateFlow<Community?> get() = _selectedCommunity
 
-	// Map des statuts de membre : [communityId] -> isMember (true/false)
 	var isMember: MutableStateFlow<MutableMap<String, Boolean>> = MutableStateFlow(mutableMapOf())
 
-	// Liste des posts de la communauté sélectionnée
 	var allPosts: MutableStateFlow<List<Post>> = MutableStateFlow(emptyList())
 
 	init {
-		// Lorsque l'ID utilisateur est défini, on rafraîchit les communautés
 		viewModelScope.launch {
 			_userId.collect { id ->
 				if (id.isNotEmpty()) {
@@ -60,18 +42,10 @@ class CommunityViewModel : ViewModel() {
 		}
 	}
 
-	/**
-	 * Met à jour l'identifiant utilisateur courant
-	 * @param id Identifiant utilisateur
-	 */
 	fun setUserId(id: String) {
 		_userId.value = id
 	}
 
-	/**
-	 * Rafraîchit toutes les informations liées aux communautés
-	 * (liste complète, communauté de l'utilisateur, appartenance)
-	 */
 	fun refreshCommunities() {
 		getCommunities()
 		getMyCommunity()
@@ -84,21 +58,12 @@ class CommunityViewModel : ViewModel() {
 		}
 	}
 
-	/**
-	 * Définit la communauté sélectionnée par l'utilisateur
-	 * et déclenche le chargement des posts associés.
-	 * @param community La communauté sélectionnée
-	 */
 	fun selectCommunity(community: Community) {
 		_selectedCommunity.value = community
 		Log.d("CommunityViewModel", "Community selected: ${community.id}. Fetching posts.")
 		getPosts(community.id)
 	}
 
-	/**
-	 * Récupère toutes les communautés (sauf celle correspondant à mon propre userId)
-	 * Trie la liste pour faire apparaître en tête celles dont je suis membre
-	 */
 	fun getCommunities() {
 		viewModelScope.launch {
 			try {
@@ -139,9 +104,6 @@ class CommunityViewModel : ViewModel() {
 		}
 	}
 
-	/**
-	 * Récupère ma communauté personnelle (ID = mon userId)
-	 */
 	fun getMyCommunity() {
 		viewModelScope.launch {
 			try {
@@ -160,10 +122,6 @@ class CommunityViewModel : ViewModel() {
 		}
 	}
 
-	/**
-	 * Crée une nouvelle communauté avec mon ID comme identifiant
-	 * et m’ajoute comme membre automatiquement.
-	 */
 	fun addCommunity(community: Community) {
 		viewModelScope.launch {
 			try {
@@ -180,10 +138,6 @@ class CommunityViewModel : ViewModel() {
 		}
 	}
 
-	/**
-	 * Met à jour une communauté existante (remplace entièrement le document)
-	 * @param community Communauté mise à jour
-	 */
 	fun updateCommunity(community: Community) {
 		viewModelScope.launch {
 			try {
@@ -198,10 +152,6 @@ class CommunityViewModel : ViewModel() {
 		}
 	}
 
-	/**
-	 * Récupère les identifiants des membres d'une communauté donnée
-	 * @param communityId ID de la communauté
-	 */
 	suspend fun getCommunityMembers(communityId: String): List<String> {
 		return try {
 			val snapshot = db.collection(COMMUNITY_FIREBASE_COLLECTION)
@@ -216,10 +166,6 @@ class CommunityViewModel : ViewModel() {
 		}
 	}
 
-	/**
-	 * Vérifie, pour chaque communauté, si l'utilisateur en est membre
-	 * @param communitiesToScan Liste des communautés à vérifier
-	 */
 	suspend fun checkMemberships(communitiesToScan: List<Community>) {
 		if (communitiesToScan.isEmpty()) {
 			isMember.value = mutableMapOf()
@@ -242,11 +188,6 @@ class CommunityViewModel : ViewModel() {
 		isMember.value = currentMembership
 	}
 
-	/**
-	 * Ajoute un utilisateur à une communauté.
-	 * @param communityId ID de la communauté
-	 * @param userId ID de l'utilisateur à ajouter (défaut = moi)
-	 */
 	suspend fun addMember(communityId: String, userId: String = _userId.value): Boolean {
 		return try {
 			db.collection(COMMUNITY_FIREBASE_COLLECTION)
@@ -271,11 +212,6 @@ class CommunityViewModel : ViewModel() {
 		}
 	}
 
-	/**
-	 * Supprime un utilisateur d'une communauté.
-	 * @param communityId ID de la communauté
-	 * @param userId ID de l'utilisateur à retirer
-	 */
 	suspend fun removeMember(communityId: String, userId: String = _userId.value): Boolean {
 		return try {
 			db.collection(COMMUNITY_FIREBASE_COLLECTION)
@@ -300,10 +236,6 @@ class CommunityViewModel : ViewModel() {
 		}
 	}
 
-	/**
-	 * Charge tous les posts d'une communauté et les trie par date décroissante
-	 * @param communityId ID de la communauté
-	 */
 	fun getPosts(communityId: String) {
 		viewModelScope.launch {
 			try {
@@ -327,16 +259,10 @@ class CommunityViewModel : ViewModel() {
 		}
 	}
 
-	// Vérifie si l'utilisateur a déjà liké un post donné
 	fun hasLiked(post: Post): Boolean {
 		return post.likes.contains(_userId.value)
 	}
 
-	/**
-	 * Crée un post dans la communauté courante (et public si nécessaire)
-	 * @param post Objet Post à enregistrer
-	 * @param communityId ID de la communauté (défaut : ma communauté)
-	 */
 	fun createPost(post: Post, communityId: String = myCommunity.value?.id ?: "") {
 		if (communityId.isEmpty()) {
 			Log.e("CommunityViewModel", "Cannot create post: communityId is empty")
@@ -376,16 +302,12 @@ class CommunityViewModel : ViewModel() {
 		}
 	}
 
-	/**
-	 * Ajoute un like au post donné
-	 * @param post Le post à liker
-	 * @param userId L'utilisateur qui like
-	 */
 	fun likePost(post: Post, userId: String) {
 		viewModelScope.launch {
 			try {
+				val communityId = selectedCommunity.value?.id ?: return@launch
 				val postRef = db.collection(COMMUNITY_FIREBASE_COLLECTION)
-					.document(_selectedCommunity.value?.id ?: return@launch)
+					.document(communityId)
 					.collection("posts")
 					.document(post.id)
 
@@ -398,7 +320,6 @@ class CommunityViewModel : ViewModel() {
 				Log.d("CommunityViewModel", "Post liked by $userId")
 
 				if (!post.isPrivate) {
-					Log.d("CommunityViewModel", "Updating public feed post likes")
 					try {
 						db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
 							.document(post.id)
@@ -409,9 +330,6 @@ class CommunityViewModel : ViewModel() {
 						Log.d("CommunityViewModel", "Error updating post likes in public feed: $e")
 					}
 				}
-				else {
-					Log.d("CommunityViewModel", "Not updating public feed post likes")
-				}
 
 			} catch (e: Exception) {
 				Log.d("CommunityViewModel", "Error liking post: $e")
@@ -419,16 +337,12 @@ class CommunityViewModel : ViewModel() {
 		}
 	}
 
-	/**
-	 * Retire un like du post donné
-	 * @param post Le post à unliker
-	 * @param userId L'utilisateur qui retire son like
-	 */
 	fun unlikePost(post: Post, userId: String) {
 		viewModelScope.launch {
 			try {
+				val communityId = selectedCommunity.value?.id ?: return@launch
 				val postRef = db.collection(COMMUNITY_FIREBASE_COLLECTION)
-					.document(_selectedCommunity.value?.id ?: return@launch)
+					.document(communityId)
 					.collection("posts")
 					.document(post.id)
 
@@ -458,11 +372,6 @@ class CommunityViewModel : ViewModel() {
 		}
 	}
 
-	/**
-	 * Met à jour localement le nombre de likes d’un post donné
-	 * @param postId L’identifiant du post
-	 * @param updatedLikes Nouvelle liste de likes
-	 */
 	private fun updateLocalPostLikes(postId: String, updatedLikes: List<String>) {
 		val updatedPosts = allPosts.value.map {
 			if (it.id == postId) it.copy(likes = updatedLikes.toMutableList()) else it
@@ -470,4 +379,3 @@ class CommunityViewModel : ViewModel() {
 		allPosts.value = updatedPosts
 	}
 }
-
