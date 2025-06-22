@@ -255,18 +255,19 @@ fun BottomNavBar(
         NavigationBarItem(
             icon = {
                 Icon(
-                    if (screenName == Screen.Calendar.name) Icons.Default.DateRange else Icons.Outlined.DateRange,
-                    contentDescription = "Calendar",
+                    if (screenName == Screen.CheckFeed.name) Icons.Default.Public else Icons.Outlined.Public,
+                    contentDescription = "Feed",
                     tint = Color.White,
                     modifier = Modifier.size(40.dp)
                 )
             },
-            selected = screenName == Screen.Calendar.name,
-            onClick = { navRoutes(Screen.Calendar.name) },
+            selected = screenName == Screen.CheckFeed.name,
+            onClick = { navRoutes(Screen.CheckFeed.name) },
             colors = NavigationBarItemDefaults.colors(
                 indicatorColor = MaterialTheme.colorScheme.primary
             )
         )
+
 
         // Groceries navigation item
         NavigationBarItem(
