@@ -1,6 +1,7 @@
 package com.example.culinar.viewmodels
 
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -102,4 +103,28 @@ class RecipeViewModel : ViewModel() {
     }
 
     fun findById(id: String): Recipe? = recipes.find { it.firestoreId == id }
+
+    fun addRecipe(recipe: Recipe) {
+        recipes.add(recipe)
+
+        // Ajouter la recette à Firestore
+        val recipeData = hashMapOf(
+            "name" to recipe.name,
+            "imageUrl" to recipe.imageUrl,
+            "prepTime" to recipe.prepTime,
+            "difficulty" to recipe.difficulty,
+            "ingredients" to recipe.ingredients,
+            "steps" to recipe.steps
+        )
+
+        db.collection(RECIPES_FIREBASE_COLLECTION)
+            .add(recipeData)
+            .addOnSuccessListener { documentReference ->
+                Log.d("RecipeViewModel", "Document ajouté avec ID: ${documentReference.id}")
+            }
+            .addOnFailureListener { e ->
+                Log.d("RecipeViewModel", "Erreur d'ajout du document", e)
+
+            }
+    }
 }

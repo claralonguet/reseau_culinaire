@@ -1,4 +1,4 @@
-package com.example.culinar.ui.components
+package com.example.culinar.recipesScreen.components
 
 
 import androidx.compose.foundation.Image

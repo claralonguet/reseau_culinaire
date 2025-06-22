@@ -30,6 +30,9 @@ enum class Screen {
     MyCommunity,
     Feed,
     CreatePost,
+    PostFeedRecipe,
+    PublishPostRecipe,
+
 }
 
 

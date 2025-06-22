@@ -1,4 +1,4 @@
-package com.example.culinar.datastore
+package com.example.culinar.DataStore
 
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey

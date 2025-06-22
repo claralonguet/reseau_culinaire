@@ -22,9 +22,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
@@ -440,11 +448,18 @@ fun RecipePost(
 	createRecipe: (Recipe) -> Unit,
 	goBack: () -> Unit
 ) {
-	/*
+
+	var scrollableForm = rememberScrollState()
+
 	var name by rememberSaveable { mutableStateOf("") }
 	var ingredientsText by rememberSaveable { mutableStateOf("") }
 	var stepsText by rememberSaveable { mutableStateOf("") }
 	var private by rememberSaveable { mutableStateOf(true) }
+	var time by rememberSaveable { mutableStateOf("") }
+	var difficulty by rememberSaveable { mutableStateOf("facile") }
+	var difficultyOptionsExpanded by rememberSaveable { mutableStateOf(false) }
+
+	val selectedCommunityId = communityViewModel.selectedCommunity.collectAsState().value?.id ?: ""
 
 	var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 	val context = LocalContext.current
@@ -456,9 +471,11 @@ fun RecipePost(
 	}
 
 	Column(
-		modifier = Modifier.padding(16.dp),
+		modifier = Modifier
+			.padding(16.dp)
+			.verticalScroll(scrollableForm),
 		verticalArrangement = Arrangement.Top,
-		horizontalAlignment = Alignment.CenterHorizontally
+		horizontalAlignment = Alignment.CenterHorizontally,
 	) {
 		Text(
 			text = stringResource(R.string.create_recipe_title),
@@ -495,6 +512,56 @@ fun RecipePost(
 				modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
 				maxLines = 8
 			)
+
+			// Cooking time picker. Accepting only numbers
+			TextField(
+				value = time,
+				onValueChange = { time = it.filter { char -> char.isDigit() } },
+				label = { Text(stringResource(R.string.create_recipe_time_label)) },
+			)
+
+
+			Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+				// Difficulty picker
+				TextField(
+					value = difficulty,
+					onValueChange = { difficulty = it },
+					label = { Text(stringResource(R.string.create_recipe_difficulty_label)) },
+					readOnly = true,
+					modifier = Modifier
+				)
+				IconButton(
+					onClick = { difficultyOptionsExpanded = true },
+					modifier = Modifier.size(40.dp)
+				) {
+					Icon(
+						imageVector = Icons.Default.ArrowDropDown,
+						contentDescription = stringResource(R.string.create_recipe_difficulty_label),
+						modifier = Modifier.size(40.dp)
+					)
+				}
+				// Difficulty picker
+				DropdownMenu (
+					modifier = Modifier.fillMaxWidth(0.8f),
+					expanded = difficultyOptionsExpanded,
+					onDismissRequest = { difficultyOptionsExpanded = false }
+				) {
+					DropdownMenuItem(
+						text = { Text("Facile") },
+						onClick = { difficulty = "Facile"; difficultyOptionsExpanded = false }
+					)
+					DropdownMenuItem(
+						text = { Text("Moyen") },
+						onClick = { difficulty = "Moyen"; difficultyOptionsExpanded = false }
+					)
+					DropdownMenuItem(
+						text = { Text("Difficile") },
+						onClick = { difficulty = "Difficile"; difficultyOptionsExpanded = false }
+					)
+				}
+
+			}
+
 
 			Spacer(modifier = Modifier.height(10.dp))
 
@@ -555,11 +622,13 @@ fun RecipePost(
 					if (name.isNotBlank() && ingredientsText.isNotBlank() && stepsText.isNotBlank()) {
 						val recipe = Recipe(
 							name = name,
-							ingredients = ingredientsText,
-							steps = stepsText,
-							imageUri = imageUri?.toString() ?: "",
-							communityId = communityViewModel.selectedCommunity?.id ?: "",
-							isPrivate = private
+							ingredients = ingredientsText.split("\n"),
+							steps = stepsText.split("\n"),
+							imageUrl = imageUri?.toString() ?: "",
+							communityId = selectedCommunityId,
+							isPrivate = private,
+							prepTime = "$time min",
+							difficulty = difficulty
 						)
 						createRecipe(recipe)
 						goBack()
@@ -578,7 +647,6 @@ fun RecipePost(
 		}
 	}
 
-	 */
 }
 
 

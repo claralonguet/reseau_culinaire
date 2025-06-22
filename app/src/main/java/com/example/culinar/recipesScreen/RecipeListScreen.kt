@@ -1,9 +1,11 @@
-package com.example.culinar.ui.screens
+package com.example.culinar.recipesScreen
 
 import androidx.compose.foundation.background
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -11,7 +13,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -19,11 +20,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.culinar.models.Screen
-import com.example.culinar.ui.components.FilterTabs
-import com.example.culinar.ui.components.RecipeCard
+import com.example.culinar.recipesScreen.components.FilterTabs
+import com.example.culinar.recipesScreen.components.RecipeCard
 import com.example.culinar.ui.theme.Typography
 import com.example.culinar.ui.theme.grey
-import com.example.culinar.ui.theme.mediumGreen
 import com.example.culinar.viewmodels.Filter
 import com.example.culinar.viewmodels.RecipeViewModel
 
@@ -53,6 +53,25 @@ fun RecipeListScreen(navController: NavHostController = rememberNavController(),
                 style = Typography.titleLarge,
             )
         }
+        Column {//****************************************************************
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Button(
+                onClick = { navController.navigate(Screen.PostFeedRecipe.name) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+
+            ) {
+                Text("Voir les publications")
+            }
+            Button(onClick = { navController.navigate("CreateRecettePost") }) {
+                Icon(Icons.Default.Add, contentDescription = "Créer une recette")
+            }
+
+
+        }//***************************************************************************************
 
         // Composant FilterTabs pour changer le filtre
         //FilterTabs(current = filter, onFilterChange ={ vm::setFilter})

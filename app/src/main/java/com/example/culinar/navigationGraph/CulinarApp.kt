@@ -47,10 +47,14 @@ import com.example.culinar.models.Screen
 import com.example.culinar.models.viewModels.CommunityViewModel
 import com.example.culinar.models.viewModels.FriendViewModel
 import com.example.culinar.models.viewModels.GeneralPostViewModel
+import com.example.culinar.recipesScreen.RecipeDetailScreen
+import com.example.culinar.recipesScreen.RecipeListScreen
 import com.example.culinar.settings.ExpertRequestsScreen
 import com.example.culinar.settings.SettingScreen
-import com.example.culinar.ui.screens.RecipeDetailScreen
-import com.example.culinar.ui.screens.RecipeListScreen
+<<<<<<< HEAD
+=======
+
+>>>>>>> 8e998d051d8e9216ff85992fb8143a2738f47576
 import com.example.culinar.viewmodels.RecipeViewModel
 import com.example.culinar.viewmodels.SessionViewModel
 
@@ -400,8 +404,8 @@ fun CulinarApp(
                             showSnackbar("Posted on ${if(post.isPrivate) "your community and" else ""}the public feed!")
                         },
                         createRecipe = { recipe ->
-                            // TODO: Optionally handle recipe creation here
-                            //showSnackbar("Posted on ${if(recipe.isPrivate) "your community and" else ""} the public feed!")
+                            viewModelRecipes.addRecipe(recipe)
+                            showSnackbar("Posted on ${if(recipe.isPrivate) "your community and" else ""} the public feed!")
                         },
                         goBack = { navController.popBackStack() }
                     )
