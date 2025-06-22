@@ -108,9 +108,9 @@ fun CulinarApp(
         Screen.Account.name,
         Screen.MyCommunity.name,
         Screen.PostFeed.name,
-        Screen.CheckFeed.name,
+        //Screen.CheckFeed.name,
         Screen.SendMessage.name,
-        Screen.Conversation.name
+        //Screen.Conversation.name
     )
 
     // Determine visibility of top and bottom bars based on current route
@@ -237,8 +237,8 @@ fun CulinarApp(
                 composable(route = Screen.PendingExpertRequests.name) {
                     ExpertRequestsScreen()
                 }
-                composable(route = Screen.Calendar.name) {
-                    CalendarScreen()
+                composable(route = Screen.CheckFeed.name) {
+                    CheckFeed(navController = navController)
                 }
                 composable(route = Screen.Groceries.name) {
                     Grocery(sessionViewModel = sessionViewModel, onNavigate = onNavigate)

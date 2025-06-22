@@ -57,18 +57,7 @@ fun RecipeListScreen(navController: NavHostController = rememberNavController(),
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            Button(
-                onClick = { navController.navigate(Screen.PostFeedRecipe.name) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
 
-            ) {
-                Text("Voir les publications")
-            }
-            Button(onClick = { navController.navigate("CreateRecettePost") }) {
-                Icon(Icons.Default.Add, contentDescription = "Créer une recette")
-            }
 
 
         }//***************************************************************************************
