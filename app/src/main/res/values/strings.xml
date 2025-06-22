@@ -5,6 +5,26 @@
     <string name="home_title" translatable="true">Accueil</string>
 
 
+    // Login, register and logout strings
+    <string name="login_title" translatable="true">Connexion</string>
+    <string name="login_button" translatable="true">Connexion</string>
+    <string name="register_button" translatable="true">Inscription</string>
+    <string name="register_title" translatable="true">Inscription</string>
+    <string name="register_username_label" translatable="true">Nom d\'utilisateur</string>
+    <string name="register_password_label" translatable="true">Mot de passe</string>
+    <string name="register_confirm_password_label" translatable="true">Confirmer le mot de passe</string>
+    <string name="register_email_label" translatable="true">Adresse e-mail</string>
+    <string name="register_phone_label" translatable="true">Numéro de téléphone</string>
+    <string name="login_username_label" translatable="true">Nom d\'utilisateur</string>
+    <string name="login_password_label" translatable="true">Mot de passe</string>
+    <string name="logout_button" translatable="true">Se déconnecter</string>
+    <string name="login_error" translatable="true">Erreur de connexion</string>
+    <string name="register_error" translatable="true">Erreur d\'inscription</string>
+    <string name="login_success" translatable="true">Login Successful! Welcome back </string>
+    <string name="register_success" translatable="true">Inscription réussie!</string>
+
+
+
     // Public feed
     <string name="feed_title" translatable="true">Feed</string>
     <string name="feed_post_screen_title" translatable="true">Publier au grand public</string>

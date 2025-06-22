@@ -136,6 +136,7 @@ fun CommunityScreen (
 
 	// Set current user ID into the community view model for data filtering
 	communityViewModel.setUserId(userId ?: "")
+	val myCommunity = communityViewModel.myCommunity.collectAsState().value
 
 	// Layout container for all screen content
 	Column (
@@ -183,7 +184,7 @@ fun CommunityScreen (
 
 		// Conditional buttons based on user expertise and community membership
 		if (isExpert == true) {
-			if (communityViewModel.myCommunity.value != null) {
+			if (myCommunity != null) {
 				// Button to access user's own community
 				TextButton(
 					onClick = {

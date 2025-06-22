@@ -1,5 +1,10 @@
 package com.example.culinar.Home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CutCornerShape
@@ -24,6 +29,7 @@ import com.example.culinar.R
 import com.example.culinar.models.Screen
 import com.example.culinar.models.communityRelatedScreens
 import com.example.culinar.ui.theme.grey
+import kotlinx.coroutines.delay
 
 @Composable
 /**
@@ -40,12 +46,14 @@ import com.example.culinar.ui.theme.grey
  * @param toAccount Lambda called when user selects the account/login option.
  * @param toSettings Lambda called when user selects settings.
  * @param logout Lambda called when user selects logout.
+ * @param showSnackbar Lambda to display a Snackbar message.
  */
 fun TopBar(
     isLoggedIn: Boolean = false,
     toAccount: () -> Unit = {},
     toSettings: () -> Unit = {},
-    logout: () -> Unit = {}
+    logout: () -> Unit = {},
+    showSnackbar: (String) -> Unit
 ) {
 
     var menuClicked by remember { mutableStateOf(false) } // Tracks whether dropdown menu is open
@@ -174,6 +182,7 @@ fun TopBar(
                         onClick = {
                             logout()
                             menuClicked = false
+                            showSnackbar("Déconnexion réussie")
                         },
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = CutCornerShape(3.dp),
@@ -334,6 +343,58 @@ fun BottomNavBar(
                 indicatorColor = MaterialTheme.colorScheme.primary
             )
         )
+    }
+}
+
+
+
+
+/**
+ * SlideUpSnackbar displays a Snackbar with a slide-up animation when visible.
+ *
+ * @param message The text message to display inside the Snackbar.
+ * @param isVisible Boolean flag to control visibility of the Snackbar.
+ * @param onDismiss Callback triggered to hide the Snackbar (e.g., set isVisible to false).
+ */
+@Composable
+fun SlideUpSnackbar(
+    message: String,
+    isVisible: Boolean,
+    onDismiss: () -> Unit // Callback to set isVisible to false after animation
+) {
+    // Automatically dismiss after a delay when it becomes visible
+    LaunchedEffect(isVisible) {
+        if (isVisible) {
+            delay(3000L) // Display the Snackbar for 2 seconds before triggering dismissal
+            onDismiss()
+        }
+    }
+
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(), // Slide up from half height and fade in
+        exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut(), // Slide down to half height and fade out
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp) // Some padding around the snackbar
+    ) {
+        // We use a Box to align the Snackbar at the bottom of its AnimatedVisibility container
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter // Align Snackbar at the bottom center
+        ) {
+            Snackbar(
+                modifier = Modifier.padding(bottom = 100.dp), // Extra padding from the bottom edge
+                action = {
+                    // "Dismiss" button allows user to close the Snackbar manually
+                    TextButton(onClick = onDismiss) {
+                        Text("Dismiss", color = MaterialTheme.colorScheme.inversePrimary)
+                    }
+                }
+            ) {
+                Text(text = message) // Main message text
+            }
+        }
     }
 }
 
