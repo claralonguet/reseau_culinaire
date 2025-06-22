@@ -7,7 +7,7 @@
 
     // Public feed
     <string name="feed_title" translatable="true">Feed</string>
-    <string name="feed_post_screen_title" translatable="true">Publier</string>
+    <string name="feed_post_screen_title" translatable="true">Publier au grand public</string>
 
     // Groceries strings
     <string name="grocery_list_title" translatable="true">Ma liste de courses</string>
@@ -15,6 +15,16 @@
     <string name="grocery_search_placeholder" translatable="true">Rechercher un aliment</string>
     <string name="grocery_search_button" translatable="true">Rechercher</string>
     <string name="grocery_item_delete_button" translatable="true">Supprimer</string>
+    <string name="grocery_item_modify_button" translatable="true">Modifier</string>
+    <string name="grocery_item_quantity_label" translatable="true">Quantité</string>
+    <string name="grocery_item_quantity_label_description" translatable="true">Quantité de l\'aliment</string>
+    <string name="grocery_item_unit_label" translatable="true">Unité</string>
+    <string name="grocery_item_name_label" translatable="true">Nom de l\'aliment</string>
+    <string name="grocery_item_photo_label" translatable="true">Photo</string>
+    <string name="grocery_item_add_button" translatable="true">Ajouter</string>
+    <string name="grocery_dropdown_menu_default" translatable="true">Choisissez un aliment</string>
+    <string name="grocery_item_add_screen_title" translatable="true">Ajouter à ma liste</string>
+
     <string name="grocery_screen_description" translatable="true">
         Bienvenue sur votre liste de courses!
         Vous pouvez y ajouter des produits et les supprimer.
@@ -24,6 +34,7 @@
 
 
     // Community space strings
+    <string name="community_space_title" translatable="true">Espace communautaire</string>
     <string name="expert_terms_and_conditions" translatable="true">
         lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
         \n
@@ -34,7 +45,9 @@
         Vous pourrez y partagez vos expériences culinaires et expérimentez celles d\'experts du domaine.
     </string>
     <string name="join_community_button_default" translatable="true">Accéder à nos communautés</string>
-    <string name="join_community_button_second" translatable="true">Connectez vous</string>
+    <string name="join_community_button" translatable="true">Rejoindre</string>
+    <string name="join_community_button_joined" translatable="true">Quitter</string>
+    <string name="community_members_label" translatable="true">membre</string>
     <string name="create_community_button" translatable="true">Créer une communauté</string>
     <string name="my_community_button" translatable="true">Ma communauté</string>
     <string name="community_list_title" translatable="true">Liste des communautés</string>
@@ -56,5 +69,13 @@
     <string name="create_post_private_label_2" translatable="true">Cette publication sera visible hors de la communauté</string>
 
 
+
+    // Every screen strings
+    <string name="back_button" translatable="true">Retour</string>
+    <string name="next_button" translatable="true">Suivant</string>
+    <string name="cancel_button" translatable="true">Annuler</string>
+    <string name="confirm_button" translatable="true">Confirmer</string>
+    <string name="error_message" translatable="true">Erreur</string>
+    <string name="login_first_button" translatable="true">Connectez-vous</string>
 
 </resources>

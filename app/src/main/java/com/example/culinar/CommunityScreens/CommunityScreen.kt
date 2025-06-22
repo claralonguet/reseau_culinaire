@@ -107,6 +107,20 @@ import com.google.firebase.Timestamp
 
 
 @Composable
+/**
+ * Main screen for the community section.
+ *
+ * Displays the community space title, description, and buttons to:
+ * - Access "My Community" if the user is an expert and part of a community.
+ * - Create a new community if the user is an expert without a community.
+ * - Join a community for all logged-in users.
+ * Handles navigation based on user actions and session state.
+ *
+ * @param modifier Modifier for styling the composable.
+ * @param communityViewModel ViewModel managing community data and actions.
+ * @param sessionViewModel ViewModel managing user session and authentication.
+ * @param onNavigate Lambda for navigation between screens, takes destination route and optional params.
+ */
 fun CommunityScreen (
 	modifier: Modifier = Modifier,
 	communityViewModel: CommunityViewModel = CommunityViewModel(),
@@ -117,21 +131,19 @@ fun CommunityScreen (
 	val userId by sessionViewModel.id.collectAsState()
 	val isExpert by sessionViewModel.isExpert.collectAsState()
 
+	// Log current user session info for debugging
 	Log.d("CommunityScreen", "userId: $userId, ${if(isExpert == true) "is expert" else "is not expert"}")
-	// Setting session id into viewModels
+
+	// Set current user ID into the community view model for data filtering
 	communityViewModel.setUserId(userId ?: "")
 
-
-	// communityViewModel.refreshCommunities()
-
-	// Screen content
+	// Layout container for all screen content
 	Column (
-		//verticalArrangement = Arrangement.SpaceEvenly,
 		horizontalAlignment = Alignment.CenterHorizontally,
 		modifier = modifier.fillMaxSize()
 	) {
 
-		// Screen title and options
+		// Header row with screen title
 		Row(
 			verticalAlignment = Alignment.CenterVertically,
 			horizontalArrangement = Arrangement.Center,
@@ -139,44 +151,45 @@ fun CommunityScreen (
 				.height(80.dp)
 				.background(color = grey)
 		) {
-			// Title of the subscreen
+			// Title text styled for emphasis
 			Text(
-				text = "Espace communauté",
+				text = stringResource(R.string.community_space_title),
 				fontSize = 25.sp,
 				fontFamily = FontFamily.Serif,
 				textAlign = TextAlign.Center,
 				fontWeight = FontWeight.Bold,
 				lineHeight = 50.sp,
 				color = Color(0xFF3CB460),
-
 				modifier = modifier
 					.height(50.dp)
 					.background(color = grey)
 			)
-
 		}
 
+		// Spacer to push description lower on screen, flexibly sized
 		Spacer(modifier = Modifier.weight(1f))
 
-		// Screen description
-		Text(stringResource(R.string.community_space_description),
+		// Description text explaining the community space purpose
+		Text(
+			stringResource(R.string.community_space_description),
 			style = MaterialTheme.typography.bodyLarge,
 			lineHeight = 50.sp,
 			textAlign = TextAlign.Center,
 			modifier = modifier.padding(16.dp)
 		)
 
+		// Fixed vertical space between description and buttons
 		Spacer(modifier = Modifier.height(40.dp))
 
-		// Community options
-		if(isExpert == true) {
-			if(communityViewModel.myCommunity.value != null) {
-				// ... My community
+		// Conditional buttons based on user expertise and community membership
+		if (isExpert == true) {
+			if (communityViewModel.myCommunity.value != null) {
+				// Button to access user's own community
 				TextButton(
 					onClick = {
 						communityViewModel.selectCommunity(communityViewModel.myCommunity.value!!)
 						onNavigate(Screen.MyCommunity.name, null)
-							  },
+					},
 					shape = CutCornerShape(5.dp),
 					modifier = modifier.height(50.dp),
 					colors = ButtonColors(
@@ -193,9 +206,8 @@ fun CommunityScreen (
 						textAlign = TextAlign.Center,
 					)
 				}
-			}
-			else {
-				// ... Create a community
+			} else {
+				// Button to create a new community if none exists
 				TextButton(
 					onClick = { onNavigate(Screen.CreateCommunity.name, null) },
 					shape = CutCornerShape(5.dp),
@@ -217,16 +229,17 @@ fun CommunityScreen (
 			}
 		}
 
+		// Spacer between expert options and join button
 		Spacer(modifier = Modifier.height(20.dp))
 
-		// ... Join a community
+		// Button to join a community or prompt login if not logged in
 		TextButton(
 			onClick = {
-				if(userId != null)
+				if (userId != null)
 					onNavigate(Screen.ListCommunities.name, null)
 				else
 					onNavigate("${Screen.Account.name}?nextRoute=${Screen.Community.name}", null)
-					  },
+			},
 			shape = CutCornerShape(5.dp),
 			modifier = modifier.height(80.dp),
 			colors = ButtonColors(
@@ -237,46 +250,63 @@ fun CommunityScreen (
 			)
 		) {
 			Text(
-				text =
-					if(userId != null)
-						stringResource(R.string.join_community_button_default)
-					else
-						stringResource(R.string.join_community_button_second)
-				,
+				text = if (userId != null)
+					stringResource(R.string.join_community_button_default)
+				else
+					stringResource(R.string.login_first_button),
 				fontSize = 20.sp,
 				fontFamily = FontFamily.Serif,
 				textAlign = TextAlign.Center,
 			)
 		}
 
+		// Flexible spacer to push content upwards if needed
 		Spacer(modifier = Modifier.weight(1f))
-
 	}
 
 }
 
 
 @Composable
-fun CreateCommunity(modifier: Modifier = Modifier, onNavigate: (String, String?) -> Unit, communityViewModel: CommunityViewModel = viewModel()) {
+/**
+ * Screen for creating a new community.
+ *
+ * Manages a multi-step process using an internal screen number state:
+ * - Step 0: Initial start screen to begin creation.
+ * - Step 1: Details input screen to finalize community creation.
+ *
+ * Includes a header with a back button and screen title.
+ *
+ * @param modifier Modifier to style the container.
+ * @param onNavigate Lambda for navigation actions, accepting destination and optional params.
+ * @param communityViewModel ViewModel managing community-related data and actions.
+ */
+fun CreateCommunity(
+	modifier: Modifier = Modifier,
+	onNavigate: (String, String?) -> Unit,
+	communityViewModel: CommunityViewModel = viewModel()
+) {
 
+	// Current step/screen in the community creation flow
 	var screenNumber by remember { mutableIntStateOf(0) }
+
+	// Function to update the current screen number (step)
 	val changeOnboardingScreen: (Int) -> Unit = { screenNumber = it }
 
-	// Screen content
-	Column (
-		//verticalArrangement = Arrangement.SpaceEvenly,
+	// Main vertical container for the entire screen content
+	Column(
 		horizontalAlignment = Alignment.CenterHorizontally,
 		modifier = modifier.fillMaxSize()
 	) {
 
-		// Screen title and options
+		// Header row with back button and screen title
 		Row(
 			verticalAlignment = Alignment.CenterVertically,
 			modifier = Modifier.fillMaxWidth()
 				.height(80.dp)
 				.background(color = grey)
 		) {
-			// Return button
+			// Back/cancel button to return to the community screen
 			TextButton(
 				onClick = { onNavigate(Screen.Community.name, null) },
 				shape = CutCornerShape(3.dp),
@@ -293,11 +323,9 @@ fun CreateCommunity(modifier: Modifier = Modifier, onNavigate: (String, String?)
 					tint = darkGrey,
 					modifier = modifier.height(100.dp).width(45.dp)
 				)
-
 			}
 
-
-			// Title of the subscreen
+			// Title text for the create community screen
 			Text(
 				text = "Démarrer une communauté",
 				fontSize = 20.sp,
@@ -306,14 +334,13 @@ fun CreateCommunity(modifier: Modifier = Modifier, onNavigate: (String, String?)
 				fontWeight = FontWeight.Bold,
 				lineHeight = 50.sp,
 				color = Color(0xFF3CB460),
-
 				modifier = modifier
 					.height(50.dp)
 					.background(color = grey)
 			)
-
 		}
 
+		// Switch displayed content depending on current screen number (step)
 		when (screenNumber) {
 			0 -> CreateCommunityStart(changeOnboardingScreen = changeOnboardingScreen)
 			1 -> CreateCommunityDetails(communityViewModel = communityViewModel, onNavigate = onNavigate)
@@ -324,15 +351,30 @@ fun CreateCommunity(modifier: Modifier = Modifier, onNavigate: (String, String?)
 
 
 @Composable
-fun CreateCommunityStart(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) -> Unit = {}) {
+/**
+ * First step screen for creating a community.
+ *
+ * Displays the terms and conditions text and a checkbox for the user to accept them.
+ * Only allows continuing to the next step if the terms are accepted.
+ *
+ * @param modifier Modifier to style the container.
+ * @param changeOnboardingScreen Lambda to update the current step in the creation flow.
+ */
+fun CreateCommunityStart(
+	modifier: Modifier = Modifier,
+	changeOnboardingScreen: (Int) -> Unit = {}
+) {
 
+	// Tracks whether the user has accepted the terms and conditions
 	var acceptedTerms by remember { mutableStateOf(false) }
 
+	// Main vertical container centered horizontally and vertically
 	Column(
 		horizontalAlignment = Alignment.CenterHorizontally,
 		verticalArrangement = Arrangement.Center,
 		modifier = modifier.fillMaxSize()
 	) {
+		// Read-only text field displaying the terms and conditions text
 		TextField(
 			value = stringResource(R.string.expert_terms_and_conditions),
 			readOnly = true,
@@ -347,26 +389,26 @@ fun CreateCommunityStart(modifier: Modifier = Modifier, changeOnboardingScreen: 
 			},
 			modifier = modifier.padding(16.dp).height(300.dp)
 		)
+
 		Spacer(modifier = Modifier.height(16.dp))
 
-		// Accept terms and conditions
+		// Checkbox with label to accept terms and conditions
 		Row(
 			horizontalArrangement = Arrangement.Center,
 			verticalAlignment = Alignment.CenterVertically
 		) {
 			Checkbox(
 				checked = acceptedTerms,
-				onCheckedChange = { acceptedTerms = it },
-
-				)
+				onCheckedChange = { acceptedTerms = it }
+			)
 			TextButton(
-				onClick = { acceptedTerms = !acceptedTerms },
+				onClick = { acceptedTerms = !acceptedTerms }
 			) {
 				Text("J'accepte les termes et conditions d'utilisation")
 			}
 		}
 
-
+		// Button to continue to next screen, enabled only if terms accepted
 		Button(
 			onClick = { changeOnboardingScreen(1) },
 			enabled = acceptedTerms,
@@ -384,25 +426,44 @@ fun CreateCommunityStart(modifier: Modifier = Modifier, changeOnboardingScreen: 
 
 
 @Composable
-fun CreateCommunityDetails(modifier: Modifier = Modifier, communityViewModel: CommunityViewModel = CommunityViewModel(), onNavigate: (String, String?) -> Unit) {
+/**
+ * Screen to enter details for creating a new community.
+ *
+ * Allows the user to input the community name and description,
+ * accept terms and conditions, and submit to create the community.
+ *
+ * @param modifier Modifier to style the container.
+ * @param communityViewModel ViewModel handling community data and operations.
+ * @param onNavigate Lambda to handle navigation events.
+ */
+fun CreateCommunityDetails(
+	modifier: Modifier = Modifier,
+	communityViewModel: CommunityViewModel = CommunityViewModel(),
+	onNavigate: (String, String?) -> Unit
+) {
 
+	// Tracks if the community can be created (true if name is not empty)
 	var creatable by remember { mutableStateOf(true) }
+	// Tracks if the user has accepted terms and conditions
 	var acceptedTerms by remember { mutableStateOf(false) }
+	// Community name state
 	var name by remember { mutableStateOf("Communauté X") }
+	// Community description state
 	var description by remember { mutableStateOf("Que faisons-nous ?") }
 
+	// Main vertical container centered horizontally and vertically
 	Column(
 		horizontalAlignment = Alignment.CenterHorizontally,
 		verticalArrangement = Arrangement.Center,
 		modifier = modifier.fillMaxSize()
 	) {
-		// Community name
+		// Input field for community name
 		TextField(
 			value = name,
 			textStyle = TextStyle(textAlign = TextAlign.Justify),
 			onValueChange = {
 				name = it
-				creatable = name != ""
+				creatable = name != "" // Enable creation only if name is non-empty
 			},
 			label = {
 				Text(
@@ -412,9 +473,10 @@ fun CreateCommunityDetails(modifier: Modifier = Modifier, communityViewModel: Co
 			},
 			modifier = modifier.padding(16.dp).height(60.dp)
 		)
+
 		Spacer(modifier = Modifier.height(16.dp))
 
-		// Community description
+		// Input field for community description
 		TextField(
 			value = description,
 			textStyle = TextStyle(textAlign = TextAlign.Justify),
@@ -427,26 +489,29 @@ fun CreateCommunityDetails(modifier: Modifier = Modifier, communityViewModel: Co
 			},
 			modifier = modifier.padding(16.dp).height(200.dp)
 		)
+
 		Spacer(modifier = Modifier.height(16.dp))
 
-		// Accept terms and conditions
+		// Checkbox and label to accept terms and conditions
 		Row(
 			horizontalArrangement = Arrangement.Center,
 			verticalAlignment = Alignment.CenterVertically
 		) {
 			Checkbox(
 				checked = acceptedTerms,
-				onCheckedChange = { acceptedTerms = it },
-
-				)
+				onCheckedChange = { acceptedTerms = it }
+			)
 			TextButton(
-				onClick = { acceptedTerms = !acceptedTerms },
+				onClick = { acceptedTerms = !acceptedTerms }
 			) {
-				Text("J'ai lu et j'accepte les termes et conditions d'utilisation", modifier = modifier.width(230.dp))
+				Text(
+					"J'ai lu et j'accepte les termes et conditions d'utilisation",
+					modifier = modifier.width(230.dp)
+				)
 			}
 		}
 
-		// Create community button
+		// Button to create community, enabled only if terms accepted and name non-empty
 		Button(
 			onClick = {
 				communityViewModel.addCommunity(Community(name, description))
@@ -467,6 +532,18 @@ fun CreateCommunityDetails(modifier: Modifier = Modifier, communityViewModel: Co
 
 
 @Composable
+/**
+ * Displays the user's selected community screen with toolbar and post feed.
+ *
+ * Shows a toolbar with navigation and create post options,
+ * and displays the post feed if a community is selected,
+ * otherwise displays a message indicating no community selected.
+ *
+ * @param modifier Modifier to style the container.
+ * @param communityViewModel ViewModel managing community data.
+ * @param goBack Lambda invoked to navigate back.
+ * @param createPost Lambda invoked to create a new post.
+ */
 fun MyCommunity(
 	modifier: Modifier = Modifier,
 	communityViewModel: CommunityViewModel = viewModel(),
@@ -474,11 +551,17 @@ fun MyCommunity(
 	createPost: () -> Unit,
 ) {
 
-	val selectedCommunity = communityViewModel.selectedCommunity
+	// Currently selected community
+	val selectedCommunity = communityViewModel.selectedCommunity.collectAsState().value
 
+	// Main container displaying toolbar and post feed or message
 	Column {
+		// Toolbar with back and create post buttons
 		ToolBar(goBack = { goBack() }, community = selectedCommunity, createPost = createPost)
+
 		Spacer(modifier.height(10.dp))
+
+		// Conditionally show post feed or message if no community selected
 		if (selectedCommunity != null) {
 			PostFeed(communityViewModel = communityViewModel)
 		} else {
@@ -490,14 +573,32 @@ fun MyCommunity(
 
 
 
+
 @Composable
-fun ListCommunities(modifier: Modifier = Modifier, onNavigate: (String, String?) -> Unit, communityViewModel: CommunityViewModel = viewModel()) {
+/**
+ * Screen displaying a list of communities for browsing.
+ *
+ * Allows selecting a community which triggers navigation to the community feed,
+ * and provides a way to navigate back to the main community screen.
+ *
+ * @param modifier Modifier for styling the container.
+ * @param onNavigate Lambda to handle navigation actions.
+ * @param communityViewModel ViewModel managing community data.
+ */
+fun ListCommunities(
+	modifier: Modifier = Modifier,
+	onNavigate: (String, String?) -> Unit,
+	communityViewModel: CommunityViewModel = viewModel()
+) {
+	// Displays the list of communities for browsing
 	BrowseCommunities(
 		toCommunity = { community ->
+			// Select community and navigate to feed screen
 			communityViewModel.selectCommunity(community)
 			onNavigate(Screen.Feed.name, null)
 		},
 		communityViewModel = communityViewModel,
+		// Navigate back to main community screen
 		backToHome = { onNavigate(Screen.Community.name, null) }
 	)
 }

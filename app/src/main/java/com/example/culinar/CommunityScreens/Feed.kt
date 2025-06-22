@@ -53,25 +53,52 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.example.culinar.R
 
 
+/**
+ * Composable displaying the post feed for the currently selected community.
+ *
+ * Shows a toolbar with a back button and the selected community's information.
+ * If a community is selected, displays its posts via PostFeed composable;
+ * otherwise, shows a message indicating no community is selected.
+ *
+ * @param goBack Callback invoked when the user wants to navigate back.
+ * @param communityViewModel ViewModel managing community data and selected community state.
+ * @param goToPost Optional callback to navigate to a specific post (currently unused).
+ */
 @Composable
 fun Feed(
 	goBack: () -> Unit,
 	communityViewModel: CommunityViewModel = viewModel(),
 	goToPost: () -> Unit = {}
 ) {
-	val selectedCommunity = communityViewModel.selectedCommunity
+	val selectedCommunity = communityViewModel.selectedCommunity.collectAsState().value
 
 	Column {
 		ToolBar(goBack = goBack, community = selectedCommunity)
+
 		Spacer(Modifier.height(10.dp))
+
 		if (selectedCommunity != null) {
 			PostFeed(communityViewModel = communityViewModel)
 		} else {
-			Text(text = "No community selected", modifier = Modifier.padding(16.dp))
+			Text(
+				text = "No community selected",
+				modifier = Modifier.padding(16.dp)
+			)
 		}
 	}
 }
 
+
+
+/**
+ * Toolbar composable displaying a back button, a title showing the community name (or default),
+ * and optionally a create post button.
+ *
+ * @param goBack Callback invoked when the back button is pressed.
+ * @param community Optional Community whose name is displayed in the toolbar title.
+ * @param createPost Optional callback invoked when the create post button is pressed;
+ *                   if null, the create post button is hidden.
+ */
 @Composable
 fun ToolBar(
 	goBack: () -> Unit,
@@ -102,7 +129,7 @@ fun ToolBar(
 			)
 		}
 
-		Spacer(Modifier.width(16.dp))
+		Spacer(Modifier.weight(.1f))
 
 		Text(
 			text = community?.name ?: "Communaut\u00e9",
@@ -113,6 +140,8 @@ fun ToolBar(
 			modifier = Modifier.weight(1f),
 			textAlign = TextAlign.Center
 		)
+
+		Spacer(Modifier.weight(.2f))
 
 		if (createPost != null) {
 			TextButton(
@@ -134,6 +163,13 @@ fun ToolBar(
 	}
 }
 
+/**
+ * Toolbar composable specifically for the general feed screen.
+ *
+ * Displays a back button and a centered title from string resources.
+ *
+ * @param goBack Callback invoked when the back button is pressed.
+ */
 @Composable
 fun ToolBarGeneralFeed(
 	goBack: () -> Unit,
@@ -162,7 +198,7 @@ fun ToolBarGeneralFeed(
 			)
 		}
 
-		Spacer(Modifier.width(16.dp))
+		Spacer(Modifier.weight(.1f))
 
 		Text(
 			text = stringResource(R.string.feed_post_screen_title),
@@ -173,32 +209,53 @@ fun ToolBarGeneralFeed(
 			modifier = Modifier.weight(1f),
 			textAlign = TextAlign.Center
 		)
+
+		Spacer(Modifier.weight(.2f))
 	}
 }
 
 
+
+/**
+ * Composable displaying a scrollable list of posts for the selected community.
+ * Supports pull-to-refresh functionality to reload the posts from the ViewModel.
+ *
+ * @param communityViewModel ViewModel that provides posts data and handles fetching posts for the selected community.
+ */
 @Composable
 fun PostFeed(
 	communityViewModel: CommunityViewModel = viewModel()
 ) {
+	// Collect the list of posts as a state that updates when posts change
 	val posts by communityViewModel.allPosts.collectAsState()
+
+	// State to track whether the feed is currently refreshing
 	var isRefreshing by remember { mutableStateOf(false) }
+
+	// Coroutine scope for launching asynchronous refresh calls
 	val coroutineScope = rememberCoroutineScope()
 
-	// Fonction de rafraîchissement
+	// Get the currently selected community from the ViewModel
+	val selectedCommunity = communityViewModel.selectedCommunity.collectAsState().value
+
+	// Function to refresh posts by invoking ViewModel's getPosts for the selected community
 	fun refresh() {
 		isRefreshing = true
 		coroutineScope.launch {
-			communityViewModel.selectedCommunity?.id?.let { communityViewModel.getPosts(it) }
+			selectedCommunity?.id?.let {
+				communityViewModel.getPosts(it)
+			}
 			isRefreshing = false
 		}
 	}
 
+	// SwipeRefresh composable provides pull-to-refresh UI and triggers the refresh function on swipe
 	SwipeRefresh(
 		state = rememberSwipeRefreshState(isRefreshing),
 		onRefresh = { refresh() },
 		modifier = Modifier.padding(10.dp)
 	) {
+		// LazyColumn efficiently renders the list of posts
 		LazyColumn {
 			items(posts) { post ->
 				PostCard(post = post, communityViewModel = communityViewModel)
@@ -208,20 +265,45 @@ fun PostFeed(
 	}
 }
 
+
+
+/**
+ * Composable that displays a single post card with post details, likes, and comments.
+ *
+ * Shows the post image, name, content (collapsible), date, like button with count,
+ * and expandable comments section with live updates from Firestore.
+ *
+ * @param post The Post object containing data to display.
+ * @param communityViewModel ViewModel to manage likes, comments, and user info related to the post.
+ */
 @Composable
 fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
+	// State tracking whether post content is expanded to show full text or truncated
 	var expanded by rememberSaveable { mutableStateOf(false) }
+	// State controlling visibility of the comments section
 	var showComments by rememberSaveable { mutableStateOf(false) }
+
+	// Collect user ID from ViewModel as state
 	val userId = communityViewModel.userId.collectAsState().value
+	// Check if current user has liked this post
 	val liked = communityViewModel.hasLiked(post)
 
+	// Firebase Firestore instance and context for DB operations
 	val db = FirebaseFirestore.getInstance()
 	val context = LocalContext.current
+
+	// Coroutine scope for async Firestore calls
 	val coroutineScope = rememberCoroutineScope()
+
+	// Mutable list state to hold the comments fetched from Firestore in real-time
 	val comments = remember { mutableStateListOf<Comment>() }
+	// State for new comment input text
 	var newComment by remember { mutableStateOf("") }
+
+	// Listener registration to manage Firestore real-time updates; null if no listener active
 	var listenerRegistration by remember { mutableStateOf<ListenerRegistration?>(null) }
 
+	// Setup Firestore real-time listener for comments when comments are visible and no listener exists
 	if (showComments && listenerRegistration == null) {
 		listenerRegistration = db.collection("Post").document(post.id)
 			.collection("Comments")
@@ -235,6 +317,7 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 							val idAuthor = doc.getString("idAuthor") ?: continue
 							val content = doc.getString("content") ?: ""
 							val timestamp = doc.getTimestamp("timestamp")?.toDate()
+							// Fetch username of the comment author from user collection
 							val userDoc = db.collection("Utilisateur").document(idAuthor).get().await()
 							val username = userDoc.getString("username") ?: "Utilisateur inconnu"
 							tempComments.add(Comment(id, idAuthor, content, timestamp, username))
@@ -252,6 +335,7 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 			.background(lightGrey)
 			.padding(16.dp)
 	) {
+		// Post image loaded asynchronously from URI
 		AsyncImage(
 			model = post.imageUri,
 			contentDescription = "Post image",
@@ -262,6 +346,7 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 
 		Spacer(modifier = Modifier.height(8.dp))
 
+		// Row with like icon and like count
 		Row(verticalAlignment = Alignment.CenterVertically) {
 			Icon(
 				imageVector = if (liked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
@@ -270,6 +355,7 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 				modifier = Modifier
 					.size(30.dp)
 					.clickable {
+						// Toggle like state on click by calling ViewModel functions
 						if (liked) communityViewModel.unlikePost(post, userId)
 						else communityViewModel.likePost(post, userId)
 					}
@@ -284,8 +370,13 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 		}
 
 		Spacer(modifier = Modifier.height(8.dp))
+
+		// Post title/name displayed in bold
 		Text(text = post.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+
 		Spacer(modifier = Modifier.height(4.dp))
+
+		// Button toggling expanded/truncated post content with animation on size change
 		TextButton(onClick = { expanded = !expanded }, modifier = Modifier.fillMaxWidth()) {
 			Text(
 				text = if (expanded) post.content else post.content.take(post.content.length / 2) + "...",
@@ -293,19 +384,29 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 				modifier = Modifier.animateContentSize()
 			)
 		}
+
 		Spacer(modifier = Modifier.height(4.dp))
+
+		// Post date in lighter style and gray color
 		Text(text = post.date.toString(), fontSize = 12.sp, fontWeight = FontWeight.Light, color = Color.Gray)
+
 		Spacer(modifier = Modifier.height(8.dp))
 
+		// Button to toggle visibility of comments section
 		TextButton(onClick = { showComments = !showComments }) {
 			Text(if (showComments) "Masquer les commentaires" else "Voir les commentaires")
 		}
 
+		// Comments section shown only if toggled
 		if (showComments) {
 			Spacer(modifier = Modifier.height(8.dp))
+
+			// List all comments using CommentPost composable
 			comments.forEach { CommentPost(it) }
+
 			Spacer(modifier = Modifier.height(8.dp))
 
+			// Row containing new comment input field and send button
 			Row(verticalAlignment = Alignment.CenterVertically) {
 				TextField(
 					value = newComment,
@@ -316,6 +417,7 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 				)
 				Spacer(Modifier.width(8.dp))
 				Button(onClick = {
+					// On send, add comment to Firestore and clear input if non-blank
 					if (newComment.isNotBlank()) {
 						val commentData = hashMapOf(
 							"idAuthor" to userId,
@@ -335,15 +437,25 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 	}
 }
 
+
+/**
+ * Composable that displays a single comment with author, content, and timestamp.
+ *
+ * @param comment The Comment data object containing username, content, and optional timestamp.
+ */
 @Composable
 fun CommentPost(comment: Comment) {
 	Column(modifier = Modifier.padding(vertical = 4.dp)) {
+		// Display the username in bold with primary color
 		Text(
 			text = comment.username,
 			style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
 			color = MaterialTheme.colorScheme.primary
 		)
+		// Display the comment content in normal body style
 		Text(text = comment.content, style = MaterialTheme.typography.bodyMedium)
+
+		// If a timestamp exists, format and display it in smaller gray text
 		comment.timestamp?.let {
 			val formatted = SimpleDateFormat("dd MMM yyyy à HH:mm", Locale.getDefault()).format(it)
 			Text(

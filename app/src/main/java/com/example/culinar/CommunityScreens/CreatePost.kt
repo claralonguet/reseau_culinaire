@@ -51,86 +51,115 @@ import com.example.culinar.R
 import com.example.culinar.models.viewModels.GeneralPostViewModel
 
 
-/*
-	Displays options:
-	- Post a standard post (name, content, image)
-	- Post a recipe (name, ingredients, steps, image, ...)
+/**
+ * Composable that allows the user to create a post within a community.
+ *
+ * Displays a selection screen to choose the type of post: standard post or recipe.
+ * Depending on the choice, navigates to the corresponding form composable.
+ *
+ * @param communityViewModel ViewModel managing the selected community and posts.
+ * @param createPost Callback invoked to create a standard post.
+ * @param createRecipe Callback invoked to create a recipe post.
+ * @param goBack Callback to navigate back or close the post creation screen.
  */
 @Composable
 fun CreatePost(
 	communityViewModel: CommunityViewModel,
-	createPost : (Post) -> Unit,
-	createRecipe : (Recipe) -> Unit,
-	goBack : () -> Unit
+	createPost: (Post) -> Unit,
+	createRecipe: (Recipe) -> Unit,
+	goBack: () -> Unit
 ) {
-
+	// Keeps track of the current screen to show:
+	// 0 = post type selection, 1 = standard post form, 2 = recipe post form
 	var screenOn by rememberSaveable { mutableIntStateOf(0) }
 
-	ToolBar(goBack = { goBack() }, community = communityViewModel.selectedCommunity)
-	Column (
+	// Displays a toolbar with back button and community info
+	ToolBar(goBack = { goBack() }, community = communityViewModel.selectedCommunity.collectAsState().value)
+
+	// Main container column centered both vertically and horizontally
+	Column(
 		verticalArrangement = Arrangement.Center,
 		horizontalAlignment = Alignment.CenterHorizontally,
 		modifier = Modifier.fillMaxSize()
-		) {
-
-		when(screenOn) {
-			0 -> TypeOfPost(
-				changeScreenOn = { screenOn = it }
-			)
+	) {
+		// Shows the screen according to current selection
+		when (screenOn) {
+			0 -> TypeOfPost(changeScreenOn = { screenOn = it }) // Choose post type
 			1 -> StandardPost(
 				communityViewModel = communityViewModel,
 				createPost = createPost,
 				goBack = goBack
-			)
+			) // Standard post creation form
 			2 -> RecipePost(
 				communityViewModel = communityViewModel,
 				createRecipe = createRecipe,
 				goBack = goBack
-			)
-			else -> TypeOfPost(
-				changeScreenOn = { screenOn = it }
-			)
+			) // Recipe post creation form
+			else -> TypeOfPost(changeScreenOn = { screenOn = it }) // Default to post type selection
 		}
 	}
 }
 
 
-/*
-	Displays options:
-	- Post a standard post (name, content, image)
-	- Post a recipe (name, ingredients, steps, image, ...)
+
+
+
+/**
+ * Composable for creating a general feed post in the public feed.
+ *
+ * Displays the UI for creating a standard post, including fields for name, content, and image.
+ * This composable does not offer the recipe post option.
+ *
+ * @param generalPostViewModel ViewModel managing the state and logic for general posts.
+ * @param createPost Callback invoked with the created Post object to be saved or sent.
+ * @param goBack Callback to navigate back or close the post creation screen.
  */
 @Composable
 fun CreateGeneralFeedPost(
 	generalPostViewModel: GeneralPostViewModel,
-	createPost : (Post) -> Unit,
-	goBack : () -> Unit
+	createPost: (Post) -> Unit,
+	goBack: () -> Unit
 ) {
-
+	// Screen state variable currently unused as only standard post form is shown
 	var screenOn by rememberSaveable { mutableIntStateOf(0) }
 
+	// Shows a toolbar dedicated for the general feed context with a back button
 	ToolBarGeneralFeed(goBack = { goBack() })
-	Column (
+
+	// Container column centered vertically and horizontally, filling available space
+	Column(
 		verticalArrangement = Arrangement.Center,
 		horizontalAlignment = Alignment.CenterHorizontally,
 		modifier = Modifier.fillMaxSize()
 	) {
-
+		// Directly show the standard post creation form
 		StandardPost(
-				generalPostViewModel = generalPostViewModel,
-				createPost = createPost,
-				goBack = goBack
+			generalPostViewModel = generalPostViewModel,
+			createPost = createPost,
+			goBack = goBack
 		)
 	}
 }
 
 
 
+
+
+/**
+ * Composable that displays options for selecting the type of post to create.
+ *
+ * Shows radio buttons for choosing between a standard post and a recipe post,
+ * along with descriptions for each option. Includes a continue button that triggers
+ * navigation to the selected post creation screen.
+ *
+ * @param changeScreenOn Callback invoked with the selected option's screen index:
+ *                       1 for standard post, 2 for recipe post.
+ */
 @Composable
 fun TypeOfPost(
-	changeScreenOn : (Int) -> Unit
+	changeScreenOn: (Int) -> Unit
 ) {
-
+	// Holds the currently selected option: 1 = standard post, 2 = recipe post
 	var selectedOption by rememberSaveable { mutableIntStateOf(1) }
 
 	Column(
@@ -141,8 +170,8 @@ fun TypeOfPost(
 			.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.9f))
 			.border(width = 2.dp, color = MaterialTheme.colorScheme.onPrimary, shape = MaterialTheme.shapes.medium)
 			.padding(10.dp)
-	)
-	{
+	) {
+		// Title describing the selection
 		Text(
 			text = stringResource(R.string.create_post_type),
 			style = MaterialTheme.typography.titleMedium,
@@ -150,13 +179,12 @@ fun TypeOfPost(
 			textAlign = TextAlign.Center,
 			modifier = Modifier.padding(10.dp)
 		)
+
 		Spacer(modifier = Modifier.height(40.dp))
 
 		Column {
-			// Radio button for standard posts
-			Row(
-				verticalAlignment = Alignment.CenterVertically
-			) {
+			// Option 1: Standard post selection with radio button and description
+			Row(verticalAlignment = Alignment.CenterVertically) {
 				RadioButton(
 					selected = selectedOption == 1,
 					onClick = { selectedOption = 1 },
@@ -180,10 +208,8 @@ fun TypeOfPost(
 
 			Spacer(modifier = Modifier.height(20.dp))
 
-			// Radio button for recipes
-			Row(
-				verticalAlignment = Alignment.CenterVertically
-			) {
+			// Option 2: Recipe post selection with radio button and description
+			Row(verticalAlignment = Alignment.CenterVertically) {
 				RadioButton(
 					selected = selectedOption == 2,
 					onClick = { selectedOption = 2 },
@@ -208,12 +234,10 @@ fun TypeOfPost(
 
 		Spacer(modifier = Modifier.height(40.dp))
 
+		// Continue button triggers the navigation callback with the selected option's index
 		TextButton(
 			onClick = {
-				if(selectedOption == 1)
-					changeScreenOn(1)
-				else
-					changeScreenOn(2)
+				if (selectedOption == 1) changeScreenOn(1) else changeScreenOn(2)
 			},
 			shape = MaterialTheme.shapes.medium,
 			modifier = Modifier.height(50.dp),
@@ -229,16 +253,24 @@ fun TypeOfPost(
 				style = MaterialTheme.typography.labelSmall
 			)
 		}
-
 	}
 }
 
 
 
 
-/*
-	Creates a standard post.
 
+
+/**
+ * Composable for creating a standard post with text content, optional image, and privacy setting.
+ *
+ * @param communityViewModel Optional ViewModel managing community state; used to get the selected community and determine privacy options.
+ * @param generalPostViewModel Optional ViewModel for general feed posts (not used directly here).
+ * @param createPost Lambda called to create the post; receives a Post object constructed from the input fields.
+ * @param goBack Lambda called to navigate back or close the post creation screen after successfully creating a post.
+ *
+ * The UI includes inputs for post name, multiline content, an image picker, a privacy checkbox (if communityViewModel is provided),
+ * and a create button that validates inputs before calling createPost.
  */
 @Composable
 fun StandardPost(
@@ -247,30 +279,28 @@ fun StandardPost(
 	createPost: (Post) -> Unit,
 	goBack: () -> Unit
 ) {
-
-	// Field values
+	// Field values for the post inputs
 	var name by rememberSaveable { mutableStateOf("") }
 	var content by rememberSaveable { mutableStateOf("") }
 	var private by rememberSaveable { mutableStateOf(true) }
+	val selectedCommunityId = communityViewModel?.selectedCommunity?.collectAsState()?.value
 
-	// State for the selected image URI
-	var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) } // Uri type
-	val context = LocalContext.current // Not strictly needed for the picker, but good for other context needs
+	// State for selected image URI
+	var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+	val context = LocalContext.current
 
-	// Launcher for the modern photo picker
+	// Image picker launcher for selecting images from gallery
 	val photoPickerLauncher = rememberLauncherForActivityResult(
 		contract = ActivityResultContracts.PickVisualMedia()
 	) { uri: Uri? ->
-		imageUri = uri // Update the state when an image is picked
+		imageUri = uri
 	}
 
 	Column(
-		modifier = Modifier
-			.padding(16.dp),
-		verticalArrangement = Arrangement.Top, // Align content to the top
+		modifier = Modifier.padding(16.dp),
+		verticalArrangement = Arrangement.Top,
 		horizontalAlignment = Alignment.CenterHorizontally
 	) {
-
 		Text(
 			text = stringResource(R.string.create_post_title),
 			style = MaterialTheme.typography.titleLarge,
@@ -279,33 +309,26 @@ fun StandardPost(
 			modifier = Modifier.padding(bottom = 20.dp)
 		)
 
-		// Form for the post
 		Column(
 			verticalArrangement = Arrangement.spacedBy(10.dp),
 			horizontalAlignment = Alignment.CenterHorizontally,
-			modifier = Modifier
-				.fillMaxWidth(0.9f)
-
+			modifier = Modifier.fillMaxWidth(0.9f)
 		) {
-
-			// Name of the post
 			TextField(
 				value = name,
 				onValueChange = { name = it },
 				label = { Text(stringResource(R.string.create_post_name_label)) },
-				modifier = Modifier.fillMaxWidth() // Using fillMaxWidth within the constrained parent
+				modifier = Modifier.fillMaxWidth()
 			)
 
-			// Content of the post
 			TextField(
 				value = content,
 				onValueChange = { content = it },
 				label = { Text(stringResource(R.string.create_post_content_label)) },
-				modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp), // Allow content to be multi-line
+				modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
 				maxLines = 5
 			)
 
-			// --- Image Picker Section ---
 			Spacer(modifier = Modifier.height(10.dp))
 
 			if (imageUri != null) {
@@ -315,7 +338,7 @@ fun StandardPost(
 					modifier = Modifier
 						.size(200.dp)
 						.padding(bottom = 8.dp)
-						.align(Alignment.CenterHorizontally) // Center the image
+						.align(Alignment.CenterHorizontally)
 				)
 			} else {
 				Text(
@@ -334,11 +357,9 @@ fun StandardPost(
 			) {
 				Text(stringResource(R.string.create_post_image_picking_button))
 			}
-			// --- End of Image Picker Section ---
 
-			Spacer(modifier = Modifier.height(20.dp)) // Spacer before the create button
+			Spacer(modifier = Modifier.height(20.dp))
 
-			// Privacy status
 			if (communityViewModel != null) {
 				Row {
 					Checkbox(
@@ -352,11 +373,10 @@ fun StandardPost(
 					)
 					Spacer(modifier = Modifier.width(8.dp))
 					Text(
-						text =
-							if (private)
-								stringResource(R.string.create_post_private_label_1)
-							else
-								stringResource(R.string.create_post_private_label_2),
+						text = if (private)
+							stringResource(R.string.create_post_private_label_1)
+						else
+							stringResource(R.string.create_post_private_label_2),
 						style = MaterialTheme.typography.bodyMedium,
 						modifier = Modifier.align(Alignment.CenterVertically)
 					)
@@ -365,24 +385,17 @@ fun StandardPost(
 
 			Button(
 				onClick = {
-					// Basic validation
 					if (name.isNotBlank() && content.isNotBlank()) {
 						val newPost = Post(
 							name = name,
 							content = content,
-							imageUri = imageUri?.toString() ?: "", // Convert Uri to String for now
-							communityId = communityViewModel?.selectedCommunity?.id ?: "",
+							imageUri = imageUri?.toString() ?: "",
+							communityId = selectedCommunityId?.id ?: "",
 							isPrivate = private
-							// id = generated by Firestore
-							// Current user ID is set inside the viewModel
 						)
 						createPost(newPost)
-						// Navigate back or clear fields after post creation
 						goBack()
 					} else {
-						// Some error to the user (e.g., using a Snackbar)
-						// For now, just logged
-
 						Log.d("CreatePost", "Name and content cannot be blank.")
 					}
 				},
@@ -391,9 +404,7 @@ fun StandardPost(
 				Text(
 					text = stringResource(R.string.create_post_button),
 					style = MaterialTheme.typography.labelSmall,
-					modifier = Modifier
-						.padding(vertical = 8.dp)
-
+					modifier = Modifier.padding(vertical = 8.dp)
 				)
 			}
 		}
@@ -402,18 +413,163 @@ fun StandardPost(
 
 
 
-/*
-	Creates a standard post.
 
+/**
+ * Composable allowing the user to create a recipe post.
+ *
+ * @param communityViewModel ViewModel managing community data and state; used here mainly for context like selected community.
+ * @param createRecipe Lambda invoked when submitting a new Recipe; receives the created Recipe object.
+ * @param goBack Lambda called to navigate back or close the create recipe screen after submission or cancellation.
+ *
+ * The UI includes inputs for recipe name, multiline ingredients and steps, an image picker, and a privacy toggle.
  */
 @Composable
 fun RecipePost(
 	communityViewModel: CommunityViewModel,
-	createRecipe : (Recipe) -> Unit,
-	goBack : () -> Unit
+	createRecipe: (Recipe) -> Unit,
+	goBack: () -> Unit
 ) {
+	/*
+	var name by rememberSaveable { mutableStateOf("") }
+	var ingredientsText by rememberSaveable { mutableStateOf("") }
+	var stepsText by rememberSaveable { mutableStateOf("") }
+	var private by rememberSaveable { mutableStateOf(true) }
 
+	var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+	val context = LocalContext.current
+
+	val photoPickerLauncher = rememberLauncherForActivityResult(
+		contract = ActivityResultContracts.PickVisualMedia()
+	) { uri: Uri? ->
+		imageUri = uri
+	}
+
+	Column(
+		modifier = Modifier.padding(16.dp),
+		verticalArrangement = Arrangement.Top,
+		horizontalAlignment = Alignment.CenterHorizontally
+	) {
+		Text(
+			text = stringResource(R.string.create_recipe_title),
+			style = MaterialTheme.typography.titleLarge,
+			color = MaterialTheme.colorScheme.primary,
+			textAlign = TextAlign.Center,
+			modifier = Modifier.padding(bottom = 20.dp)
+		)
+
+		Column(
+			verticalArrangement = Arrangement.spacedBy(10.dp),
+			horizontalAlignment = Alignment.CenterHorizontally,
+			modifier = Modifier.fillMaxWidth(0.9f)
+		) {
+			TextField(
+				value = name,
+				onValueChange = { name = it },
+				label = { Text(stringResource(R.string.create_recipe_name_label)) },
+				modifier = Modifier.fillMaxWidth()
+			)
+
+			TextField(
+				value = ingredientsText,
+				onValueChange = { ingredientsText = it },
+				label = { Text(stringResource(R.string.create_recipe_ingredients_label)) },
+				modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
+				maxLines = 6
+			)
+
+			TextField(
+				value = stepsText,
+				onValueChange = { stepsText = it },
+				label = { Text(stringResource(R.string.create_recipe_steps_label)) },
+				modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
+				maxLines = 8
+			)
+
+			Spacer(modifier = Modifier.height(10.dp))
+
+			if (imageUri != null) {
+				Image(
+					painter = rememberAsyncImagePainter(model = imageUri),
+					contentDescription = "Selected Recipe Image",
+					modifier = Modifier
+						.size(200.dp)
+						.padding(bottom = 8.dp)
+						.align(Alignment.CenterHorizontally)
+				)
+			} else {
+				Text(
+					stringResource(R.string.create_recipe_image_picking_message),
+					modifier = Modifier
+						.padding(bottom = 8.dp)
+						.align(Alignment.CenterHorizontally)
+				)
+			}
+
+			Button(
+				onClick = {
+					photoPickerLauncher.launch(
+						PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+					)
+				},
+				modifier = Modifier.fillMaxWidth(0.8f).align(Alignment.CenterHorizontally)
+			) {
+				Text(stringResource(R.string.create_recipe_image_picking_button))
+			}
+
+			Spacer(modifier = Modifier.height(20.dp))
+
+			Row {
+				Checkbox(
+					checked = private,
+					onCheckedChange = { private = it },
+					colors = CheckboxDefaults.colors(
+						checkedColor = MaterialTheme.colorScheme.primary,
+						uncheckedColor = MaterialTheme.colorScheme.onBackground,
+						checkmarkColor = MaterialTheme.colorScheme.onPrimary
+					)
+				)
+				Spacer(modifier = Modifier.width(8.dp))
+				Text(
+					text = if (private)
+						stringResource(R.string.create_post_private_label_1)
+					else
+						stringResource(R.string.create_post_private_label_2),
+					style = MaterialTheme.typography.bodyMedium,
+					modifier = Modifier.align(Alignment.CenterVertically)
+				)
+			}
+
+			Button(
+				onClick = {
+					if (name.isNotBlank() && ingredientsText.isNotBlank() && stepsText.isNotBlank()) {
+						val recipe = Recipe(
+							name = name,
+							ingredients = ingredientsText,
+							steps = stepsText,
+							imageUri = imageUri?.toString() ?: "",
+							communityId = communityViewModel.selectedCommunity?.id ?: "",
+							isPrivate = private
+						)
+						createRecipe(recipe)
+						goBack()
+					} else {
+						Log.d("RecipePost", "Name, ingredients, and steps cannot be blank.")
+					}
+				},
+				modifier = Modifier.align(Alignment.CenterHorizontally).width(150.dp)
+			) {
+				Text(
+					text = stringResource(R.string.create_post_button),
+					style = MaterialTheme.typography.labelSmall,
+					modifier = Modifier.padding(vertical = 8.dp)
+				)
+			}
+		}
+	}
+
+	 */
 }
+
 
 
 
