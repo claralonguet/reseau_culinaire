@@ -132,21 +132,23 @@ fun CreateGeneralFeedPost(
 	// Screen state variable currently unused as only standard post form is shown
 	var screenOn by rememberSaveable { mutableIntStateOf(0) }
 
-	// Shows a toolbar dedicated for the general feed context with a back button
-	ToolBarGeneralFeed(goBack = { goBack() })
+	Column {
+		// Shows a toolbar dedicated for the general feed context with a back button
+		ToolBarGeneralFeed(goBack = { goBack() })
 
-	// Container column centered vertically and horizontally, filling available space
-	Column(
-		verticalArrangement = Arrangement.Center,
-		horizontalAlignment = Alignment.CenterHorizontally,
-		modifier = Modifier.fillMaxSize()
-	) {
-		// Directly show the standard post creation form
-		StandardPost(
-			generalPostViewModel = generalPostViewModel,
-			createPost = createPost,
-			goBack = goBack
-		)
+		// Container column centered vertically and horizontally, filling available space
+		Column(
+			verticalArrangement = Arrangement.Center,
+			horizontalAlignment = Alignment.CenterHorizontally,
+			modifier = Modifier.fillMaxSize()
+		) {
+			// Directly show the standard post creation form
+			StandardPost(
+				generalPostViewModel = generalPostViewModel,
+				createPost = createPost,
+				goBack = goBack
+			)
+		}
 	}
 }
 

@@ -396,7 +396,7 @@ fun CulinarApp(
                             )
                             communityViewModel.createPost(post, selectedCommunity.id)
                             Log.d("CulinarApp", "Post created successfully")
-                            showSnackbar("Posted on ${if(post.isPrivate) "your community and" else ""} the public feed!")
+                            showSnackbar("Posted on ${if(post.isPrivate) "your community and" else ""}the public feed!")
                         },
                         createRecipe = { recipe ->
                             // TODO: Optionally handle recipe creation here

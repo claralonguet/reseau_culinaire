@@ -2,6 +2,7 @@ package com.example.culinar.models.viewModels
 
 import android.util.Log
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -90,9 +91,11 @@ class CommunityViewModel : ViewModel() {
 	 * @param community La communauté sélectionnée
 	 */
 	fun selectCommunity(community: Community) {
-		_selectedCommunity.value = community
-		Log.d("CommunityViewModel", "Community selected: ${community.id}. Fetching posts.")
-		getPosts(community.id)
+		viewModelScope.launch {
+			_selectedCommunity.value = community
+			Log.d("CommunityViewModel", "Community selected: ${community.id}. Fetching posts.")
+			getPosts(community.id)
+		}
 	}
 
 	/**
