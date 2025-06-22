@@ -41,14 +41,15 @@ import com.example.culinar.Home.TopBar
 import com.example.culinar.models.Screen
 import com.example.culinar.models.viewModels.CommunityViewModel
 import com.example.culinar.models.viewModels.FriendViewModel
-import com.example.culinar.recipesScreen.PostFeedScreen
-import com.example.culinar.recipesScreen.PublishPostScreen
+import com.example.culinar.recipesScreen.CreateRecettePostScreen
+import com.example.culinar.recipesScreen.FeedRecetteScreen
 import com.example.culinar.settings.ExpertRequestsScreen
 import com.example.culinar.settings.SettingScreen
 import com.example.culinar.recipesScreen.RecipeDetailScreen
 import com.example.culinar.recipesScreen.RecipeListScreen
 import com.example.culinar.viewmodels.RecipeViewModel
 import com.example.culinar.viewmodels.SessionViewModel
+import com.example.culinar.models.viewModels.RecettePostViewModel
 
 @Composable
 fun CulinarApp(
@@ -297,12 +298,22 @@ fun CulinarApp(
 
             //***********************************************************************  test
             composable(route = Screen.PostFeedRecipe.name) {
-                PublishPostScreen()
+                FeedRecetteScreen(goBack = { navController.popBackStack() })
             }
 
-            composable(route = Screen.CheckFeedRecipe.name) {
-                PostFeedScreen()
+            composable("CreateRecettePost") {
+                CreateRecettePostScreen(
+                    onPostCreated = {
+                        navController.popBackStack()
+                    },
+                    onCancel = {
+                        navController.popBackStack()
+                    }
+                )
             }
+
+
+
 
 
 

@@ -82,13 +82,6 @@ class RecipeViewModel : ViewModel() {
     init {
 
         fetchRecipesFromFirestore()
-
-        val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
-        val displayName = currentUser?.displayName ?: currentUser?.email?.substringBefore("@")
-
-        if (displayName != null) {
-            fetchUserData(displayName)
-        }
     }
 
 

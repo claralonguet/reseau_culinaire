@@ -53,15 +53,7 @@ fun RecipeListScreen(navController: NavHostController = rememberNavController(),
                 style = Typography.titleLarge,
             )
         }
-        Row{//****************************************************************
-            Button(
-                onClick = { navController.navigate(Screen.CheckFeedRecipe.name) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Text("Voir les publications")
-            }
+        Column {//****************************************************************
 
             Spacer(modifier = Modifier.width(16.dp))
 
@@ -72,7 +64,10 @@ fun RecipeListScreen(navController: NavHostController = rememberNavController(),
                     .padding(16.dp)
 
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Ajouter une publication")
+                Text("Voir les publications")
+            }
+            Button(onClick = { navController.navigate("CreateRecettePost") }) {
+                Icon(Icons.Default.Add, contentDescription = "Créer une recette")
             }
 
 

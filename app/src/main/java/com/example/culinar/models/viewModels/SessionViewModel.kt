@@ -3,7 +3,7 @@ package com.example.culinar.viewmodels
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.culinar.datastore.DataStoreManager
+import com.example.culinar.DataStore.DataStoreManager
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase

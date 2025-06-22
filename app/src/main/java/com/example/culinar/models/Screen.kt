@@ -31,7 +31,7 @@ enum class Screen {
     Feed,
     CreatePost,
     PostFeedRecipe,
-    CheckFeedRecipe,
+    PublishPostRecipe,
 
 }
 
