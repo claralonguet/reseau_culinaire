@@ -101,6 +101,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import com.example.culinar.models.viewModels.GENERAL_POSTS_FIREBASE_COLLECTION
 import com.example.culinar.models.viewModels.GeneralPostViewModel
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
@@ -974,13 +975,14 @@ fun CommentsScreen(postId: String, navController: NavController) {
 
 	LaunchedEffect(postId) {
 		val db = Firebase.firestore
-		db.collection("comments")
-			.whereEqualTo("postId", postId)
+		db.collection(GENERAL_POSTS_FIREBASE_COLLECTION).document(postId).collection("comments")
 			.get()
 			.addOnSuccessListener { snapshot ->
 				comments = snapshot.documents.map { doc ->
 					doc.toObject(Comment::class.java)!!.copy(id = doc.id)
-				}
+					}.sortedByDescending { it.timestamp }
+
+				Log.d("CommentsScreen", "Loaded ${comments.size} comments")
 				isLoading = false
 			}
 			.addOnFailureListener {

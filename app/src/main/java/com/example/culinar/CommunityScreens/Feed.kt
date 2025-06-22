@@ -51,6 +51,7 @@ import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.animation.animateContentSize
+import com.example.culinar.models.viewModels.COMMUNITY_FIREBASE_COLLECTION
 import com.example.culinar.models.viewModels.GENERAL_POSTS_FIREBASE_COLLECTION
 
 
@@ -314,16 +315,21 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 							"content" to newComment,
 							"timestamp" to com.google.firebase.Timestamp.now()
 						)
-						db.collection(GENERAL_POSTS_FIREBASE_COLLECTION).document(post.id).collection("Comments")
+						db.collection(COMMUNITY_FIREBASE_COLLECTION).document(post.id).collection("posts").document(post.id).collection("comments")
 							.add(commentData)
 							.addOnSuccessListener { newComment = "" }
+							.addOnFailureListener {
+								Log.e("PostCard", "Error adding comment", it)
+							}
 
 						// If the post has a public version
 						if (!post.isPrivate) {
 							db.collection(GENERAL_POSTS_FIREBASE_COLLECTION).document(post.id).collection("comments")
 								.add(commentData)
 								.addOnSuccessListener { newComment = "" }
-
+								.addOnFailureListener {
+									Log.e("PostCard", "Error adding comment", it)
+								}
 						}
 					}
 				}) {
