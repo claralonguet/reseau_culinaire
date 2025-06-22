@@ -1,390 +1,381 @@
 package com.example.culinar.models.viewModels
 
 import android.util.Log
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.geometry.isEmpty
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.culinar.models.Community
 import com.example.culinar.models.Post
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
-import okhttp3.internal.wait
-import java.util.Dictionary
-import java.util.Hashtable
 
 class CommunityViewModel : ViewModel() {
 
 	private val db = Firebase.firestore
 
-	private val userId : MutableStateFlow<String> = MutableStateFlow<String>("")
-	var allCommunities : MutableStateFlow<List<Community>> = MutableStateFlow<List<Community>>(listOf())
-	var myCommunity: MutableState<Community?> = mutableStateOf(null)
-	var selectedCommunity: Community? = null
-	var isMember: MutableStateFlow<MutableMap<String, Boolean>> = MutableStateFlow<MutableMap<String, Boolean>>(
-		mutableMapOf())
-	var myCommunities: MutableStateFlow<List<Community>> = MutableStateFlow<List<Community>>(listOf())
-	var allPosts: MutableStateFlow<List<Post>> = MutableStateFlow<List<Post>>(listOf())
+	private val _userId = MutableStateFlow("")
+	val userId: StateFlow<String> get() = _userId
+
+	var allCommunities: MutableStateFlow<List<Community>> = MutableStateFlow(emptyList())
+
+	private val _myCommunity = MutableStateFlow<Community?>(null)
+	val myCommunity: StateFlow<Community?> get() = _myCommunity
+
+	private val _selectedCommunity = MutableStateFlow<Community?>(null)
+	val selectedCommunity: StateFlow<Community?> get() = _selectedCommunity
+
+	var isMember: MutableStateFlow<MutableMap<String, Boolean>> = MutableStateFlow(mutableMapOf())
+
+	var allPosts: MutableStateFlow<List<Post>> = MutableStateFlow(emptyList())
 
 	init {
-		// Load communities when userId changes
 		viewModelScope.launch {
-			userId.collect {
-				// Update communities when userId is not null
-				if (it.isNotEmpty())
+			_userId.collect { id ->
+				if (id.isNotEmpty()) {
 					refreshCommunities()
+				}
 			}
 		}
 	}
 
-	// User session info setup
 	fun setUserId(id: String) {
-		userId.value = id
+		_userId.value = id
 	}
-
-	// Communities
 
 	fun refreshCommunities() {
 		getCommunities()
 		getMyCommunity()
 		viewModelScope.launch {
-			allCommunities.collect { communitiesList -> // Collect emissions from allCommunities
+			allCommunities.collect { communitiesList ->
 				if (communitiesList.isNotEmpty()) {
-					Log.d("CommunityViewModel", "allCommunities has data, now checking memberships. Size: ${communitiesList.size}")
-					checkMemberships(communitiesList) // Pass the list to avoid race condition
-				} else {
-					Log.d("CommunityViewModel", "allCommunities is empty, skipping membership check for now.")
+					checkMemberships(communitiesList)
 				}
 			}
 		}
 	}
 
 	fun selectCommunity(community: Community) {
-		selectedCommunity = community
+		_selectedCommunity.value = community
 		Log.d("CommunityViewModel", "Community selected: ${community.id}. Fetching posts.")
 		getPosts(community.id)
 	}
 
 	fun getCommunities() {
-
-		db.collection("Communauté")
-			.get()
-			.addOnSuccessListener { result ->
-
+		viewModelScope.launch {
+			try {
+				val result = db.collection(COMMUNITY_FIREBASE_COLLECTION).get().await()
 				val toSort = mutableListOf<Community>()
 				val communities = mutableListOf<Community>()
 
 				for (document in result) {
-					if(document.id != userId.value) {
-						toSort.add(document.toObject<Community>(Community::class.java))
-						toSort.last().id = document.id
+					if (document.id != _userId.value) {
+						val community = document.toObject(Community::class.java)
+						community.id = document.id
 
+						val memberIdsSnapshot = db.collection(COMMUNITY_FIREBASE_COLLECTION)
+							.document(document.id)
+							.collection("members")
+							.get()
+							.await()
+						val memberIds = memberIdsSnapshot.documents.map { it.id }
+						community.members = memberIds.toMutableList()
 
-						// Now, fetching member IDs for this community
-						runBlocking {
-							val memberIdsSnapshot = db.collection("Communauté")
-								.document(document.id)
-								.collection("members") // Members subcollection
-								.get()
-								.await()
-
-							val memberIds =
-								memberIdsSnapshot.documents.map { it.id } // Getting the IDs of the documents in the subcollection
-							toSort.last().members = memberIds // Assigning the list
-						}
+						toSort.add(community)
 					}
 				}
 
-				Log.d("CommunityViewModel", "Retrieved ${toSort.size} communities")
-
-				// Sorting communities (by membership)
-				runBlocking {
-					toSort.forEach { community ->
-						if (getCommunityMembers(community.id).contains(userId.value))
-							communities.add(0, community)
-						else
-							communities.add(community)
-					}
+				toSort.forEach { community ->
+					if (community.members?.contains(_userId.value) == true)
+						communities.add(0, community)
+					else
+						communities.add(community)
 				}
-				Log.d("CommunityViewModel", "Sorted the communities")
+
 				allCommunities.value = communities
+				Log.d("CommunityViewModel", "Communities loaded: ${communities.size}")
 
+			} catch (e: Exception) {
+				Log.e("CommunityViewModel", "Error getting communities: $e")
 			}
-			.addOnFailureListener { exception ->
-				Log.e("CommunityViewModel", "Error getting documents: $exception")
-			}
-
+		}
 	}
 
 	fun getMyCommunity() {
-
 		viewModelScope.launch {
-			db.collection("Communauté")
-				.document(userId.value)
-				.get()
-				.addOnSuccessListener { result ->
-					myCommunity.value = result.toObject(Community::class.java)
-					myCommunity.value?.id = userId.value
-					Log.d("CommunityViewModel", "Retrieved my community")
-				}
-				.addOnFailureListener { exception ->
-					Log.e("CommunityViewModel", "Error getting documents: $exception")
-					myCommunity.value = null
-				}
-				.await()
+			try {
+				val result = db.collection(COMMUNITY_FIREBASE_COLLECTION)
+					.document(_userId.value)
+					.get()
+					.await()
+				val community = result.toObject(Community::class.java)
+				community?.id = _userId.value
+				_myCommunity.value = community
+				Log.d("CommunityViewModel", "My community loaded")
+			} catch (e: Exception) {
+				Log.e("CommunityViewModel", "Error getting my community: $e")
+				_myCommunity.value = null
+			}
 		}
 	}
 
 	fun addCommunity(community: Community) {
-
 		viewModelScope.launch {
-			db.collection("Communauté")
-				.document(userId.value)
-				.set(community)
-				.addOnSuccessListener {
-					Log.d("CommunityViewModel", "Community added successfully")
-				}
-				.addOnFailureListener { exception ->
-					Log.e("CommunityViewModel", "Error adding community: $exception")
-				}
-				.await()
-			addMember(community.id)
-			refreshCommunities()
+			try {
+				db.collection(COMMUNITY_FIREBASE_COLLECTION)
+					.document(_userId.value)
+					.set(community)
+					.await()
+				addMember(community.id)
+				refreshCommunities()
+				Log.d("CommunityViewModel", "Community added")
+			} catch (e: Exception) {
+				Log.e("CommunityViewModel", "Error adding community: $e")
+			}
 		}
 	}
 
 	fun updateCommunity(community: Community) {
-
 		viewModelScope.launch {
-			db.collection("Communauté")
-				.document(userId.value)
-				.set(community)
-				.addOnSuccessListener {
-					Log.d("CommunityViewModel", "Community updated successfully")
-				}
-				.addOnFailureListener { exception ->
-					Log.e("CommunityViewModel", "Error updating community: $exception")
-				}
-				.await()
+			try {
+				db.collection(COMMUNITY_FIREBASE_COLLECTION)
+					.document(_userId.value)
+					.set(community)
+					.await()
+				Log.d("CommunityViewModel", "Community updated")
+			} catch (e: Exception) {
+				Log.e("CommunityViewModel", "Error updating community: $e")
+			}
 		}
 	}
 
-
-	// Members
-
-	suspend fun getCommunityMembers(communityId: String): MutableList<String> {
-
-		val fetchedMembers = mutableListOf<String>()
-		db.collection("Communauté")
-			.document(communityId)
-			.collection("members")
-			.get()
-			.addOnSuccessListener { result ->
-				for (document in result)
-					fetchedMembers.add(document.id)
-
-				Log.d("CommunityViewModel", "Retrieved ${fetchedMembers.size} members in community $communityId")
-			}
-			.addOnFailureListener { exception ->
-				Log.e("CommunityViewModel", "Error getting members: $exception")
-			}
-			.await()
-		return fetchedMembers
-	}
-
-	suspend fun checkMemberships(communitiesToScan: List<Community>) {
-
-		 if (communitiesToScan.isEmpty()) {
-			 Log.d("CommunityViewModel", "checkMembershipsInternal called with empty list.")
-			 isMember.value = mutableMapOf() // Ensure it's reset if the list is empty
-			 return
-		 }
-
-		 // Updating the membership state of the current user in the community
-		 val currentMembership = isMember.value.toMutableMap() // Creating a copy of the membership states
-
-		 for (community in communitiesToScan) {
-			 try {
-				 val membersSnapshot = db.collection("Communauté")
-					 .document(community.id)
-					 .collection("members")
-					 .get()
-					 .await()
-
-
-				 var userIsMemberInThisCommunity = false
-				 for (memberDoc in membersSnapshot.documents) {
-					 if (memberDoc.id == userId.value) {
-						 userIsMemberInThisCommunity = true
-						 Log.d("CommunityViewModel", "User $userId.value is a member of ${community.id}!")
-						 break
-					 }
-				 }
-				 currentMembership[community.id] = userIsMemberInThisCommunity
-				 /*
-				 if (userIsMemberInThisCommunity) {
-					 Log.d("CommunityViewModel", "Setting isMember for ${community.id} to true")
-				 } else {
-					 Log.d("CommunityViewModel", "Setting isMember for ${community.id} to false (or not found)")
-				 }
-				 */
-
-			 } catch (e: Exception) {
-				 Log.e("CommunityViewModel", "Error getting members for ${community.id}: $e")
-				 currentMembership[community.id] = false // Default to false on error
-			 }
-		 }
-		 isMember.value = currentMembership // Assign the new map
-		 //Log.d("CommunityViewModel", "isMemberState: ${isMember.value}")
-
-	 }
-
-	suspend fun updateMembership(communityId: String, userId: String = this.userId.value) {
-
-		viewModelScope.launch {
-			db.collection("Communauté")
+	suspend fun getCommunityMembers(communityId: String): List<String> {
+		return try {
+			val snapshot = db.collection(COMMUNITY_FIREBASE_COLLECTION)
 				.document(communityId)
 				.collection("members")
 				.get()
-				.addOnSuccessListener {
-					val memberships: MutableMap<String, Boolean> = isMember.value.toMutableMap()
-					memberships[communityId] = false
-					for (document in it) {
-						if (document.id == userId) {
-							memberships[communityId] = true
-						}
-						break
-					}
-					isMember.value = memberships
-				}
-				.addOnFailureListener { exception ->
-					Log.e("CommunityViewModel", "Error getting members: $exception")
-				}
 				.await()
+			snapshot.documents.map { it.id }
+		} catch (e: Exception) {
+			Log.e("CommunityViewModel", "Error getting members for $communityId: $e")
+			emptyList()
 		}
 	}
 
-	suspend fun addMember(communityId: String, userId: String = this.userId.value): Boolean {
+	suspend fun checkMemberships(communitiesToScan: List<Community>) {
+		if (communitiesToScan.isEmpty()) {
+			isMember.value = mutableMapOf()
+			return
+		}
+		val currentMembership = isMember.value.toMutableMap()
+		for (community in communitiesToScan) {
+			try {
+				val membersSnapshot = db.collection(COMMUNITY_FIREBASE_COLLECTION)
+					.document(community.id)
+					.collection("members")
+					.get()
+					.await()
+				currentMembership[community.id] = membersSnapshot.documents.any { it.id == _userId.value }
+			} catch (e: Exception) {
+				Log.e("CommunityViewModel", "Error checking membership for ${community.id}: $e")
+				currentMembership[community.id] = false
+			}
+		}
+		isMember.value = currentMembership
+	}
 
-		var success = false
-		runBlocking {
-			db.collection("Communauté")
+	suspend fun addMember(communityId: String, userId: String = _userId.value): Boolean {
+		return try {
+			db.collection(COMMUNITY_FIREBASE_COLLECTION)
 				.document(communityId)
 				.collection("members")
 				.document(userId)
 				.set(mapOf("userId" to userId))
-				.addOnSuccessListener {
-					Log.d("CommunityViewModel", "Member added successfully")
-					success = true
-				}
-				.addOnFailureListener { exception ->
-					Log.e("CommunityViewModel", "Error adding member: $exception")
-				}
 				.await()
 
-			// Updating the number of members in the community
-			var currentCommunities = allCommunities.value
+			val currentCommunities = allCommunities.value.toMutableList()
 			currentCommunities.find { it.id == communityId }?.let {
-				it.members = it.members?.plus(userId)
-			} ?: allCommunities.value
+				it.members = (it.members ?: mutableListOf()).toMutableList().apply { add(userId) }
+			}
 			allCommunities.value = currentCommunities
 
-			updateMembership(communityId, userId)
+			checkMemberships(currentCommunities)
+			Log.d("CommunityViewModel", "Member added to $communityId")
+			true
+		} catch (e: Exception) {
+			Log.e("CommunityViewModel", "Error adding member to $communityId: $e")
+			false
 		}
-		Log.d("CommunityViewModel", "addMember: $success")
-		return success
 	}
 
-	suspend fun removeMember(communityId: String, userId: String = this.userId.value): Boolean {
-		var success = false
-		runBlocking {
-			db.collection("Communauté")
+	suspend fun removeMember(communityId: String, userId: String = _userId.value): Boolean {
+		return try {
+			db.collection(COMMUNITY_FIREBASE_COLLECTION)
 				.document(communityId)
 				.collection("members")
 				.document(userId)
 				.delete()
-				.addOnSuccessListener {
-					Log.d("CommunityViewModel", "Member removed successfully")
-					success = true
-				}
-				.addOnFailureListener { exception ->
-					Log.e("CommunityViewModel", "Error removing member: $exception")
-				}
 				.await()
 
-			// Updating the number of members in the community
-			var currentCommunities = allCommunities.value
+			val currentCommunities = allCommunities.value.toMutableList()
 			currentCommunities.find { it.id == communityId }?.let {
-				it.members = it.members?.minus(userId)
-			} ?: allCommunities.value
-			allCommunities.value = currentCommunities
+				it.members = (it.members ?: mutableListOf()).toMutableList().apply { remove(userId) }
 			}
+			allCommunities.value = currentCommunities
 
-		updateMembership(communityId, userId)
-
-		Log.d("CommunityViewModel", "removeMember: $success")
-		return success
+			checkMemberships(currentCommunities)
+			Log.d("CommunityViewModel", "Member removed from $communityId")
+			true
+		} catch (e: Exception) {
+			Log.e("CommunityViewModel", "Error removing member from $communityId: $e")
+			false
+		}
 	}
 
-
-	// Posts
-
 	fun getPosts(communityId: String) {
-		try {
-			viewModelScope.launch {
-				db.collection("Communauté")
+		viewModelScope.launch {
+			try {
+				val result = db.collection(COMMUNITY_FIREBASE_COLLECTION)
 					.document(communityId)
 					.collection("posts")
 					.get()
-					.addOnSuccessListener { result ->
-						val fetchedPosts = mutableListOf<Post>()
-						for (document in result) {
-							fetchedPosts.add(document.toObject(Post::class.java))
-							fetchedPosts.last().id = document.id
-						}
-						Log.d("ViewModelGetPosts", "Fetched ${fetchedPosts.size} posts. IDs: ${fetchedPosts.map { it.id }}")
-						allPosts.value = fetchedPosts
-						Log.d("ViewModelGetPosts", "allPosts.value updated. New size: ${allPosts.value.size}. New IDs: ${allPosts.value.map { it.id }}")
-					}
-					.addOnFailureListener { exception ->
-						Log.e("CommunityViewModel", "Error getting documents: $exception")
-						allPosts.value = emptyList()
-					}
 					.await()
+				val fetchedPosts = result.documents.mapNotNull { doc ->
+					val post = doc.toObject(Post::class.java)
+					post?.id = doc.id
+					post
+				}.sortedByDescending { it.date }
+
+				allPosts.value = fetchedPosts
+				Log.d("CommunityViewModel", "Posts loaded for $communityId, count: ${fetchedPosts.size}")
+			} catch (e: Exception) {
+				Log.e("CommunityViewModel", "Error getting posts for $communityId: $e")
+				allPosts.value = emptyList()
 			}
-		} catch (e: Exception) {
-			Log.e("CommunityViewModel", "Error getting posts: $e")
-			allPosts.value = emptyList() // Also good
 		}
 	}
 
 	fun hasLiked(post: Post): Boolean {
-		return post.likes.contains(userId.value)
+		return post.likes.contains(_userId.value)
 	}
 
-	fun createPost(post: Post, communityId: String = this.myCommunity.value?.id ?: "") {
-		viewModelScope.launch {
-			db.collection("Communauté")
-				.document(communityId)
-				.collection("posts")
-				.add(post)
-				.addOnSuccessListener {
-					Log.d("CommunityViewModel", "Post added successfully")
-				}
-				.addOnFailureListener { exception ->
-					Log.e("CommunityViewModel", "Error adding post: $exception")
-					}
-				.await()
-			getPosts(communityId)
+	fun createPost(post: Post, communityId: String = myCommunity.value?.id ?: "") {
+		if (communityId.isEmpty()) {
+			Log.e("CommunityViewModel", "Cannot create post: communityId is empty")
+			return
+		}
+		post.authorId = _userId.value
+		post.communityId = communityId
 
+		viewModelScope.launch {
+			try {
+				val postRef = db.collection(COMMUNITY_FIREBASE_COLLECTION)
+					.document(communityId)
+					.collection("posts")
+					.add(post)
+					.addOnSuccessListener {
+						it.update(mapOf("id" to it.id))
+					}
+					.await()
+				post.id = postRef.id
+				getPosts(communityId)
+				Log.d("CommunityViewModel", "Post created in $communityId")
+
+				if (!post.isPrivate) {
+					try {
+						db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
+							.document(postRef.id).set(post.toMap())
+							.await()
+						Log.d("CommunityViewModel", "Post added to public feed")
+					} catch (e: Exception) {
+						Log.d("CommunityViewModel", "Error adding post to public feed: $e")
+					}
+				}
+
+			} catch (e: Exception) {
+				Log.d("CommunityViewModel", "Error creating post in $communityId: $e")
+			}
 		}
 	}
 
+	fun likePost(post: Post, userId: String) {
+		viewModelScope.launch {
+			try {
+				val communityId = selectedCommunity.value?.id ?: return@launch
+				val postRef = db.collection(COMMUNITY_FIREBASE_COLLECTION)
+					.document(communityId)
+					.collection("posts")
+					.document(post.id)
 
+				val updatedLikes = post.likes.toMutableList().apply {
+					if (!contains(userId)) add(userId)
+				}
 
+				postRef.update("likes", updatedLikes).await()
+				updateLocalPostLikes(post.id, updatedLikes)
+				Log.d("CommunityViewModel", "Post liked by $userId")
+
+				if (!post.isPrivate) {
+					try {
+						db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
+							.document(post.id)
+							.update("likes", updatedLikes)
+							.await()
+						Log.d("CommunityViewModel", "Post likes updated in public feed")
+					} catch (e: Exception) {
+						Log.d("CommunityViewModel", "Error updating post likes in public feed: $e")
+					}
+				}
+
+			} catch (e: Exception) {
+				Log.d("CommunityViewModel", "Error liking post: $e")
+			}
+		}
+	}
+
+	fun unlikePost(post: Post, userId: String) {
+		viewModelScope.launch {
+			try {
+				val communityId = selectedCommunity.value?.id ?: return@launch
+				val postRef = db.collection(COMMUNITY_FIREBASE_COLLECTION)
+					.document(communityId)
+					.collection("posts")
+					.document(post.id)
+
+				val updatedLikes = post.likes.toMutableList().apply {
+					remove(userId)
+				}
+
+				postRef.update("likes", updatedLikes).await()
+				updateLocalPostLikes(post.id, updatedLikes)
+				Log.d("CommunityViewModel", "Post unliked by $userId")
+
+				if (!post.isPrivate) {
+					try {
+						db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
+							.document(post.id)
+							.update("likes", updatedLikes)
+							.await()
+						Log.d("CommunityViewModel", "Post likes updated in public feed")
+					} catch (e: Exception) {
+						Log.d("CommunityViewModel", "Error updating post likes in public feed: $e")
+					}
+				}
+
+			} catch (e: Exception) {
+				Log.d("CommunityViewModel", "Error unliking post: $e")
+			}
+		}
+	}
+
+	private fun updateLocalPostLikes(postId: String, updatedLikes: List<String>) {
+		val updatedPosts = allPosts.value.map {
+			if (it.id == postId) it.copy(likes = updatedLikes.toMutableList()) else it
+		}
+		allPosts.value = updatedPosts
+	}
 }

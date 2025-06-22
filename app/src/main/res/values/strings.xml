@@ -1,12 +1,50 @@
 <resources>
     <string name="app_name">Culinary</string>
 
+    // Home strings
+    <string name="home_title" translatable="true">Accueil</string>
+
+
+    // Login, register and logout strings
+    <string name="login_title" translatable="true">Connexion</string>
+    <string name="login_button" translatable="true">Connexion</string>
+    <string name="register_button" translatable="true">Inscription</string>
+    <string name="register_title" translatable="true">Inscription</string>
+    <string name="register_username_label" translatable="true">Nom d\'utilisateur</string>
+    <string name="register_password_label" translatable="true">Mot de passe</string>
+    <string name="register_confirm_password_label" translatable="true">Confirmer le mot de passe</string>
+    <string name="register_email_label" translatable="true">Adresse e-mail</string>
+    <string name="register_phone_label" translatable="true">Numéro de téléphone</string>
+    <string name="login_username_label" translatable="true">Nom d\'utilisateur</string>
+    <string name="login_password_label" translatable="true">Mot de passe</string>
+    <string name="logout_button" translatable="true">Se déconnecter</string>
+    <string name="login_error" translatable="true">Erreur de connexion</string>
+    <string name="register_error" translatable="true">Erreur d\'inscription</string>
+    <string name="login_success" translatable="true">Login Successful! Welcome back </string>
+    <string name="register_success" translatable="true">Inscription réussie!</string>
+
+
+
+    // Public feed
+    <string name="feed_title" translatable="true">Feed</string>
+    <string name="feed_post_screen_title" translatable="true">Publier au grand public</string>
+
     // Groceries strings
     <string name="grocery_list_title" translatable="true">Ma liste de courses</string>
     <string name="grocery_add_button" translatable="true">Ajouter</string>
     <string name="grocery_search_placeholder" translatable="true">Rechercher un aliment</string>
     <string name="grocery_search_button" translatable="true">Rechercher</string>
     <string name="grocery_item_delete_button" translatable="true">Supprimer</string>
+    <string name="grocery_item_modify_button" translatable="true">Modifier</string>
+    <string name="grocery_item_quantity_label" translatable="true">Quantité</string>
+    <string name="grocery_item_quantity_label_description" translatable="true">Quantité de l\'aliment</string>
+    <string name="grocery_item_unit_label" translatable="true">Unité</string>
+    <string name="grocery_item_name_label" translatable="true">Nom de l\'aliment</string>
+    <string name="grocery_item_photo_label" translatable="true">Photo</string>
+    <string name="grocery_item_add_button" translatable="true">Ajouter</string>
+    <string name="grocery_dropdown_menu_default" translatable="true">Choisissez un aliment</string>
+    <string name="grocery_item_add_screen_title" translatable="true">Ajouter à ma liste</string>
+
     <string name="grocery_screen_description" translatable="true">
         Bienvenue sur votre liste de courses!
         Vous pouvez y ajouter des produits et les supprimer.
@@ -16,6 +54,7 @@
 
 
     // Community space strings
+    <string name="community_space_title" translatable="true">Espace communautaire</string>
     <string name="expert_terms_and_conditions" translatable="true">
         lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
         \n
@@ -25,18 +64,53 @@
         Bienvenue sur L\'espace communautaire !\n
         Vous pourrez y partagez vos expériences culinaires et expérimentez celles d\'experts du domaine.
     </string>
-    <string name="join_community_button_default" translatable="true">
-        Accéder à nos communautés
-    </string>
-    <string name="join_community_button_second" translatable="true">
-        Connectez vous
-    </string>
-    <string name="create_community_button" translatable="true">
-        Créer une communauté
-    </string>
-    <string name="my_community_button" translatable="true">
-        Ma communauté
-    </string>
+    <string name="join_community_button_default" translatable="true">Accéder à nos communautés</string>
+    <string name="join_community_button" translatable="true">Rejoindre</string>
+    <string name="join_community_button_joined" translatable="true">Quitter</string>
+    <string name="community_members_label" translatable="true">membre</string>
+    <string name="create_community_button" translatable="true">Créer une communauté</string>
+    <string name="my_community_button" translatable="true">Ma communauté</string>
+    <string name="community_list_title" translatable="true">Liste des communautés</string>
+
+    // Create post strings
+    <string name="create_post_type" translatable="true">Que voulez-vous publier?</string>
+    <string name="create_post_standard" translatable="true">Publication standarde</string>
+    <string name="create_post_standard_details" translatable="true">Nom, contenu, image</string>
+    <string name="create_post_recipe" translatable="true">Publication de recette</string>
+    <string name="create_post_recipe_details" translatable="true">Nom, ingredients, steps, image</string>
+    <string name="create_post_continue_button" translatable="true">Continuer</string>
+    <string name="create_post_title" translatable="true">Faire une publication</string>
+    <string name="create_post_button" translatable="true">Publier</string>
+    <string name="create_post_name_label" translatable="true">Nom</string>
+    <string name="create_post_content_label" translatable="true">Contenu</string>
+    <string name="create_post_image_picking_button" translatable="true">Sélectionner une image</string>
+    <string name="create_post_image_picking_message" translatable="true">Aucune image sélectionnée</string>
+    <string name="create_post_private_label_1" translatable="true">Cette publication ne sera visible que dans la communauté</string>
+    <string name="create_post_private_label_2" translatable="true">Cette publication sera visible hors de la communauté</string>
+
+
+
+    // Every screen strings
+    <string name="back_button" translatable="true">Retour</string>
+    <string name="next_button" translatable="true">Suivant</string>
+    <string name="cancel_button" translatable="true">Annuler</string>
+    <string name="confirm_button" translatable="true">Confirmer</string>
+    <string name="error_message" translatable="true">Erreur</string>
+    <string name="login_first_button" translatable="true">Connectez-vous</string>
+
+    // Setting screen
+    <string name="expert_status_prefix">Valeur de expert =</string>
+    <string name="cgu_title">Conditions Générales d\'Utilisation</string>
+    <string name="cgu_placeholder_text">Bienvenue sur Culinar !\n\nVoici les conditions générales d\'utilisation...\n(Ajoutez ici le contenu complet des CGU)</string>
+    <string name="expert_request_title">Demande d\'expertise</string>
+    <string name="send_request_button">Soumettre ma demande</string>
+    <string name="request_success_toast">Demande envoyée avec succès</string>
+    <string name="request_failure_toast">Erreur lors de l\'envoi : %1$s</string>
+    <string name="invalid_user_or_uploading">Utilisateur non valide ou en cours d\'envoi</string>
+    <string name="already_expert_text">✅ Vous êtes déjà reconnu comme expert.</string>
+    <string name="pending_expert_nav">🔍 Expertise en attente</string>
+
+
 
 
 </resources>

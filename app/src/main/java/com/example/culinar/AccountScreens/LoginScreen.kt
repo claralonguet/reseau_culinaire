@@ -14,7 +14,8 @@ import com.google.firebase.ktx.Firebase
 @Composable
 fun AccountScreen(
     modifier: Modifier = Modifier,
-    authAndNavigation: (userId: String, username: String) -> Unit = { _, _ -> }
+    authAndNavigation: (userId: String, username: String) -> Unit = { _, _ -> },
+    showSnackbar: (String) -> Unit
 ) {
     var currentScreen by remember { mutableStateOf("login") }
 
@@ -22,7 +23,8 @@ fun AccountScreen(
         when (currentScreen) {
             "login" -> LoginScreen(
                 changeScreen = { currentScreen = "signup" },
-                authAndNavigation = authAndNavigation
+                authAndNavigation = authAndNavigation,
+                showSnackbar = showSnackbar
             )
             "signup" -> SignupScreen { currentScreen = "profile" }
             "profile" -> ProfileScreen { currentScreen = "login" }
@@ -34,7 +36,8 @@ fun AccountScreen(
 @Composable
 fun LoginScreen(
     changeScreen: (String) -> Unit,
-    authAndNavigation: (String, String) -> Unit // id, username
+    authAndNavigation: (String, String) -> Unit, // id, username
+    showSnackbar: (String) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -106,7 +109,8 @@ fun LoginScreen(
         }
 
         if (errorMessage.isNotEmpty()) {
-            Text(text = errorMessage, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
+            //Text(text = errorMessage, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
+            showSnackbar(errorMessage)
         }
 
         Spacer(modifier = Modifier.height(8.dp))

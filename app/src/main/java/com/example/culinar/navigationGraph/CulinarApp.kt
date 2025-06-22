@@ -10,8 +10,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -27,7 +32,6 @@ import com.example.culinar.CommunityScreens.CheckFeed
 import com.example.culinar.CommunityScreens.CommunityScreen
 import com.example.culinar.CommunityScreens.ConversationScreen
 import com.example.culinar.CommunityScreens.CreateCommunity
-import com.example.culinar.CommunityScreens.Feed
 import com.example.culinar.CommunityScreens.ListCommunities
 import com.example.culinar.CommunityScreens.MyCommunity
 import com.example.culinar.CommunityScreens.PhotoPreviewScreen
@@ -36,41 +40,70 @@ import com.example.culinar.CommunityScreens.SendMessage
 import com.example.culinar.GroceriesScreens.Grocery
 import com.example.culinar.Home.BottomNavBar
 import com.example.culinar.Home.Home
+import com.example.culinar.Home.SlideUpSnackbar
 import com.example.culinar.Home.TopBar
-
+import com.example.culinar.R
 import com.example.culinar.models.Screen
 import com.example.culinar.models.viewModels.CommunityViewModel
 import com.example.culinar.models.viewModels.FriendViewModel
-import com.example.culinar.recipesScreen.CreateRecettePostScreen
-import com.example.culinar.recipesScreen.FeedRecetteScreen
+import com.example.culinar.models.viewModels.GeneralPostViewModel
 import com.example.culinar.settings.ExpertRequestsScreen
 import com.example.culinar.settings.SettingScreen
-import com.example.culinar.recipesScreen.RecipeDetailScreen
-import com.example.culinar.recipesScreen.RecipeListScreen
+import com.example.culinar.ui.screens.RecipeDetailScreen
+import com.example.culinar.ui.screens.RecipeListScreen
 import com.example.culinar.viewmodels.RecipeViewModel
 import com.example.culinar.viewmodels.SessionViewModel
-import com.example.culinar.models.viewModels.RecettePostViewModel
 
+/**
+ * Main application composable for the Culinar app.
+ *
+ * Sets up the navigation graph, manages top and bottom bar visibility based on current route,
+ * and handles user session state propagation to various view models.
+ *
+ * @param modifier Modifier applied to the root layout composable.
+ * @param friendViewModel ViewModel handling friend data and logic.
+ * @param viewModelRecipes ViewModel managing recipes data and operations.
+ * @param communityViewModel ViewModel managing community data and membership state.
+ * @param sessionViewModel ViewModel managing user session, authentication, and user info.
+ * @param generalPostViewModel ViewModel managing general public feed posts.
+ */
 @Composable
 fun CulinarApp(
     modifier: Modifier = Modifier,
     friendViewModel: FriendViewModel = viewModel(),
     viewModelRecipes: RecipeViewModel = viewModel(),
     communityViewModel: CommunityViewModel = viewModel(),
-    sessionViewModel: SessionViewModel = viewModel()
+    sessionViewModel: SessionViewModel = viewModel(),
+    generalPostViewModel: GeneralPostViewModel = viewModel()
 ) {
     val navController = rememberNavController()
+    val coroutineScope = rememberCoroutineScope() // For launching the snackbar display
 
+    // --- Snackbar State ---
+    var snackbarVisible by remember { mutableStateOf(false) }
+    var snackbarMessage by remember { mutableStateOf("") }
+
+    // Function to show the snackbar
+    val showSnackbar: (String) -> Unit = { message ->
+        snackbarMessage = message
+        snackbarVisible = true
+    }
+    // --- End of Snackbar State --
+
+    // Collect session data as State from the SessionViewModel
     val username by sessionViewModel.username.collectAsState()
     val isExpert by sessionViewModel.isExpert.collectAsState()
     val idConnect by sessionViewModel.id.collectAsState()
 
-    // Setting session id into viewModels
+    // Propagate current user ID to ViewModels that require it for filtering/fetching
     communityViewModel.setUserId(idConnect ?: "")
+    generalPostViewModel.setUserId(idConnect ?: "")
 
+    // Get current navigation route from NavController's back stack entry
     val currentBackStackEntry = navController.currentBackStackEntryAsState().value
     val currentRoute = currentBackStackEntry?.destination?.route
 
+    // List of routes where top and bottom navigation bars should be hidden
     val hideBarsRoutes = listOf(
         Screen.Account.name,
         Screen.MyCommunity.name,
@@ -80,9 +113,11 @@ fun CulinarApp(
         Screen.Conversation.name
     )
 
-    val showTopBar = currentRoute?.let { it !in hideBarsRoutes } ?: true
-    val showBottomBar = currentRoute?.let { it !in hideBarsRoutes } ?: true
+    // Determine visibility of top and bottom bars based on current route
+    val showTopBar = currentRoute?.let { it !in hideBarsRoutes } != false
+    val showBottomBar = currentRoute?.let { it !in hideBarsRoutes } != false
 
+    // Navigation lambda function that handles parameterized route building and navigation options
     val onNavigate: (String, String?) -> Unit = { screenRoute, userIdOrUsername ->
         val destination = when (screenRoute) {
             "AddFriends" -> "AddFriends"
@@ -96,9 +131,10 @@ fun CulinarApp(
         }
 
         navController.navigate(destination) {
+            // Pop up to the start destination to avoid building a large back stack
             popUpTo(navController.graph.startDestinationId) { saveState = true }
-            launchSingleTop = true
-            restoreState = true
+            launchSingleTop = true  // Avoid multiple copies of the same destination
+            restoreState = true     // Restore saved state if possible
         }
     }
 
@@ -112,7 +148,8 @@ fun CulinarApp(
                     logout = {
                         sessionViewModel.logout()
                         onNavigate(Screen.Home.name, null)
-                    }
+                    },
+                    showSnackbar = showSnackbar
                 )
             }
         },
@@ -127,196 +164,258 @@ fun CulinarApp(
         },
         modifier = modifier.fillMaxSize()
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Home.name,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(route = "${Screen.Account.name}?nextRoute={nextRoute}") { backStackEntry ->
-                val nextRoute = backStackEntry.arguments?.getString("nextRoute")
 
-                AccountScreen(authAndNavigation = {id, username ->
-                    sessionViewModel.login(id, username)
-                    onNavigate(if (nextRoute == null) Screen.Home.name else nextRoute, username)
-                })
-            }
+        Box(modifier = Modifier.fillMaxSize()) { // Using a Box to layer NavHost and Snackbar
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Home.name,
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+            ) {
+                // Account screen with optional nextRoute to redirect after successful login
+                composable(route = "${Screen.Account.name}?nextRoute={nextRoute}") { backStackEntry ->
+                    val nextRoute = backStackEntry.arguments?.getString("nextRoute")
+                    val message = stringResource(R.string.login_success)
+                    AccountScreen(
+                        authAndNavigation = { id, username ->
+                            sessionViewModel.login(id, username)
+                            // Show a snackbar on successful login
+                            showSnackbar("$message $username")
+                            onNavigate(if (nextRoute == null) Screen.Home.name else nextRoute, username)
+                        },
+                        showSnackbar = showSnackbar
+                    )
+                }
 
-            composable(
-                route = "${Screen.Home.name}?username={username}",
-                arguments = listOf(navArgument("username") {
-                    type = NavType.StringType
-                    nullable = true
-                })
-            ) { backStackEntry ->
-                val user = backStackEntry.arguments?.getString("username") ?: username
-                Home(
-                    navRoutes = { screen -> onNavigate(screen, user) },
-                    username = user
-                )
-            }
+                // Home screen showing personalized content, username parameter is optional
+                composable(
+                    route = "${Screen.Home.name}?username={username}",
+                    arguments = listOf(navArgument("username") {
+                        type = NavType.StringType
+                        nullable = true
+                    })
+                ) { backStackEntry ->
+                    val user = backStackEntry.arguments?.getString("username") ?: username
+                    Home(
+                        navRoutes = { screen -> onNavigate(screen, user) },
+                        username = user
+                    )
+                }
 
-            composable(
-                route = "${Screen.Settings.name}?username={username}",
-                arguments = listOf(navArgument("username") {
-                    type = NavType.StringType
-                    nullable = true
-                })
-            ) { backStackEntry ->
-                val user = backStackEntry.arguments?.getString("username") ?: username
-
-                if (user.isNullOrBlank()) {
-                    LaunchedEffect(Unit) {
-                        navController.navigate(Screen.Account.name) {
-                            popUpTo(Screen.Home.name) { inclusive = false }
-                            launchSingleTop = true
+                // Settings screen requiring authentication; redirects if not logged in
+                composable(
+                    route = "${Screen.Settings.name}?username={username}",
+                    arguments = listOf(navArgument("username") {
+                        type = NavType.StringType
+                        nullable = true
+                    })
+                ) { backStackEntry ->
+                    val user = backStackEntry.arguments?.getString("username") ?: username
+                    if (user.isNullOrBlank()) {
+                        LaunchedEffect(Unit) {
+                            navController.navigate(Screen.Account.name) {
+                                popUpTo(Screen.Home.name) { inclusive = false }
+                                launchSingleTop = true
+                            }
+                        }
+                    } else {
+                        if (isExpert == null) {
+                            // Show loading indicator while user expertise status is unknown
+                            CircularProgressIndicator(modifier = Modifier.fillMaxSize())
+                        } else {
+                            SettingScreen(
+                                sessionViewModel = sessionViewModel,
+                                navController = navController,
+                                onRequestSent = { navController.popBackStack() }
+                            )
                         }
                     }
-                } else {
-                    if (isExpert == null) {
-                        CircularProgressIndicator(modifier = Modifier.fillMaxSize())
+                }
+
+                // Other screens for expert requests, calendar, groceries, recipes, etc.
+                composable(route = Screen.PendingExpertRequests.name) {
+                    ExpertRequestsScreen()
+                }
+                composable(route = Screen.Calendar.name) {
+                    CalendarScreen()
+                }
+                composable(route = Screen.Groceries.name) {
+                    Grocery(sessionViewModel = sessionViewModel, onNavigate = onNavigate)
+                }
+                composable(route = Screen.Recipes.name) {
+                    RecipeListScreen(navController = navController, vm = viewModelRecipes)
+                }
+
+                // Community screen varies behavior based on login state
+                composable(route = Screen.Community.name) {
+                    if (idConnect == null) {
+                        Log.d("CommunityScreen", "No user ID found in the session.")
+                        CommunityScreen(
+                            communityViewModel = communityViewModel,
+                            onNavigate = onNavigate
+                        )
                     } else {
-                        SettingScreen(
+                        Log.d("CommunityScreen", "User $idConnect is logged in.")
+                        CommunityScreen(
+                            communityViewModel = communityViewModel,
                             sessionViewModel = sessionViewModel,
-                            navController = navController,
-                            onRequestSent = {
-                                // Par exemple revenir à la page précédente
-                                navController.popBackStack()
-                            }
+                            onNavigate = onNavigate
                         )
                     }
                 }
-            }
-            // *** Nouvelle route ExpertRequestsScreen ***
-            composable(route = Screen.PendingExpertRequests.name) {
-                ExpertRequestsScreen()
-            }
 
-            // Autres routes inchangées ...
-            composable(route = Screen.Calendar.name) { CalendarScreen() }
-            composable(route = Screen.Groceries.name) {
-                Grocery(
-                    sessionViewModel = sessionViewModel,
-                    onNavigate = onNavigate
-                )
-            }
-            composable(route = Screen.Recipes.name) { RecipeListScreen(navController = navController, vm = viewModelRecipes) }
-            composable(route = Screen.Community.name) {
-                // Check if there's a user ID in the session
-                if (idConnect == null) {
-                    Log.d("CommunityScreen", "No user ID found in the session.")
-                    CommunityScreen(
+                // Post feed screen for general public posts
+                composable(route = Screen.PostFeed.name) {
+                    CreateGeneralFeedPost(
+                        generalPostViewModel = generalPostViewModel,
+                        createPost = { post ->
+                            generalPostViewModel.setUserId(idConnect ?: "")
+                            Log.d("CulinarApp", "Creating post in public feed.")
+                            generalPostViewModel.createPost(post)
+                            Log.d("CulinarApp", "Post created successfully")
+                            showSnackbar("Post submitted to public feed!")
+                        },
+                        goBack = { navController.popBackStack() }
+                    )
+                }
+
+                // Check feed screen showing user feeds
+                composable(route = Screen.CheckFeed.name) {
+                    CheckFeed(navController = navController)
+                }
+
+                // Comments screen with postId argument to show comments for a specific post
+                composable(
+                    route = "comments/{postId}",
+                    arguments = listOf(navArgument("postId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val postId = backStackEntry.arguments?.getString("postId") ?: ""
+                    CommentsScreen(postId = postId, navController = navController)
+                }                  
+
+
+                // Send message screen requiring user to be logged in
+                composable("SendMessage") {
+                    val userId = idConnect
+                    if (userId == null) return@composable
+                    SendMessage(navController, userId)
+                }
+
+                // Add friends screen with loading indicator if user ID is not available yet
+                composable("AddFriends") {
+                    when (val userId = idConnect) {
+                        null -> CircularProgressIndicator()
+                        else -> AddFriends(currentUserId = userId, viewModel = friendViewModel)
+                    }
+                }
+
+                // Conversation screen between users identified by userId parameter
+                composable(
+                    route = "${Screen.Conversation.name}/{userId}",
+                    arguments = listOf(navArgument("userId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val targetUserId = backStackEntry.arguments?.getString("userId")
+                    val currentUserId = idConnect
+
+                    if (targetUserId == null || currentUserId == null) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    } else {
+                        ConversationScreen(userId = targetUserId, currentUserId = currentUserId)
+                    }
+                }
+
+                // Photo preview screen with optional URI parameter
+                composable(
+                    "${Screen.PhotoPreview.name}?uri={uri}",
+                    arguments = listOf(navArgument("uri") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    })
+                ) { backStackEntry ->
+                    val uri = backStackEntry.arguments?.getString("uri")
+                    PhotoPreviewScreen(imageUriString = uri)
+                }
+
+                // Recipe list and detail screens
+                composable(Screen.RecipeList.name) {
+                    RecipeListScreen(navController = navController, vm = viewModelRecipes)
+                }
+                composable("${Screen.RecipeDetail.name}/{id}") { backStackEntry ->
+                    val id = backStackEntry.arguments?.getString("id")
+                    val recipe = viewModelRecipes.findById(id ?: "")
+                    if (recipe != null) {
+                        RecipeDetailScreen(recipe = recipe)
+                    }
+                }
+
+                // Community management screens for creating, listing, and viewing communities
+                composable(Screen.CreateCommunity.name) {
+                    CreateCommunity(
                         communityViewModel = communityViewModel,
                         onNavigate = onNavigate
                     )
-                } else {
-                    Log.d("CommunityScreen", "User $idConnect is logged in.")
-                    CommunityScreen(
+                }
+                composable(Screen.ListCommunities.name) {
+                    ListCommunities(
                         communityViewModel = communityViewModel,
-                        sessionViewModel = sessionViewModel,
                         onNavigate = onNavigate
                     )
                 }
-            }
-            composable(route = Screen.PostFeed.name) { PostFeed(navController) }
-            composable(route = Screen.CheckFeed.name) {
-                CheckFeed(navController = navController)
-            }
-            composable(
-                route = "comments/{postId}",
-                arguments = listOf(navArgument("postId") { type = NavType.StringType })
-            ) { backStackEntry ->
-                val postId = backStackEntry.arguments?.getString("postId") ?: ""
-                CommentsScreen(postId = postId, navController = navController)
-            }
-            composable("SendMessage") {
-                val userId = idConnect
-                if (userId == null) return@composable
-                SendMessage(navController, userId)
-            }
-            composable("AddFriends") {
-                when (val userId = idConnect) {
-                    null -> CircularProgressIndicator()
-                    else -> AddFriends(currentUserId = userId, viewModel = friendViewModel)
+                composable(Screen.MyCommunity.name) {
+                    MyCommunity(
+                        communityViewModel = communityViewModel,
+                        goBack = { navController.popBackStack() },
+                        createPost = { navController.navigate(Screen.CreatePost.name) }
+                    )
+                }
+                composable(Screen.Feed.name) {
+                    Feed(
+                        communityViewModel = communityViewModel,
+                        goBack = { navController.popBackStack() }
+                    )
+                }
+
+                // Post creation screen allowing standard or recipe post creation within selected community
+                composable(Screen.CreatePost.name) {
+                    // Get the selected community from the communityViewModel
+                    val selectedCommunity =
+                        communityViewModel.myCommunity.collectAsState().value
+                    CreatePost(
+                        communityViewModel = communityViewModel,
+                        createPost = { post ->
+                            if (selectedCommunity == null) return@CreatePost
+                            Log.d(
+                                "CulinarApp",
+                                "Creating post in community ${selectedCommunity.id}"
+                            )
+                            communityViewModel.createPost(post, selectedCommunity.id)
+                            Log.d("CulinarApp", "Post created successfully")
+                            showSnackbar("Posted on ${if(post.isPrivate) "your community and" else ""}the public feed!")
+                        },
+                        createRecipe = { recipe ->
+                            // TODO: Optionally handle recipe creation here
+                            //showSnackbar("Posted on ${if(recipe.isPrivate) "your community and" else ""} the public feed!")
+                        },
+                        goBack = { navController.popBackStack() }
+                    )
                 }
             }
-            composable(
-                route = "${Screen.Conversation.name}/{userId}",
-                arguments = listOf(navArgument("userId") { type = NavType.StringType })
-            ) { backStackEntry ->
-                val targetUserId = backStackEntry.arguments?.getString("userId")
-                val currentUserId = idConnect
 
-                if (targetUserId == null || currentUserId == null) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                } else {
-                    ConversationScreen(userId = targetUserId, currentUserId = currentUserId)
-                }
-            }
-            composable(
-                "${Screen.PhotoPreview.name}?uri={uri}",
-                arguments = listOf(navArgument("uri") {
-                    type = NavType.StringType
-                    nullable = true
-                    defaultValue = null
-                })
-            ) { backStackEntry ->
-                val uri = backStackEntry.arguments?.getString("uri")
-                PhotoPreviewScreen(imageUriString = uri)
-            }
-            composable(Screen.RecipeList.name) {
-                RecipeListScreen(navController = navController, vm = viewModelRecipes)
-            }
-            composable("${Screen.RecipeDetail.name}/{id}") { backStackEntry ->
-                val id = backStackEntry.arguments?.getString("id")
-                val recipe = viewModelRecipes.findById(id ?: "")
-                if (recipe != null) {
-                    RecipeDetailScreen(recipe = recipe)
-                }
-            }
-            composable(Screen.CreateCommunity.name) { CreateCommunity(communityViewModel = communityViewModel, onNavigate = onNavigate) }
-            composable(Screen.ListCommunities.name) { ListCommunities(communityViewModel = communityViewModel, onNavigate = onNavigate) }
-            composable(Screen.MyCommunity.name) { MyCommunity(communityViewModel = communityViewModel, goBack = { navController.popBackStack() }, createPost = { navController.navigate(Screen.CreatePost.name) }) }
-            composable(Screen.Feed.name) { Feed(communityViewModel = communityViewModel, goBack = { navController.popBackStack() }) }
-            composable(Screen.CreatePost.name) {
-                CreatePost(
-                    communityViewModel = communityViewModel,
-                    createPost = { post ->
-                        if (communityViewModel.selectedCommunity == null) return@CreatePost
-                        Log.d("CulinarApp", "Creating post in community ${communityViewModel.selectedCommunity?.id}")
-                        communityViewModel.createPost(post, communityViewModel.selectedCommunity?.id ?: "")
-                        Log.d("CulinarApp", "Post created successfully")
-                                 },
-                    createRecipe = { recipe ->
-                        // communityViewModel.createRecipe(recipe)
-                    },
-                    goBack = { navController.popBackStack() }
-                )
-            }
-
-
-            //***********************************************************************  test
-            composable(route = Screen.PostFeedRecipe.name) {
-                FeedRecetteScreen(goBack = { navController.popBackStack() })
-            }
-
-            composable("CreateRecettePost") {
-                CreateRecettePostScreen(
-                    onPostCreated = {
-                        navController.popBackStack()
-                    },
-                    onCancel = {
-                        navController.popBackStack()
-                    }
-                )
-            }
-
-
-
-
-
-
+            // Display the snackbar if visible
+            SlideUpSnackbar(
+                message = snackbarMessage,
+                isVisible = snackbarVisible,
+                onDismiss = { snackbarVisible = false }
+            )
         }
     }
 }
+
+
