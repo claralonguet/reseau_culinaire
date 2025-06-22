@@ -53,6 +53,7 @@ import java.util.*
 import androidx.compose.animation.animateContentSize
 import com.example.culinar.models.viewModels.COMMUNITY_FIREBASE_COLLECTION
 import com.example.culinar.models.viewModels.GENERAL_POSTS_FIREBASE_COLLECTION
+import com.example.culinar.models.viewModels.USER_FIREBASE_COLLECTION
 
 
 @Composable
@@ -191,7 +192,7 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 							val content = doc.getString("content") ?: ""
 							val timestamp = doc.getTimestamp("timestamp")?.toDate()
 							val userDoc = db.collection("Utilisateur").document(idAuthor).get().await()
-							val username = userDoc.getString("username") ?: "Utilisateur inconnu"
+							val username = userDoc.getString("username") ?: db.collection(USER_FIREBASE_COLLECTION).document(idAuthor).get().await().getString("username") ?: "Utilisateur inconnu"
 							tempComments.add(Comment(id, idAuthor, content, timestamp, username))
 						}
 						comments.clear()
