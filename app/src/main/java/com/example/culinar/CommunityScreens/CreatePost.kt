@@ -440,11 +440,12 @@ fun RecipePost(
 	createRecipe: (Recipe) -> Unit,
 	goBack: () -> Unit
 ) {
-	/*
+
 	var name by rememberSaveable { mutableStateOf("") }
 	var ingredientsText by rememberSaveable { mutableStateOf("") }
 	var stepsText by rememberSaveable { mutableStateOf("") }
 	var private by rememberSaveable { mutableStateOf(true) }
+	val selectedCommunityId = communityViewModel.selectedCommunity.collectAsState().value?.id ?: ""
 
 	var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 	val context = LocalContext.current
@@ -555,10 +556,10 @@ fun RecipePost(
 					if (name.isNotBlank() && ingredientsText.isNotBlank() && stepsText.isNotBlank()) {
 						val recipe = Recipe(
 							name = name,
-							ingredients = ingredientsText,
-							steps = stepsText,
-							imageUri = imageUri?.toString() ?: "",
-							communityId = communityViewModel.selectedCommunity?.id ?: "",
+							ingredients = ingredientsText.split("\n"),
+							steps = stepsText.split("\n"),
+							imageUrl = imageUri?.toString() ?: "",
+							communityId = selectedCommunityId,
 							isPrivate = private
 						)
 						createRecipe(recipe)
@@ -578,7 +579,6 @@ fun RecipePost(
 		}
 	}
 
-	 */
 }
 
 
