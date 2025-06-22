@@ -362,7 +362,7 @@ class CommunityViewModel : ViewModel() {
 							.document(post.id)
 							.update("likes", updatedLikes)
 							.await()
-						Log.d("CommunityViewModel", "Post likes updated in public feed")
+						Log.d("CommunityViewModel", "Post likes updated in pubselic feed")
 					} catch (e: Exception) {
 						Log.d("CommunityViewModel", "Error updating post likes in public feed: $e")
 					}

@@ -54,6 +54,8 @@ import androidx.compose.animation.animateContentSize
 import com.example.culinar.models.viewModels.COMMUNITY_FIREBASE_COLLECTION
 import com.example.culinar.models.viewModels.GENERAL_POSTS_FIREBASE_COLLECTION
 import com.example.culinar.models.viewModels.USER_FIREBASE_COLLECTION
+import androidx.compose.runtime.collectAsState
+
 
 
 @Composable
@@ -63,6 +65,7 @@ fun Feed(
 	goToPost: () -> Unit = {}
 ) {
 	val selectedCommunity = communityViewModel.selectedCommunity.collectAsState().value
+
 	Column {
 		ToolBar(goBack = goBack, community = selectedCommunity)
 		Spacer(Modifier.height(10.dp))
@@ -140,6 +143,7 @@ fun PostFeed(communityViewModel: CommunityViewModel = viewModel()) {
 	val coroutineScope = rememberCoroutineScope()
 	val selectedCommunity = communityViewModel.selectedCommunity.collectAsState().value
 
+
 	fun refresh() {
 		isRefreshing = true
 		coroutineScope.launch {
@@ -176,40 +180,72 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 	var listenerRegistration by remember { mutableStateOf<ListenerRegistration?>(null) }
 	var currentUsername by remember { mutableStateOf<String?>(null) }
 
+	// Récupération de la communauté sélectionnée
+	val selectedCommunity = communityViewModel.selectedCommunity.collectAsState().value
+
 	// Récupération du nom de l'utilisateur courant
 	LaunchedEffect(userId) {
 		coroutineScope.launch {
 			currentUsername =
 				db.collection("Utilisateur").document(userId).get().await().getString("username")
-				Log.d("PostCard", "username: $currentUsername")
+			Log.d("PostCard", "username: $currentUsername")
 		}
 	}
 
 	var showHeart by remember { mutableStateOf(false) }
 	val scale = remember { Animatable(0f) }
 
-	if (showComments && listenerRegistration == null) {
-		listenerRegistration = db.collection(GENERAL_POSTS_FIREBASE_COLLECTION).document(post.id)
-			.collection("Comments")
-			.orderBy("timestamp", Query.Direction.ASCENDING)
-			.addSnapshotListener { snapshot, error ->
-				if (error == null && snapshot != null) {
-					coroutineScope.launch {
-						val tempComments = mutableListOf<Comment>()
-						for (doc in snapshot.documents) {
-							val id = doc.id
-							val idAuthor = doc.getString("idAuthor") ?: continue
-							val content = doc.getString("content") ?: ""
-							val timestamp = doc.getTimestamp("timestamp")?.toDate()
-							val userDoc = db.collection("Utilisateur").document(idAuthor).get().await()
-							val username = userDoc.getString("username") ?: db.collection(USER_FIREBASE_COLLECTION).document(idAuthor).get().await().getString("username") ?: "Utilisateur inconnu"
-							tempComments.add(Comment(id, idAuthor, content, timestamp, "",username))
-						}
-						comments.clear()
-						comments.addAll(tempComments)
-					}
+	// Listener des commentaires, adapté selon si post privé ou non
+	LaunchedEffect(showComments) {
+		if (showComments && listenerRegistration == null) {
+			val commentsCollection = if (post.isPrivate) {
+				val communityId = selectedCommunity?.id
+				if (communityId == null) {
+					null
+				} else {
+					db.collection(COMMUNITY_FIREBASE_COLLECTION)
+						.document(communityId)
+						.collection("posts")
+						.document(post.id)
+						.collection("Comments")
 				}
+			} else {
+				db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
+					.document(post.id)
+					.collection("Comments")
 			}
+
+			commentsCollection?.let { collection ->
+				listenerRegistration = collection
+					.orderBy("timestamp", Query.Direction.ASCENDING)
+					.addSnapshotListener { snapshot, error ->
+						if (error == null && snapshot != null) {
+							coroutineScope.launch {
+								val tempComments = mutableListOf<Comment>()
+								for (doc in snapshot.documents) {
+									val id = doc.id
+									val idAuthor = doc.getString("idAuthor") ?: continue
+									val content = doc.getString("content") ?: ""
+									val timestamp = doc.getTimestamp("timestamp")?.toDate()
+									val userDoc = db.collection("Utilisateur").document(idAuthor).get().await()
+									val username = userDoc.getString("username")
+										?: db.collection(USER_FIREBASE_COLLECTION).document(idAuthor).get()
+											.await().getString("username")
+										?: "Utilisateur inconnu"
+									tempComments.add(Comment(id, idAuthor, content, timestamp, "", username))
+								}
+								comments.clear()
+								comments.addAll(tempComments)
+							}
+						}
+					}
+			}
+		} else if (!showComments) {
+			// Si on cache les commentaires, on enlève le listener pour éviter fuite mémoire
+			listenerRegistration?.remove()
+			listenerRegistration = null
+			comments.clear()
+		}
 	}
 
 	Column(
@@ -302,10 +338,12 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 			color = Color.Gray
 		)
 		Spacer(modifier = Modifier.height(8.dp))
+		// Toggle commentaires
 		TextButton(onClick = { showComments = !showComments }) {
 			Text(if (showComments) "Masquer les commentaires" else "Voir les commentaires")
 		}
 
+		// Affichage + ajout commentaire
 		if (showComments) {
 			Spacer(modifier = Modifier.height(8.dp))
 			comments.forEach { CommentPost(it) }
@@ -321,27 +359,38 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 				Spacer(Modifier.width(8.dp))
 				Button(onClick = {
 					if (newComment.isNotBlank()) {
-
 						val commentData = hashMapOf(
 							"idAuthor" to userId,
 							"content" to newComment,
-							"username" to if(!currentUsername.isNullOrEmpty()) currentUsername else "Utilisateur inconnu",
+							"username" to (currentUsername ?: "Utilisateur inconnu"),
 							"timestamp" to com.google.firebase.Timestamp.now()
 						)
-						db.collection(COMMUNITY_FIREBASE_COLLECTION).document(post.id).collection("posts").document(post.id).collection("Comments")
-							.add(commentData)
-							.addOnSuccessListener { newComment = "" }
-							.addOnFailureListener {
-								Log.e("PostCard", "Error adding comment", it)
-							}
 
-						// If the post has a public version
-						if (!post.isPrivate) {
-							db.collection(GENERAL_POSTS_FIREBASE_COLLECTION).document(post.id).collection("Comments")
+						val communityId = selectedCommunity?.id
+
+						// Commentaire dans la collection privée
+						if (post.isPrivate && communityId != null) {
+							db.collection(COMMUNITY_FIREBASE_COLLECTION)
+								.document(communityId)
+								.collection("posts")
+								.document(post.id)
+								.collection("Comments")
 								.add(commentData)
 								.addOnSuccessListener { newComment = "" }
 								.addOnFailureListener {
-									Log.e("PostCard", "Error adding comment", it)
+									Log.e("PostCard", "Erreur ajout commentaire (privé)", it)
+								}
+						}
+
+						// Commentaire dans la collection publique
+						if (!post.isPrivate) {
+							db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
+								.document(post.id)
+								.collection("Comments")
+								.add(commentData)
+								.addOnSuccessListener { newComment = "" }
+								.addOnFailureListener {
+									Log.e("PostCard", "Erreur ajout commentaire (public)", it)
 								}
 						}
 					}
@@ -352,6 +401,8 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 		}
 	}
 }
+
+
 
 
 @Composable
