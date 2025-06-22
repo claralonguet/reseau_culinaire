@@ -975,7 +975,7 @@ fun CommentsScreen(postId: String, navController: NavController) {
 
 	LaunchedEffect(postId) {
 		val db = Firebase.firestore
-		db.collection(GENERAL_POSTS_FIREBASE_COLLECTION).document(postId).collection("comments")
+		db.collection(GENERAL_POSTS_FIREBASE_COLLECTION).document(postId).collection("Comments")
 			.get()
 			.addOnSuccessListener { snapshot ->
 				comments = snapshot.documents.map { doc ->

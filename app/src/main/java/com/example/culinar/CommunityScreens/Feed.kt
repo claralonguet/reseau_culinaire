@@ -316,7 +316,7 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 							"content" to newComment,
 							"timestamp" to com.google.firebase.Timestamp.now()
 						)
-						db.collection(COMMUNITY_FIREBASE_COLLECTION).document(post.id).collection("posts").document(post.id).collection("comments")
+						db.collection(COMMUNITY_FIREBASE_COLLECTION).document(post.id).collection("posts").document(post.id).collection("Comments")
 							.add(commentData)
 							.addOnSuccessListener { newComment = "" }
 							.addOnFailureListener {
@@ -325,7 +325,7 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 
 						// If the post has a public version
 						if (!post.isPrivate) {
-							db.collection(GENERAL_POSTS_FIREBASE_COLLECTION).document(post.id).collection("comments")
+							db.collection(GENERAL_POSTS_FIREBASE_COLLECTION).document(post.id).collection("Comments")
 								.add(commentData)
 								.addOnSuccessListener { newComment = "" }
 								.addOnFailureListener {
