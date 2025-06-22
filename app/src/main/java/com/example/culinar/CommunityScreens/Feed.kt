@@ -51,6 +51,7 @@ import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.animation.animateContentSize
+import com.example.culinar.models.viewModels.GENERAL_POSTS_FIREBASE_COLLECTION
 
 
 @Composable
@@ -176,7 +177,7 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 	val scale = remember { Animatable(0f) }
 
 	if (showComments && listenerRegistration == null) {
-		listenerRegistration = db.collection("Post").document(post.id)
+		listenerRegistration = db.collection(GENERAL_POSTS_FIREBASE_COLLECTION).document(post.id)
 			.collection("Comments")
 			.orderBy("timestamp", Query.Direction.ASCENDING)
 			.addSnapshotListener { snapshot, error ->
@@ -313,9 +314,17 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 							"content" to newComment,
 							"timestamp" to com.google.firebase.Timestamp.now()
 						)
-						db.collection("Post").document(post.id).collection("Comments")
+						db.collection(GENERAL_POSTS_FIREBASE_COLLECTION).document(post.id).collection("Comments")
 							.add(commentData)
 							.addOnSuccessListener { newComment = "" }
+
+						// If the post has a public version
+						if (!post.isPrivate) {
+							db.collection(GENERAL_POSTS_FIREBASE_COLLECTION).document(post.id).collection("comments")
+								.add(commentData)
+								.addOnSuccessListener { newComment = "" }
+
+						}
 					}
 				}) {
 					Text("Envoyer")
