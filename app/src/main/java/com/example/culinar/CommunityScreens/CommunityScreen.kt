@@ -101,26 +101,30 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import com.example.culinar.models.viewModels.GeneralPostViewModel
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+
 
 
 @Composable
-/**
- * Main screen for the community section.
- *
- * Displays the community space title, description, and buttons to:
- * - Access "My Community" if the user is an expert and part of a community.
- * - Create a new community if the user is an expert without a community.
- * - Join a community for all logged-in users.
- * Handles navigation based on user actions and session state.
- *
- * @param modifier Modifier for styling the composable.
- * @param communityViewModel ViewModel managing community data and actions.
- * @param sessionViewModel ViewModel managing user session and authentication.
- * @param onNavigate Lambda for navigation between screens, takes destination route and optional params.
- */
+		/**
+		 * Main screen for the community section.
+		 *
+		 * Displays the community space title, description, and buttons to:
+		 * - Access "My Community" if the user is an expert and part of a community.
+		 * - Create a new community if the user is an expert without a community.
+		 * - Join a community for all logged-in users.
+		 * Handles navigation based on user actions and session state.
+		 *
+		 * @param modifier Modifier for styling the composable.
+		 * @param communityViewModel ViewModel managing community data and actions.
+		 * @param sessionViewModel ViewModel managing user session and authentication.
+		 * @param onNavigate Lambda for navigation between screens, takes destination route and optional params.
+		 */
 fun CommunityScreen (
 	modifier: Modifier = Modifier,
 	communityViewModel: CommunityViewModel = CommunityViewModel(),
@@ -269,19 +273,19 @@ fun CommunityScreen (
 
 
 @Composable
-/**
- * Screen for creating a new community.
- *
- * Manages a multi-step process using an internal screen number state:
- * - Step 0: Initial start screen to begin creation.
- * - Step 1: Details input screen to finalize community creation.
- *
- * Includes a header with a back button and screen title.
- *
- * @param modifier Modifier to style the container.
- * @param onNavigate Lambda for navigation actions, accepting destination and optional params.
- * @param communityViewModel ViewModel managing community-related data and actions.
- */
+		/**
+		 * Screen for creating a new community.
+		 *
+		 * Manages a multi-step process using an internal screen number state:
+		 * - Step 0: Initial start screen to begin creation.
+		 * - Step 1: Details input screen to finalize community creation.
+		 *
+		 * Includes a header with a back button and screen title.
+		 *
+		 * @param modifier Modifier to style the container.
+		 * @param onNavigate Lambda for navigation actions, accepting destination and optional params.
+		 * @param communityViewModel ViewModel managing community-related data and actions.
+		 */
 fun CreateCommunity(
 	modifier: Modifier = Modifier,
 	onNavigate: (String, String?) -> Unit,
@@ -352,15 +356,15 @@ fun CreateCommunity(
 
 
 @Composable
-/**
- * First step screen for creating a community.
- *
- * Displays the terms and conditions text and a checkbox for the user to accept them.
- * Only allows continuing to the next step if the terms are accepted.
- *
- * @param modifier Modifier to style the container.
- * @param changeOnboardingScreen Lambda to update the current step in the creation flow.
- */
+		/**
+		 * First step screen for creating a community.
+		 *
+		 * Displays the terms and conditions text and a checkbox for the user to accept them.
+		 * Only allows continuing to the next step if the terms are accepted.
+		 *
+		 * @param modifier Modifier to style the container.
+		 * @param changeOnboardingScreen Lambda to update the current step in the creation flow.
+		 */
 fun CreateCommunityStart(
 	modifier: Modifier = Modifier,
 	changeOnboardingScreen: (Int) -> Unit = {}
@@ -427,16 +431,16 @@ fun CreateCommunityStart(
 
 
 @Composable
-/**
- * Screen to enter details for creating a new community.
- *
- * Allows the user to input the community name and description,
- * accept terms and conditions, and submit to create the community.
- *
- * @param modifier Modifier to style the container.
- * @param communityViewModel ViewModel handling community data and operations.
- * @param onNavigate Lambda to handle navigation events.
- */
+		/**
+		 * Screen to enter details for creating a new community.
+		 *
+		 * Allows the user to input the community name and description,
+		 * accept terms and conditions, and submit to create the community.
+		 *
+		 * @param modifier Modifier to style the container.
+		 * @param communityViewModel ViewModel handling community data and operations.
+		 * @param onNavigate Lambda to handle navigation events.
+		 */
 fun CreateCommunityDetails(
 	modifier: Modifier = Modifier,
 	communityViewModel: CommunityViewModel = CommunityViewModel(),
@@ -533,18 +537,18 @@ fun CreateCommunityDetails(
 
 
 @Composable
-/**
- * Displays the user's selected community screen with toolbar and post feed.
- *
- * Shows a toolbar with navigation and create post options,
- * and displays the post feed if a community is selected,
- * otherwise displays a message indicating no community selected.
- *
- * @param modifier Modifier to style the container.
- * @param communityViewModel ViewModel managing community data.
- * @param goBack Lambda invoked to navigate back.
- * @param createPost Lambda invoked to create a new post.
- */
+		/**
+		 * Displays the user's selected community screen with toolbar and post feed.
+		 *
+		 * Shows a toolbar with navigation and create post options,
+		 * and displays the post feed if a community is selected,
+		 * otherwise displays a message indicating no community selected.
+		 *
+		 * @param modifier Modifier to style the container.
+		 * @param communityViewModel ViewModel managing community data.
+		 * @param goBack Lambda invoked to navigate back.
+		 * @param createPost Lambda invoked to create a new post.
+		 */
 fun MyCommunity(
 	modifier: Modifier = Modifier,
 	communityViewModel: CommunityViewModel = viewModel(),
@@ -578,16 +582,16 @@ fun MyCommunity(
 
 
 @Composable
-/**
- * Screen displaying a list of communities for browsing.
- *
- * Allows selecting a community which triggers navigation to the community feed,
- * and provides a way to navigate back to the main community screen.
- *
- * @param modifier Modifier for styling the container.
- * @param onNavigate Lambda to handle navigation actions.
- * @param communityViewModel ViewModel managing community data.
- */
+		/**
+		 * Screen displaying a list of communities for browsing.
+		 *
+		 * Allows selecting a community which triggers navigation to the community feed,
+		 * and provides a way to navigate back to the main community screen.
+		 *
+		 * @param modifier Modifier for styling the container.
+		 * @param onNavigate Lambda to handle navigation actions.
+		 * @param communityViewModel ViewModel managing community data.
+		 */
 fun ListCommunities(
 	modifier: Modifier = Modifier,
 	onNavigate: (String, String?) -> Unit,
@@ -803,16 +807,14 @@ fun PhotoPreviewScreen(imageUriString: String?) {
 	}
 }
 
-
-data class Post(
-	val id: String,
-	val idAuthor: String,
-	val title: String,
-	val content: String,
-	val username: String,
+data class Comment(
+	val id: String = "",
+	val userId: String = "",
+	val content: String = "",
 	val timestamp: Date? = null,
-	val likes: List<String> = emptyList() // userIds qui ont liké
-)
+	val postId: String = "",
+	val username: String = "Utilisateur inconnu",
+	)
 
 
 
@@ -820,59 +822,18 @@ data class Post(
 @Composable
 fun CheckFeed(
 	navController: NavController,
-	sessionViewModel: SessionViewModel = viewModel()
+	sessionViewModel: SessionViewModel = viewModel(),
+	generalPostViewModel: GeneralPostViewModel = viewModel()
 ) {
-	val db = FirebaseFirestore.getInstance()
 	val context = LocalContext.current
-	val posts = remember { mutableStateListOf<Post>() }
-	val coroutineScope = rememberCoroutineScope()
-
+	val allPosts by generalPostViewModel.allPosts.collectAsState()
 	val idConnect by sessionViewModel.id.collectAsState()
-
-	var listenerRegistration by remember { mutableStateOf<ListenerRegistration?>(null) }
-
-	DisposableEffect(Unit) {
-		listenerRegistration = db.collection("Post")
-			.addSnapshotListener { snapshot, error ->
-				if (error != null) {
-					Toast.makeText(context, "Erreur : ${error.message}", Toast.LENGTH_SHORT).show()
-					return@addSnapshotListener
-				}
-
-				val documents = snapshot?.documents ?: return@addSnapshotListener
-
-				coroutineScope.launch {
-					val tempPosts = mutableListOf<Post>()
-					for (doc in documents) {
-						val id = doc.id
-						val idAuthor = doc.getString("id_author") ?: continue
-						val title = doc.getString("title") ?: ""
-						val content = doc.getString("content") ?: ""
-						val timestamp = doc.getTimestamp("timestamp")?.toDate()
-						val likes = doc.get("likes") as? List<String> ?: emptyList()
-
-						val userDoc = db.collection("Utilisateur").document(idAuthor).get().await()
-						val username = userDoc.getString("username") ?: "Utilisateur inconnu"
-
-						tempPosts.add(Post(id, idAuthor, title, content, username, timestamp, likes))
-					}
-
-					posts.clear()
-					posts.addAll(tempPosts.sortedByDescending { it.timestamp })
-				}
-			}
-
-		onDispose {
-			listenerRegistration?.remove()
-		}
-	}
+	val currentUserId = idConnect // ✅ pour éviter l'erreur "smart cast"
 
 	Scaffold(
 		topBar = {
 			TopAppBar(
-				title = {
-					Text("Fil d’actualité", style = MaterialTheme.typography.titleLarge)
-				},
+				title = { Text("Fil d’actualité", style = MaterialTheme.typography.titleLarge) },
 				colors = TopAppBarDefaults.topAppBarColors(
 					containerColor = MaterialTheme.colorScheme.primary,
 					titleContentColor = MaterialTheme.colorScheme.onPrimary
@@ -888,8 +849,8 @@ fun CheckFeed(
 			verticalArrangement = Arrangement.spacedBy(12.dp),
 			contentPadding = PaddingValues(16.dp)
 		) {
-			items(posts) { post ->
-				val isLiked = idConnect != null && idConnect in post.likes
+			items(allPosts.sortedByDescending { it.date }) { post ->
+				val isLiked = currentUserId != null && currentUserId in post.likes
 
 				Card(
 					modifier = Modifier.fillMaxWidth(),
@@ -908,13 +869,15 @@ fun CheckFeed(
 						)
 						Spacer(modifier = Modifier.height(6.dp))
 						Text(
-							text = post.title,
+							text = post.name,
 							style = MaterialTheme.typography.titleMedium.copy(
 								color = MaterialTheme.colorScheme.onSurface
 							)
 						)
-						post.timestamp?.let {
-							val dateFormatted = SimpleDateFormat("dd MMM yyyy à HH:mm", Locale.getDefault()).format(it)
+						post.date?.let {
+							val dateFormatted = SimpleDateFormat(
+								"dd MMM yyyy à HH:mm", Locale.getDefault()
+							).format(it)
 							Spacer(modifier = Modifier.height(4.dp))
 							Text(
 								text = dateFormatted,
@@ -937,16 +900,15 @@ fun CheckFeed(
 						) {
 							IconButton(
 								onClick = {
-									if (idConnect == null) {
+									if (currentUserId == null) {
 										Toast.makeText(context, "Connectez-vous pour liker", Toast.LENGTH_SHORT).show()
 										return@IconButton
 									}
 
-									val postRef = db.collection("Post").document(post.id)
 									if (isLiked) {
-										postRef.update("likes", FieldValue.arrayRemove(idConnect))
+										generalPostViewModel.unlikePost(post, currentUserId)
 									} else {
-										postRef.update("likes", FieldValue.arrayUnion(idConnect))
+										generalPostViewModel.likePost(post, currentUserId)
 									}
 								}
 							) {
@@ -956,6 +918,7 @@ fun CheckFeed(
 									tint = if (isLiked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
 								)
 							}
+
 							IconButton(onClick = {
 								navController.navigate("comments/${post.id}")
 							}) {
@@ -973,127 +936,6 @@ fun CheckFeed(
 	}
 }
 
-data class Comment(
-	val id: String,
-	val idAuthor: String,
-	val content: String,
-	val timestamp: Date?,
-	val username: String = "Utilisateur inconnu"  // nouveau champ
-)
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CommentsScreen(
-	postId: String,
-	navController: NavController,
-	sessionViewModel: SessionViewModel = viewModel()
-) {
-	val db = FirebaseFirestore.getInstance()
-	val context = LocalContext.current
-	val comments = remember { mutableStateListOf<Comment>() }
-	val coroutineScope = rememberCoroutineScope()
-	val idConnect by sessionViewModel.id.collectAsState()
-
-	var newComment by remember { mutableStateOf("") }
-	var listenerRegistration by remember { mutableStateOf<ListenerRegistration?>(null) }
-
-	DisposableEffect(postId) {
-		listenerRegistration = db.collection("Post").document(postId)
-			.collection("Comments")
-			.orderBy("timestamp", Query.Direction.ASCENDING)
-			.addSnapshotListener { snapshot, error ->
-				if (error != null) {
-					Toast.makeText(context, "Erreur : ${error.message}", Toast.LENGTH_SHORT).show()
-					return@addSnapshotListener
-				}
-				val docs = snapshot?.documents ?: return@addSnapshotListener
-
-				coroutineScope.launch {
-					val tempComments = mutableListOf<Comment>()
-					for (doc in docs) {
-						val id = doc.id
-						val idAuthor = doc.getString("idAuthor") ?: continue
-						val content = doc.getString("content") ?: ""
-						val timestamp = doc.getTimestamp("timestamp")?.toDate()
-
-						// Récupérer le username dans la collection Utilisateur
-						val userDoc = db.collection("Utilisateur").document(idAuthor).get().await()
-						val username = userDoc.getString("username") ?: "Utilisateur inconnu"
-
-						tempComments.add(Comment(id, idAuthor, content, timestamp, username))
-					}
-					comments.clear()
-					comments.addAll(tempComments)
-				}
-			}
-
-		onDispose {
-			listenerRegistration?.remove()
-		}
-	}
-
-	Scaffold(
-		topBar = {
-			TopAppBar(
-				title = { Text("Commentaires") },
-				navigationIcon = {
-					IconButton(onClick = { navController.popBackStack() }) {
-						Icon(Icons.Default.ArrowBack, contentDescription = "Retour")
-					}
-				}
-			)
-		}
-	) { padding ->
-		Column(
-			modifier = Modifier
-				.fillMaxSize()
-				.padding(padding)
-				.padding(16.dp)
-		) {
-			LazyColumn(
-				modifier = Modifier.weight(1f),
-				verticalArrangement = Arrangement.spacedBy(8.dp)
-			) {
-				items(comments) { comment ->
-					CommentItem(comment)
-				}
-			}
-
-			Row(verticalAlignment = Alignment.CenterVertically) {
-				TextField(
-					modifier = Modifier.weight(1f),
-					value = newComment,
-					onValueChange = { newComment = it },
-					placeholder = { Text("Écrire un commentaire...") },
-					maxLines = 3
-				)
-				Spacer(Modifier.width(8.dp))
-				Button(
-					onClick = {
-						if (newComment.isNotBlank()) {
-							val commentData = hashMapOf(
-								"idAuthor" to idConnect,
-								"content" to newComment,
-								"timestamp" to com.google.firebase.Timestamp.now()
-							)
-							db.collection("Post").document(postId)
-								.collection("Comments")
-								.add(commentData)
-								.addOnSuccessListener {
-									newComment = ""
-								}
-								.addOnFailureListener {
-									Toast.makeText(context, "Erreur lors de l'envoi", Toast.LENGTH_SHORT).show()
-								}
-						}
-					}
-				) {
-					Text("Envoyer")
-				}
-			}
-		}
-	}
-}
 
 @Composable
 fun CommentItem(comment: Comment) {
@@ -1109,15 +951,74 @@ fun CommentItem(comment: Comment) {
 			style = MaterialTheme.typography.bodyMedium
 		)
 		comment.timestamp?.let {
-			val formattedDate = SimpleDateFormat("dd MMM yyyy à HH:mm", Locale.getDefault()).format(it)
+			val formattedDate = SimpleDateFormat(
+				"dd MMM yyyy à HH:mm", Locale.getDefault()
+			).format(it)
 			Text(
 				text = formattedDate,
-				style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+				style = MaterialTheme.typography.bodySmall.copy(
+					color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+				)
 			)
 		}
 		Spacer(modifier = Modifier.height(4.dp))
 	}
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CommentsScreen(postId: String, navController: NavController) {
+	val context = LocalContext.current
+	var comments by remember { mutableStateOf<List<Comment>>(emptyList()) }
+	var isLoading by remember { mutableStateOf(true) }
+
+	LaunchedEffect(postId) {
+		val db = Firebase.firestore
+		db.collection("comments")
+			.whereEqualTo("postId", postId)
+			.get()
+			.addOnSuccessListener { snapshot ->
+				comments = snapshot.documents.map { doc ->
+					doc.toObject(Comment::class.java)!!.copy(id = doc.id)
+				}
+				isLoading = false
+			}
+			.addOnFailureListener {
+				Toast.makeText(context, "Erreur lors du chargement des commentaires", Toast.LENGTH_SHORT).show()
+				isLoading = false
+			}
+	}
+
+	Scaffold(
+		topBar = {
+			TopAppBar(
+				title = { Text("Commentaires") },
+				navigationIcon = {
+					IconButton(onClick = { navController.popBackStack() }) {
+						Icon(Icons.Default.ArrowBack, contentDescription = "Retour")
+					}
+				}
+			)
+		}
+	) { padding ->
+		if (isLoading) {
+			Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+				CircularProgressIndicator()
+			}
+		} else {
+			LazyColumn(
+				modifier = Modifier.padding(padding)
+			) {
+				items(comments) { comment ->
+					CommentItem(comment)
+					Divider()
+				}
+			}
+		}
+	}
+}
+
+
 
 
 

@@ -13,6 +13,7 @@ data class Post(
 	val date: Date = Date(),
 	val imageUri: String = "",
 	var authorId: String = "",
+	var username: String = "Utilisateur inconnu",
 	@set:PropertyName("isPrivate")
 	var isPrivate: Boolean = true,
 	var communityId: String = "",

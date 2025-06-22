@@ -6,197 +6,179 @@ import androidx.lifecycle.viewModelScope
 import com.example.culinar.models.Post
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-/**
- * ViewModel responsible for managing and exposing the general post feed data.
- * Interacts with Firestore to fetch, add, like, and unlike posts.
- * Maintains UI state like loading and error for UI feedback.
- */
 class GeneralPostViewModel : ViewModel() {
 
 	private val db = Firebase.firestore
 
-	// User ID exposed as read-only StateFlow
 	private val _userId = MutableStateFlow("")
 	val userId: StateFlow<String> get() = _userId
 
-	// All posts exposed as StateFlow
 	private val _allPosts = MutableStateFlow<List<Post>>(emptyList())
 	val allPosts: StateFlow<List<Post>> = _allPosts
 
-	// Loading state for async operations
 	private val _loading = MutableStateFlow(false)
 	val loading: StateFlow<Boolean> get() = _loading
 
-	// Error message emitted on failure
 	private val _error = MutableStateFlow<String?>(null)
 	val error: StateFlow<String?> get() = _error
 
-	init {
-		getAllPosts() // Fetch posts initially
+	companion object {
+		private const val GENERAL_POSTS_FIREBASE_COLLECTION = "Post"
+		private const val COMMUNITY_FIREBASE_COLLECTION = "Communities"
+		private const val USERS_FIREBASE_COLLECTION = "users"
 	}
 
-	/**
-	 * Sets the current user ID.
-	 * @param id The user ID to assign.
-	 */
+	init {
+		getAllPosts()
+	}
+
 	fun setUserId(id: String) {
 		_userId.value = id
 	}
 
-	/**
-	 * Retrieves all general posts from Firestore collection.
-	 * Updates local post list and handles error/loading state.
-	 */
-	fun getAllPosts() {
+	// Nouvelle fonction pour charger les posts ET récupérer les usernames associés
+	private fun getAllPosts() {
 		viewModelScope.launch {
 			_loading.value = true
 			try {
-				val result = db.collection(GENERAL_POSTS_FIREBASE_COLLECTION).get().await()
-				// Map Firestore documents to Post objects
-				val posts = result.map {
+				val postsResult = db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
+					.orderBy("date", com.google.firebase.firestore.Query.Direction.DESCENDING)
+					.get()
+					.await()
+
+				val rawPosts = postsResult.map {
 					it.toObject(Post::class.java).apply { id = it.id }
-				}.sortedByDescending { it.date } // Sort posts by most recent
-				_allPosts.value = posts
+				}
+
+				if (rawPosts.isEmpty()) {
+					_allPosts.value = emptyList()
+					_loading.value = false
+					return@launch
+				}
+
+				val uniqueUserIds = rawPosts.map { it.authorId }.toSet()
+				if (uniqueUserIds.isEmpty()) {
+					_allPosts.value = rawPosts
+					_loading.value = false
+					return@launch
+				}
+
+				val userMap = mutableMapOf<String, String>()
+				val usersRef = db.collection(USERS_FIREBASE_COLLECTION)
+
+				// Lance toutes les requêtes en parallèle et attends leur fin
+				uniqueUserIds.map { userId ->
+					async {
+						try {
+							val userDoc = usersRef.document(userId).get().await()
+							userMap[userId] = userDoc.getString("username") ?: "Utilisateur inconnu"
+						} catch (e: Exception) {
+							Log.e("GeneralPostViewModel", "Erreur fetch username for $userId", e)
+							userMap[userId] = "Utilisateur inconnu"
+						}
+					}
+				}.awaitAll()
+
+				val enrichedPosts = rawPosts.map { post ->
+					post.copy(username = userMap[post.authorId] ?: "Utilisateur inconnu")
+				}
+
+				_allPosts.value = enrichedPosts
+
 			} catch (e: Exception) {
 				_error.value = e.message
-				Log.e("GeneralPostViewModel", "Failed to fetch posts", e)
+				Log.e("GeneralPostViewModel", "Failed to fetch posts with usernames", e)
 			} finally {
 				_loading.value = false
 			}
 		}
 	}
 
-	/**
-	 * Adds a new post to the general Firestore post collection.
-	 * Automatically assigns current user ID to the post.
-	 * Immediately adds it locally and refreshes from backend after success.
-	 * Rolls back in case of failure.
-	 *
-	 * @param post The Post object to add.
-	 */
 	fun createPost(post: Post) {
-
-		// Add post locally to UI before confirmation
-		_allPosts.value += post
 		post.authorId = _userId.value
 
-		viewModelScope.launch {
-			db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
-				.add(post)
-				.addOnSuccessListener {
-					Log.d("GeneralPostViewModel", "Post added successfully")
-				}
-				.addOnFailureListener { exception ->
-					Log.d("GeneralPostViewModel", "Error adding post", exception)
-					_allPosts.value -= post // Rollback on failure
-				}
-				.await()
+		_allPosts.value = listOf(post) + _allPosts.value
 
-			getAllPosts() // Refresh posts to reflect server state
+		viewModelScope.launch {
+			try {
+				db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
+					.add(post)
+					.await()
+				Log.d("GeneralPostViewModel", "Post ajouté avec succès")
+				getAllPosts()
+			} catch (e: Exception) {
+				Log.e("GeneralPostViewModel", "Erreur lors de l'ajout du post", e)
+				_allPosts.value = _allPosts.value.filter { it != post }
+			}
 		}
 	}
 
-	/**
-	 * Adds a like to the given post from the given user ID.
-	 * Updates the post in both the community-specific subcollection and public feed if applicable.
-	 *
-	 * @param post The Post being liked.
-	 * @param userId The ID of the user performing the like.
-	 */
 	fun likePost(post: Post, userId: String) {
 		viewModelScope.launch {
-			if (post.communityId.isNotEmpty()) {
-				try {
-					val postRef = db.collection(COMMUNITY_FIREBASE_COLLECTION)
+			try {
+				val updatedLikes = post.likes.toMutableList().apply {
+					if (!contains(userId)) add(userId)
+				}
+
+				val postRef = db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
+					.document(post.id)
+
+				postRef.update("likes", updatedLikes).await()
+
+				updateLocalPostLikes(post.id, updatedLikes)
+
+				if (post.communityId.isNotEmpty()) {
+					db.collection(COMMUNITY_FIREBASE_COLLECTION)
 						.document(post.communityId)
 						.collection("posts")
 						.document(post.id)
-
-					// Create updated list of likes
-					val updatedLikes = post.likes.toMutableList().apply {
-						if (!contains(userId)) add(userId)
-					}
-
-					postRef.update("likes", updatedLikes).await()
-					updateLocalPostLikes(post.id, updatedLikes)
-					Log.d("CommunityViewModel", "Post liked by $userId")
-
-					// Update public version if exists
-					try {
-						db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
-							.document(post.id)
-							.update("likes", updatedLikes)
-							.await()
-						Log.d("CommunityViewModel", "Post likes updated in public feed")
-					} catch (e: Exception) {
-						Log.d("CommunityViewModel", "Error updating public feed likes: $e")
-					}
-				} catch (e: Exception) {
-					Log.d("CommunityViewModel", "Error liking post: $e")
+						.update("likes", updatedLikes)
+						.await()
 				}
+			} catch (e: Exception) {
+				Log.e("GeneralPostViewModel", "Erreur lors du like", e)
 			}
 		}
 	}
 
-	/**
-	 * Removes a like from a post for a given user.
-	 * Synchronizes the update with the Firestore backend.
-	 *
-	 * @param post The Post being unliked.
-	 * @param userId The ID of the user removing the like.
-	 */
 	fun unlikePost(post: Post, userId: String) {
 		viewModelScope.launch {
-			if (post.communityId.isNotEmpty()) {
-				try {
-					val postRef = db.collection(COMMUNITY_FIREBASE_COLLECTION)
+			try {
+				val updatedLikes = post.likes.toMutableList().apply {
+					remove(userId)
+				}
+
+				val postRef = db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
+					.document(post.id)
+
+				postRef.update("likes", updatedLikes).await()
+
+				updateLocalPostLikes(post.id, updatedLikes)
+
+				if (post.communityId.isNotEmpty()) {
+					db.collection(COMMUNITY_FIREBASE_COLLECTION)
 						.document(post.communityId)
 						.collection("posts")
 						.document(post.id)
-
-					// Remove like from the list
-					val updatedLikes = post.likes.toMutableList().apply {
-						remove(userId)
-					}
-
-					postRef.update("likes", updatedLikes).await()
-					updateLocalPostLikes(post.id, updatedLikes)
-					Log.d("CommunityViewModel", "Post unliked by $userId")
-
-					// Update public version if post is not private
-					if (!post.isPrivate) {
-						try {
-							db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
-								.document(post.id)
-								.update("likes", updatedLikes)
-								.await()
-							Log.d("CommunityViewModel", "Post likes updated in public feed")
-						} catch (e: Exception) {
-							Log.e("CommunityViewModel", "Error updating public feed likes: $e")
-						}
-					}
-				} catch (e: Exception) {
-					Log.d("CommunityViewModel", "Error unliking post: $e")
+						.update("likes", updatedLikes)
+						.await()
 				}
+			} catch (e: Exception) {
+				Log.e("GeneralPostViewModel", "Erreur lors du unlike", e)
 			}
 		}
 	}
 
-	/**
-	 * Locally updates the post list by replacing the likes for a specific post.
-	 *
-	 * @param postId ID of the post to update.
-	 * @param updatedLikes The new list of user IDs who liked the post.
-	 */
 	private fun updateLocalPostLikes(postId: String, updatedLikes: List<String>) {
-		val updatedPosts = allPosts.value.map {
-			if (it.id == postId) it.copy(likes = updatedLikes.toMutableList()) else it
+		_allPosts.value = _allPosts.value.map {
+			if (it.id == postId) it.copy(likes = updatedLikes) else it
 		}
-		_allPosts.value = updatedPosts
 	}
 }

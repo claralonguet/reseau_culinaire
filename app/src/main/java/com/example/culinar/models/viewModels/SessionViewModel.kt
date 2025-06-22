@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
+const val USER_FIREBASE_COLLECTION = "users"
+
 class SessionViewModel(application: Application) : AndroidViewModel(application) {
 
     private val db = Firebase.firestore
