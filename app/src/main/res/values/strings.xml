@@ -87,7 +87,7 @@
     <string name="create_post_image_picking_message" translatable="true">Aucune image sélectionnée</string>
     <string name="create_post_private_label_1" translatable="true">Cette publication ne sera visible que dans la communauté</string>
     <string name="create_post_private_label_2" translatable="true">Cette publication sera visible hors de la communauté</string>
-    <string name="create_recipe_title" translatable="true">titre de la recette</string>
+
 
 
 
@@ -110,11 +110,12 @@
     <string name="invalid_user_or_uploading">Utilisateur non valide ou en cours d\'envoi</string>
     <string name="already_expert_text">✅ Vous êtes déjà reconnu comme expert.</string>
     <string name="pending_expert_nav">🔍 Expertise en attente</string>
-    <string name="create_recipe_name_label">nom</string>
-    <string name="create_recipe_ingredients_label">ingredient</string>
+    <string name="create_recipe_name_label">Nom</string>
+    <string name="create_recipe_ingredients_label">Ingredient</string>
     <string name="create_recipe_steps_label">Etapes de création</string>
-    <string name="create_recipe_image_picking_message">Erreur d\'affichage</string>
+    <string name="create_recipe_image_picking_message">Aucune image sélectionnée</string>
     <string name="create_recipe_image_picking_button">Importer</string>
+    <string name="create_recipe_title" translatable="true">Publier une recette</string>
 
 
 </resources>

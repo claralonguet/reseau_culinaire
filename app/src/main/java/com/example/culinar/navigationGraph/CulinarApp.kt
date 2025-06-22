@@ -47,10 +47,11 @@ import com.example.culinar.models.Screen
 import com.example.culinar.models.viewModels.CommunityViewModel
 import com.example.culinar.models.viewModels.FriendViewModel
 import com.example.culinar.models.viewModels.GeneralPostViewModel
+import com.example.culinar.recipesScreen.RecipeDetailScreen
+import com.example.culinar.recipesScreen.RecipeListScreen
 import com.example.culinar.settings.ExpertRequestsScreen
 import com.example.culinar.settings.SettingScreen
-import com.example.culinar.ui.screens.RecipeDetailScreen
-import com.example.culinar.ui.screens.RecipeListScreen
+
 import com.example.culinar.viewmodels.RecipeViewModel
 import com.example.culinar.viewmodels.SessionViewModel
 
