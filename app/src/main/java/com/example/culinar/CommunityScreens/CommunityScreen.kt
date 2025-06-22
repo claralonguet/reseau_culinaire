@@ -103,6 +103,7 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import com.example.culinar.models.viewModels.GENERAL_POSTS_FIREBASE_COLLECTION
 import com.example.culinar.models.viewModels.GeneralPostViewModel
+import com.example.culinar.models.viewModels.USER_FIREBASE_COLLECTION
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
 import com.google.firebase.Timestamp
@@ -826,10 +827,15 @@ fun CheckFeed(
 	sessionViewModel: SessionViewModel = viewModel(),
 	generalPostViewModel: GeneralPostViewModel = viewModel()
 ) {
+	val db = FirebaseFirestore.getInstance()
 	val context = LocalContext.current
 	val allPosts by generalPostViewModel.allPosts.collectAsState()
 	val idConnect by sessionViewModel.id.collectAsState()
 	val currentUserId = idConnect // ✅ pour éviter l'erreur "smart cast"
+	var currentUserName by remember { mutableStateOf("Utilisateur inconnu") }
+
+	val coroutineScope = rememberCoroutineScope()
+
 
 	Scaffold(
 		topBar = {
@@ -862,8 +868,14 @@ fun CheckFeed(
 					elevation = CardDefaults.cardElevation(4.dp)
 				) {
 					Column(modifier = Modifier.padding(16.dp)) {
+						LaunchedEffect(Unit) {
+							coroutineScope.launch{
+								currentUserName = db.collection(USER_FIREBASE_COLLECTION).document(post.authorId).get().await().get("username").toString()
+							}
+						}
+
 						Text(
-							text = post.username,
+							text = if(post.username == "Utilisateur inconnu") currentUserName else  post.username,
 							style = MaterialTheme.typography.bodyLarge.copy(
 								color = MaterialTheme.colorScheme.primary
 							)
@@ -875,7 +887,7 @@ fun CheckFeed(
 								color = MaterialTheme.colorScheme.onSurface
 							)
 						)
-						post.date?.let {
+						post.date.let {
 							val dateFormatted = SimpleDateFormat(
 								"dd MMM yyyy à HH:mm", Locale.getDefault()
 							).format(it)

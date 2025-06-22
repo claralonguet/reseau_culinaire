@@ -272,6 +272,8 @@ class CommunityViewModel : ViewModel() {
 		post.communityId = communityId
 
 		viewModelScope.launch {
+			post.username = db.collection(USER_FIREBASE_COLLECTION).document(_userId.value).get().await().get("username").toString()
+
 			try {
 				val postRef = db.collection(COMMUNITY_FIREBASE_COLLECTION)
 					.document(communityId)

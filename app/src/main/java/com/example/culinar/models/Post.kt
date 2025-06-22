@@ -29,6 +29,8 @@ data class Post(
 			"authorId" to authorId,
 			"isPrivate" to isPrivate,
 			"communityId" to communityId,
+			"username" to username
+
 		)
 	}
 }

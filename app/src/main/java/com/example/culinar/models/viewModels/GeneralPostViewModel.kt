@@ -104,9 +104,12 @@ class GeneralPostViewModel : ViewModel() {
 	fun createPost(post: Post) {
 		post.authorId = _userId.value
 
-		_allPosts.value = listOf(post) + _allPosts.value
 
 		viewModelScope.launch {
+			post.username = db.collection(USERS_FIREBASE_COLLECTION).document(_userId.value).get().await().get("username").toString()
+
+			_allPosts.value = listOf(post) + _allPosts.value
+
 			try {
 				db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
 					.add(post)
