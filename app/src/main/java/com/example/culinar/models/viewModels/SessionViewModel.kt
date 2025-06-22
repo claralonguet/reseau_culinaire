@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-const val USER_FIREBASE_COLLECTION = "users"
+const val USERS_FIREBASE_COLLECTION = "Utilisateur"
 
 class SessionViewModel(application: Application) : AndroidViewModel(application) {
 

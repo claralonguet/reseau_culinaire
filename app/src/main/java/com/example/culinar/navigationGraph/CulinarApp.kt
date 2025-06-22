@@ -292,7 +292,7 @@ fun CulinarApp(
                 ) { backStackEntry ->
                     val postId = backStackEntry.arguments?.getString("postId") ?: ""
                     CommentsScreen(postId = postId, navController = navController)
-                }                  
+                }
 
 
                 // Send message screen requiring user to be logged in

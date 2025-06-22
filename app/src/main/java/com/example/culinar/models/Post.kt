@@ -1,5 +1,6 @@
 package com.example.culinar.models
 
+import com.google.firebase.database.Exclude
 import com.google.firebase.database.IgnoreExtraProperties
 import com.google.firebase.database.PropertyName
 import java.util.Date
@@ -13,11 +14,14 @@ data class Post(
 	val date: Date = Date(),
 	val imageUri: String = "",
 	var authorId: String = "",
-	var username: String = "Utilisateur inconnu",
 	@set:PropertyName("isPrivate")
 	var isPrivate: Boolean = true,
 	var communityId: String = "",
 ) {
+	@get:Exclude
+	@set:Exclude
+	var username: String = "Utilisateur inconnu"
+
 	fun toMap(): HashMap<String, Any?> {
 		return hashMapOf(
 			"id" to id,
@@ -32,3 +36,4 @@ data class Post(
 		)
 	}
 }
+
