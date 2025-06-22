@@ -98,4 +98,19 @@
     <string name="error_message" translatable="true">Erreur</string>
     <string name="login_first_button" translatable="true">Connectez-vous</string>
 
+    // Setting screen
+    <string name="expert_status_prefix">Valeur de expert =</string>
+    <string name="cgu_title">Conditions Générales d\'Utilisation</string>
+    <string name="cgu_placeholder_text">Bienvenue sur Culinar !\n\nVoici les conditions générales d\'utilisation...\n(Ajoutez ici le contenu complet des CGU)</string>
+    <string name="expert_request_title">Demande d\'expertise</string>
+    <string name="send_request_button">Soumettre ma demande</string>
+    <string name="request_success_toast">Demande envoyée avec succès</string>
+    <string name="request_failure_toast">Erreur lors de l\'envoi : %1$s</string>
+    <string name="invalid_user_or_uploading">Utilisateur non valide ou en cours d\'envoi</string>
+    <string name="already_expert_text">✅ Vous êtes déjà reconnu comme expert.</string>
+    <string name="pending_expert_nav">🔍 Expertise en attente</string>
+
+
+
+
 </resources>

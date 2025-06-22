@@ -49,8 +49,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.runtime:runtime-saveable")
-    implementation ("com.google.accompanist:accompanist-swiperefresh:0.30.1")
-
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.30.1")
 
     // Compose BOM and Compose UI dependencies
     implementation(platform(libs.androidx.compose.bom))
@@ -60,6 +59,9 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    // **Ajout de la dépendance animation**
+    implementation("androidx.compose.animation:animation:1.4.3")
 
     // CameraX and Coil for image loading
     implementation(libs.androidx.exifinterface)
@@ -80,7 +82,6 @@ dependencies {
     implementation("com.google.firebase:firebase-database")
     implementation("com.google.firebase:firebase-storage-ktx")
 
-
     // Google Play Services (maps & location)
     implementation("com.google.android.gms:play-services-maps:19.2.0")
     implementation("com.google.android.gms:play-services-location:21.3.0")
@@ -96,3 +97,4 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
+
