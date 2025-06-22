@@ -174,6 +174,16 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 	val comments = remember { mutableStateListOf<Comment>() }
 	var newComment by remember { mutableStateOf("") }
 	var listenerRegistration by remember { mutableStateOf<ListenerRegistration?>(null) }
+	var currentUsername by remember { mutableStateOf<String?>(null) }
+
+	// Récupération du nom de l'utilisateur courant
+	LaunchedEffect(userId) {
+		coroutineScope.launch {
+			currentUsername =
+				db.collection("Utilisateur").document(userId).get().await().getString("username")
+				Log.d("PostCard", "username: $currentUsername")
+		}
+	}
 
 	var showHeart by remember { mutableStateOf(false) }
 	val scale = remember { Animatable(0f) }
@@ -193,7 +203,7 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 							val timestamp = doc.getTimestamp("timestamp")?.toDate()
 							val userDoc = db.collection("Utilisateur").document(idAuthor).get().await()
 							val username = userDoc.getString("username") ?: db.collection(USER_FIREBASE_COLLECTION).document(idAuthor).get().await().getString("username") ?: "Utilisateur inconnu"
-							tempComments.add(Comment(id, idAuthor, content, timestamp, username))
+							tempComments.add(Comment(id, idAuthor, content, timestamp, "",username))
 						}
 						comments.clear()
 						comments.addAll(tempComments)
@@ -311,9 +321,11 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 				Spacer(Modifier.width(8.dp))
 				Button(onClick = {
 					if (newComment.isNotBlank()) {
+
 						val commentData = hashMapOf(
 							"idAuthor" to userId,
 							"content" to newComment,
+							"username" to if(!currentUsername.isNullOrEmpty()) currentUsername else "Utilisateur inconnu",
 							"timestamp" to com.google.firebase.Timestamp.now()
 						)
 						db.collection(COMMUNITY_FIREBASE_COLLECTION).document(post.id).collection("posts").document(post.id).collection("Comments")
