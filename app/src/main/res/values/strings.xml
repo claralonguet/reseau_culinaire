@@ -110,25 +110,19 @@
     <string name="invalid_user_or_uploading">Utilisateur non valide ou en cours d\'envoi</string>
     <string name="already_expert_text">✅ Vous êtes déjà reconnu comme expert.</string>
     <string name="pending_expert_nav">🔍 Expertise en attente</string>
-<<<<<<< HEAD
-
 
     // Create recipe strings
-    <string name="create_recipe_name_label">nom</string>
-    <string name="create_recipe_ingredients_label">ingredient</string>
-=======
+
     <string name="create_recipe_name_label">Nom</string>
     <string name="create_recipe_ingredients_label">Ingredient</string>
->>>>>>> 8e998d051d8e9216ff85992fb8143a2738f47576
+
     <string name="create_recipe_steps_label">Etapes de création</string>
     <string name="create_recipe_image_picking_message">Aucune image sélectionnée</string>
     <string name="create_recipe_image_picking_button">Importer</string>
-<<<<<<< HEAD
+
     <string name="create_recipe_time_label">Temps de réalisation (min)</string>
     <string name="create_recipe_difficulty_label">Difficulté</string>
-=======
-    <string name="create_recipe_title" translatable="true">Publier une recette</string>
->>>>>>> 8e998d051d8e9216ff85992fb8143a2738f47576
 
+    <string name="create_recipe_title" translatable="true">Publier une recette</string>
 
 </resources>

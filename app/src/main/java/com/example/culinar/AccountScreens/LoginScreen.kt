@@ -10,6 +10,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import androidx.compose.ui.platform.testTag
+
 
 @Composable
 fun AccountScreen(
@@ -59,7 +61,10 @@ fun LoginScreen(
             value = username,
             onValueChange = { username = it },
             label = { Text("Nom d'utilisateur") },
-            shape = MaterialTheme.shapes.medium
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier
+                .testTag("usernameField")
+                .padding(vertical = 8.dp)
         )
 
         OutlinedTextField(
@@ -67,7 +72,10 @@ fun LoginScreen(
             onValueChange = { password = it },
             label = { Text("Mot de passe") },
             visualTransformation = PasswordVisualTransformation(),
-            shape = MaterialTheme.shapes.medium
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier
+                .testTag("passwordField")
+                .padding(vertical = 8.dp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -102,6 +110,7 @@ fun LoginScreen(
                         errorMessage = "Erreur lors de la connexion : ${exception.message}"
                     }
             },
+            modifier = Modifier.testTag("loginButton"),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
             shape = MaterialTheme.shapes.large
         ) {
@@ -109,7 +118,15 @@ fun LoginScreen(
         }
 
         if (errorMessage.isNotEmpty()) {
-            //Text(text = errorMessage, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
+            Text(
+                text = errorMessage,
+                color = Color.Red,
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .testTag("errorText")
+            )
+
+            // Permet aussi de le montrer via Snackbar si utilisé globalement
             showSnackbar(errorMessage)
         }
 
@@ -117,6 +134,7 @@ fun LoginScreen(
 
         Button(
             onClick = { changeScreen("signup") },
+            modifier = Modifier.testTag("signupButton"),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
             shape = MaterialTheme.shapes.large
         ) {
@@ -124,6 +142,7 @@ fun LoginScreen(
         }
     }
 }
+
 
 
 // Tu peux ajouter ici SignupScreen et ProfileScreen si besoin, ou les importer.
