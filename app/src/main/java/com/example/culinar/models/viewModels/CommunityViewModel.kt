@@ -398,6 +398,7 @@ class CommunityViewModel : ViewModel() {
 				Log.d("CommunityViewModel", "Post liked by $userId")
 
 				if (!post.isPrivate) {
+					Log.d("CommunityViewModel", "Updating public feed post likes")
 					try {
 						db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
 							.document(post.id)
@@ -407,6 +408,9 @@ class CommunityViewModel : ViewModel() {
 					} catch (e: Exception) {
 						Log.d("CommunityViewModel", "Error updating post likes in public feed: $e")
 					}
+				}
+				else {
+					Log.d("CommunityViewModel", "Not updating public feed post likes")
 				}
 
 			} catch (e: Exception) {

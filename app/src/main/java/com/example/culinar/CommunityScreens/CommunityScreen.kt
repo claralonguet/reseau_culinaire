@@ -553,17 +553,19 @@ fun MyCommunity(
 ) {
 
 	// Currently selected community
-	val selectedCommunity = communityViewModel.selectedCommunity.collectAsState().value
+	val selectedCommunity = communityViewModel.myCommunity.collectAsState()
+	Log.d("MyCommunityComposable", "Recomposing. Selected Community: $selectedCommunity")
+
 
 	// Main container displaying toolbar and post feed or message
 	Column {
 		// Toolbar with back and create post buttons
-		ToolBar(goBack = { goBack() }, community = selectedCommunity, createPost = createPost)
+		ToolBar(goBack = { goBack() }, community = selectedCommunity.value, createPost = createPost)
 
 		Spacer(modifier.height(10.dp))
 
 		// Conditionally show post feed or message if no community selected
-		if (selectedCommunity != null) {
+		if (selectedCommunity.value != null) {
 			PostFeed(communityViewModel = communityViewModel)
 		} else {
 			Text(text = "No community selected")

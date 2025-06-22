@@ -73,30 +73,39 @@ fun CreatePost(
 	// 0 = post type selection, 1 = standard post form, 2 = recipe post form
 	var screenOn by rememberSaveable { mutableIntStateOf(0) }
 
-	// Displays a toolbar with back button and community info
-	ToolBar(goBack = { goBack() }, community = communityViewModel.selectedCommunity.collectAsState().value)
+	Column {
+		// Displays a toolbar with back button and community info
+		ToolBar(
+			goBack = { goBack() },
+			community = communityViewModel.myCommunity.collectAsState().value
+		)
 
-	// Main container column centered both vertically and horizontally
-	Column(
-		verticalArrangement = Arrangement.Center,
-		horizontalAlignment = Alignment.CenterHorizontally,
-		modifier = Modifier.fillMaxSize()
-	) {
-		// Shows the screen according to current selection
-		when (screenOn) {
-			0 -> TypeOfPost(changeScreenOn = { screenOn = it }) // Choose post type
-			1 -> StandardPost(
-				communityViewModel = communityViewModel,
-				createPost = createPost,
-				goBack = goBack
-			) // Standard post creation form
-			2 -> RecipePost(
-				communityViewModel = communityViewModel,
-				createRecipe = createRecipe,
-				goBack = goBack
-			) // Recipe post creation form
-			else -> TypeOfPost(changeScreenOn = { screenOn = it }) // Default to post type selection
+		// Main container column centered both vertically and horizontally
+		Column(
+			verticalArrangement = Arrangement.Center,
+			horizontalAlignment = Alignment.CenterHorizontally,
+			modifier = Modifier
+				.fillMaxSize()
+		) {
+			// Shows the screen according to current selection
+			when (screenOn) {
+				0 -> TypeOfPost(changeScreenOn = { screenOn = it }) // Choose post type
+				1 -> StandardPost(
+					communityViewModel = communityViewModel,
+					createPost = createPost,
+					goBack = goBack
+				) // Standard post creation form
+				2 -> RecipePost(
+					communityViewModel = communityViewModel,
+					createRecipe = createRecipe,
+					goBack = goBack
+				) // Recipe post creation form
+				else -> TypeOfPost(changeScreenOn = {
+					screenOn = it
+				}) // Default to post type selection
+			}
 		}
+
 	}
 }
 

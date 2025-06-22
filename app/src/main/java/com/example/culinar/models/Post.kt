@@ -1,6 +1,7 @@
 package com.example.culinar.models
 
 import com.google.firebase.database.IgnoreExtraProperties
+import com.google.firebase.database.PropertyName
 import java.util.Date
 
 @IgnoreExtraProperties
@@ -12,7 +13,8 @@ data class Post(
 	val date: Date = Date(),
 	val imageUri: String = "",
 	var authorId: String = "",
-	val isPrivate: Boolean = true,
+	@set:PropertyName("isPrivate")
+	var isPrivate: Boolean = true,
 	var communityId: String = "",
 ) {
 	fun toMap(): HashMap<String, Any?> {

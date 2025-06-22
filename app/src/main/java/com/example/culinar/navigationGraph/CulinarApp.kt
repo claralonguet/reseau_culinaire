@@ -383,10 +383,9 @@ fun CulinarApp(
 
                 // Post creation screen allowing standard or recipe post creation within selected community
                 composable(Screen.CreatePost.name) {
-
-                    //
+                    // Get the selected community from the communityViewModel
                     val selectedCommunity =
-                        communityViewModel.selectedCommunity.collectAsState().value
+                        communityViewModel.myCommunity.collectAsState().value
                     CreatePost(
                         communityViewModel = communityViewModel,
                         createPost = { post ->
