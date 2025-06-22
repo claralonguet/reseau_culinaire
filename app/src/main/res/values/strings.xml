@@ -110,11 +110,16 @@
     <string name="invalid_user_or_uploading">Utilisateur non valide ou en cours d\'envoi</string>
     <string name="already_expert_text">✅ Vous êtes déjà reconnu comme expert.</string>
     <string name="pending_expert_nav">🔍 Expertise en attente</string>
+
+
+    // Create recipe strings
     <string name="create_recipe_name_label">nom</string>
     <string name="create_recipe_ingredients_label">ingredient</string>
     <string name="create_recipe_steps_label">Etapes de création</string>
     <string name="create_recipe_image_picking_message">Erreur d\'affichage</string>
     <string name="create_recipe_image_picking_button">Importer</string>
+    <string name="create_recipe_time_label">Temps de réalisation (min)</string>
+    <string name="create_recipe_difficulty_label">Difficulté</string>
 
 
 </resources>
