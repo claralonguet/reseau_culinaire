@@ -472,14 +472,32 @@ fun Home(
             }
 
             Button(
-                onClick = { navRoutes(Screen.SendMessage.name) },
+                onClick = {
+                    // If the user is not logged in, show error message, requiring him to log in
+                    if (username == null) {
+                        Log.d("CulinarApp", "User not logged in. Showing error message.")
+                        navRoutes(Screen.Account.name)
+                        showSnackbar("Please log in to post on the feed.")
+                    }
+                    else
+                        navRoutes(Screen.SendMessage.name)
+                          },
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
             ) {
                 Text("Chatter avec des amis")
             }
 
             Button(
-                onClick = { navRoutes(Screen.AddFriends.name) },
+                onClick = {
+                    // If the user is not logged in, show error message, requiring him to log in
+                    if (username == null) {
+                        Log.d("CulinarApp", "User not logged in. Showing error message.")
+                        navRoutes(Screen.Account.name)
+                        showSnackbar("Please log in to post on the feed.")
+                    }
+                    else
+                        navRoutes(Screen.AddFriends.name)
+                          },
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
             ) {
                 Text("Ajouter des amis")
