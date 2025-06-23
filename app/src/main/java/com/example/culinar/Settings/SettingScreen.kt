@@ -38,11 +38,6 @@ fun SettingScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text(
-            text = "${stringResource(R.string.expert_status_prefix)} $expert",
-            style = MaterialTheme.typography.bodyLarge,
-            color = if (expert == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-        )
 
         Spacer(modifier = Modifier.height(16.dp))
 

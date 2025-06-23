@@ -102,7 +102,7 @@
     // Setting screen
     <string name="expert_status_prefix">Valeur de expert =</string>
     <string name="cgu_title">Conditions Générales d\'Utilisation</string>
-    <string name="cgu_placeholder_text">Bienvenue sur Culinar !\n\nVoici les conditions générales d\'utilisation...\n(Ajoutez ici le contenu complet des CGU)</string>
+    <string name="cgu_placeholder_text">Bienvenue sur Culinar !\n\nVoici les conditions générales d\'utilisation...\n</string>
     <string name="expert_request_title">Demande d\'expertise</string>
     <string name="send_request_button">Soumettre ma demande</string>
     <string name="request_success_toast">Demande envoyée avec succès</string>
