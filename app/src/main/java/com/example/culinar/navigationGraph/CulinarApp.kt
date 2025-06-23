@@ -199,7 +199,8 @@ fun CulinarApp(
                     val user = backStackEntry.arguments?.getString("username") ?: username
                     Home(
                         navRoutes = { screen -> onNavigate(screen, user) },
-                        username = user
+                        username = user,
+                        showSnackbar = showSnackbar
                     )
                 }
 

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
@@ -158,7 +159,6 @@ fun ToLogin(
     Column (
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp)
     ) {
         // Top bar title for the grocery screen
         Row (
@@ -201,7 +201,7 @@ fun ToLogin(
                     )
                 },
                 modifier = Modifier
-                    .width(250.dp)
+                    .widthIn(min = 260.dp)
                     .height(80.dp),
                 shape = CutCornerShape(3.dp),
                 colors = ButtonDefaults.buttonColors(

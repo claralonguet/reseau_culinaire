@@ -1,5 +1,6 @@
 package com.example.culinar.Home
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -415,10 +416,12 @@ fun SlideUpSnackbar(
          *
          * @param navRoutes Lambda to navigate to a specified route string.
          * @param username Optional username to personalize the welcome message.
+         * @param showSnackbar Lambda to display a Snackbar message.
          */
 fun Home(
     navRoutes: (String) -> Unit,
-    username: String?
+    username: String?,
+    showSnackbar: (String) -> Unit
 ) {
     // Determine display name: username if provided, otherwise "Invité"
     val displayName = username.takeUnless { it.isNullOrEmpty() } ?: "Invité"
@@ -445,7 +448,17 @@ fun Home(
 
             // Navigation buttons for main user actions
             Button(
-                onClick = { navRoutes(Screen.PostFeed.name) },
+                onClick = {
+                    // If the user is not logged in, show error message, requiring him to log in
+                    if (username == null) {
+                        Log.d("CulinarApp", "User not logged in. Showing error message.")
+                        navRoutes(Screen.Account.name)
+                        showSnackbar("Please log in to post on the feed.")
+                    }
+                    else
+                        navRoutes(Screen.PostFeed.name)
+
+                          },
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
             ) {
                 Text("Poster sur mon feed")

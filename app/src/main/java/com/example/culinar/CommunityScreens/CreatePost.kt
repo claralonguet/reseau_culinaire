@@ -298,6 +298,9 @@ fun StandardPost(
 	createPost: (Post) -> Unit,
 	goBack: () -> Unit
 ) {
+	// Scroll state for the form
+	var scrollableForm = rememberScrollState()
+
 	// Field values for the post inputs
 	var name by rememberSaveable { mutableStateOf("") }
 	var content by rememberSaveable { mutableStateOf("") }
@@ -316,7 +319,9 @@ fun StandardPost(
 	}
 
 	Column(
-		modifier = Modifier.padding(16.dp),
+		modifier = Modifier
+			.padding(16.dp)
+			.verticalScroll(scrollableForm),
 		verticalArrangement = Arrangement.Top,
 		horizontalAlignment = Alignment.CenterHorizontally
 	) {
