@@ -477,7 +477,7 @@ fun Home(
                     if (username == null) {
                         Log.d("CulinarApp", "User not logged in. Showing error message.")
                         navRoutes(Screen.Account.name)
-                        showSnackbar("Please log in to post on the feed.")
+                        showSnackbar("Please log in chat with friends.")
                     }
                     else
                         navRoutes(Screen.SendMessage.name)
@@ -493,7 +493,7 @@ fun Home(
                     if (username == null) {
                         Log.d("CulinarApp", "User not logged in. Showing error message.")
                         navRoutes(Screen.Account.name)
-                        showSnackbar("Please log in to post on the feed.")
+                        showSnackbar("Please log in to add new friends.")
                     }
                     else
                         navRoutes(Screen.AddFriends.name)
