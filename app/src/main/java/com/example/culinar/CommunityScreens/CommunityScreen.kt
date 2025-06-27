@@ -822,6 +822,15 @@ data class Comment(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+		/**
+		 * Screen to see all the public posts
+		 *
+		 * Allows the user to see all public posts
+		 *
+		 * @param sessionViewModel ViewModel used to access the current user properties.
+		 * @param generalPostViewModel ViewModel handling post operations
+		 * @param onNavigate Lambda to handle navigation events.
+		 */
 fun CheckFeed(
 	navController: NavController,
 	sessionViewModel: SessionViewModel = viewModel(),
@@ -951,6 +960,13 @@ fun CheckFeed(
 
 
 @Composable
+		/**
+		 * Screen to show a comment
+		 *
+		 * Allows the user to a comment
+		 *
+		 * @param comment a comment which will be displayed
+		 */
 fun CommentItem(comment: Comment) {
 	Column {
 		Text(
@@ -980,6 +996,13 @@ fun CommentItem(comment: Comment) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+		/**
+		 * Screen with all the comments
+		 *
+		 * Allows the user to see all comments on a post
+		 *
+		 * @param postId to identify a comment
+		 */
 fun CommentsScreen(postId: String, navController: NavController) {
 	val context = LocalContext.current
 	var comments by remember { mutableStateOf<List<Comment>>(emptyList()) }
