@@ -13,6 +13,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
+/**
+ * ViewModel responsible for handling general (public) posts logic:
+ * - Fetching all posts from Firestore
+ * - Enriching posts with usernames
+ * - Creating, liking, and unliking posts
+ */
 class GeneralPostViewModel : ViewModel() {
 
 	private val db = Firebase.firestore
@@ -36,13 +42,21 @@ class GeneralPostViewModel : ViewModel() {
 	}
 
 	init {
-		getAllPosts()
+		getAllPosts() // Load posts immediately when ViewModel is created
 	}
 
+	/**
+	 * Set the current user ID for post creation and identification
+	 * @param id The user ID to associate with actions in this ViewModel
+	 */
 	fun setUserId(id: String) {
 		_userId.value = id
 	}
 
+	/**
+	 * Retrieves all public posts from Firestore, orders them by date,
+	 * and enriches them with usernames based on authorId.
+	 */
 	private fun getAllPosts() {
 		viewModelScope.launch {
 			_loading.value = true
@@ -81,6 +95,7 @@ class GeneralPostViewModel : ViewModel() {
 				val userMap = mutableMapOf<String, String>()
 				val usersRef = db.collection("Utilisateur") // <-- Modifié ici
 
+				// Récupère tous les usernames associés aux userId des posts
 				uniqueUserIds.map { userId ->
 					async {
 						try {
@@ -98,6 +113,7 @@ class GeneralPostViewModel : ViewModel() {
 
 				Log.d("GeneralPostViewModel", "Mapping userId -> username complété: $userMap")
 
+				// Inject usernames into the Post objects
 				val enrichedPosts = rawPosts.map { post ->
 					post.apply {
 						username = userMap[authorId] ?: "Utilisateur inconnu"
@@ -119,34 +135,40 @@ class GeneralPostViewModel : ViewModel() {
 		}
 	}
 
-
-
-
-
-
-
+	/**
+	 * Adds a new post to Firestore and updates local state immediately
+	 * @param post The Post object to be added
+	 */
 	fun createPost(post: Post) {
 		post.authorId = _userId.value
 
-
 		viewModelScope.launch {
-			post.username = db.collection(USERS_FIREBASE_COLLECTION).document(_userId.value).get().await().get("username").toString()
+			// Get and assign username from Firestore for preview
+			post.username = db.collection(USERS_FIREBASE_COLLECTION)
+				.document(_userId.value)
+				.get().await()
+				.get("username").toString()
 
-			_allPosts.value = listOf(post) + _allPosts.value
+			_allPosts.value = listOf(post) + _allPosts.value // Preview the post instantly
 
 			try {
 				db.collection(GENERAL_POSTS_FIREBASE_COLLECTION)
 					.add(post)
 					.await()
 				Log.d("GeneralPostViewModel", "Post ajouté avec succès")
-				getAllPosts()
+				getAllPosts() // Refresh post list from Firestore
 			} catch (e: Exception) {
 				Log.e("GeneralPostViewModel", "Erreur lors de l'ajout du post", e)
-				_allPosts.value = _allPosts.value.filter { it != post }
+				_allPosts.value = _allPosts.value.filter { it != post } // Remove failed post
 			}
 		}
 	}
 
+	/**
+	 * Adds the given user's like to the post and syncs it in both public and community feeds
+	 * @param post The post to like
+	 * @param userId The user ID performing the like
+	 */
 	fun likePost(post: Post, userId: String) {
 		viewModelScope.launch {
 			try {
@@ -161,6 +183,7 @@ class GeneralPostViewModel : ViewModel() {
 
 				updateLocalPostLikes(post.id, updatedLikes)
 
+				// Update community version of the post too, if applicable
 				if (post.communityId.isNotEmpty()) {
 					db.collection(COMMUNITY_FIREBASE_COLLECTION)
 						.document(post.communityId)
@@ -175,6 +198,11 @@ class GeneralPostViewModel : ViewModel() {
 		}
 	}
 
+	/**
+	 * Removes the given user's like from the post and syncs it in both public and community feeds
+	 * @param post The post to unlike
+	 * @param userId The user ID performing the unlike
+	 */
 	fun unlikePost(post: Post, userId: String) {
 		viewModelScope.launch {
 			try {
@@ -203,6 +231,11 @@ class GeneralPostViewModel : ViewModel() {
 		}
 	}
 
+	/**
+	 * Updates the like count of a specific post in local state
+	 * @param postId The ID of the post to update
+	 * @param updatedLikes New list of user IDs who liked the post
+	 */
 	private fun updateLocalPostLikes(postId: String, updatedLikes: List<String>) {
 		_allPosts.value = _allPosts.value.map { post ->
 			if (post.id == postId) {
@@ -224,5 +257,4 @@ class GeneralPostViewModel : ViewModel() {
 			}
 		}
 	}
-
 }
