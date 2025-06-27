@@ -19,7 +19,11 @@ data class ExpertRequest(
     val timestamp: Timestamp?,
     val attestationUrl: String?
 )
-
+/**
+ * Écran permettant à un administrateur de consulter et gérer les demandes d'expertise.
+ * Il affiche une liste de requêtes envoyées par les utilisateurs, permet de valider ou rejeter
+ * chaque demande, et met à jour la base Firestore en conséquence.
+ */
 @Composable
 fun ExpertRequestsScreen(
     db: FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -43,7 +47,7 @@ fun ExpertRequestsScreen(
                 }
                 expertRequests = requests
 
-                // Charger usernames pour chaque userId
+                // Charger usernames pour chaque Id
                 val ids = requests.map { it.userId }
                 if (ids.isNotEmpty()) {
                     db.collection("Utilisateur")

@@ -17,7 +17,7 @@ class DataStoreManager(private val context: Context) {
         private val USERNAME_KEY = stringPreferencesKey("username")
         private val ID_KEY = stringPreferencesKey("id")
         private val IS_EXPERT_KEY = booleanPreferencesKey("is_expert")
-        private val IS_ADMIN_KEY = booleanPreferencesKey("is_admin") // 👈 Ajout
+        private val IS_ADMIN_KEY = booleanPreferencesKey("is_admin")
     }
 
     val usernameFlow: Flow<String?> = context.dataStore.data.map { prefs ->
@@ -32,7 +32,7 @@ class DataStoreManager(private val context: Context) {
         prefs[IS_EXPERT_KEY] ?: false
     }
 
-    val isAdminFlow: Flow<Boolean> = context.dataStore.data.map { prefs ->  // 👈 Ajout
+    val isAdminFlow: Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[IS_ADMIN_KEY] ?: false
     }
 
@@ -54,7 +54,7 @@ class DataStoreManager(private val context: Context) {
         }
     }
 
-    suspend fun saveIsAdmin(isAdmin: Boolean) { // 👈 Ajout
+    suspend fun saveIsAdmin(isAdmin: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[IS_ADMIN_KEY] = isAdmin
         }

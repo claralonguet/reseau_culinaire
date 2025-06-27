@@ -56,7 +56,8 @@ import com.example.culinar.models.viewModels.GENERAL_POSTS_FIREBASE_COLLECTION
 import com.example.culinar.models.viewModels.USER_FIREBASE_COLLECTION
 import androidx.compose.runtime.collectAsState
 
-
+// Composable principal affichant le fil d’actualité de la communauté sélectionnée.
+// Contient la barre supérieure (ToolBar) et la liste des posts si une communauté est sélectionnée.
 
 @Composable
 fun Feed(
@@ -76,6 +77,8 @@ fun Feed(
 		}
 	}
 }
+// Barre d'outils affichée en haut de l'écran.
+// Affiche le bouton retour, le nom de la communauté et éventuellement un bouton pour créer un post.
 
 @Composable
 fun ToolBar(goBack: () -> Unit, community: Community?, createPost: (() -> Unit)? = null) {
@@ -135,7 +138,8 @@ fun ToolBarGeneralFeed(goBack: () -> Unit) {
 		Spacer(Modifier.weight(.2f))
 	}
 }
-
+// Affiche la liste des posts
+// Intègre une fonctionnalité de "pull-to-refresh" via SwipeRefresh.
 @Composable
 fun PostFeed(communityViewModel: CommunityViewModel = viewModel()) {
 	val posts by communityViewModel.allPosts.collectAsState()
@@ -165,7 +169,8 @@ fun PostFeed(communityViewModel: CommunityViewModel = viewModel()) {
 		}
 	}
 }
-
+// Carte représentant un post individuel
+// Gère les interactions utilisateur comme liker et commenter.
 @Composable
 fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 	var expanded by rememberSaveable { mutableStateOf(false) }
@@ -191,7 +196,7 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 			Log.d("PostCard", "username: $currentUsername")
 		}
 	}
-
+// Animation de cœur rouge qui apparaît brièvement lorsque l'utilisateur aime un post.
 	var showHeart by remember { mutableStateOf(false) }
 	val scale = remember { Animatable(0f) }
 
@@ -241,7 +246,6 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 					}
 			}
 		} else if (!showComments) {
-			// Si on cache les commentaires, on enlève le listener pour éviter fuite mémoire
 			listenerRegistration?.remove()
 			listenerRegistration = null
 			comments.clear()
@@ -294,6 +298,7 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 						if (liked) communityViewModel.unlikePost(post, userId)
 						else {
 							communityViewModel.likePost(post, userId)
+							// Lancement de l'animation de cœur lors du like.
 							showHeart = true
 							coroutineScope.launch {
 								scale.snapTo(0f)
@@ -404,7 +409,7 @@ fun PostCard(post: Post, communityViewModel: CommunityViewModel = viewModel()) {
 
 
 
-
+// Composable affichant un commentaire avec nom de l’auteur, contenu et date.
 @Composable
 fun CommentPost(comment: Comment) {
 	Column(modifier = Modifier.padding(vertical = 4.dp)) {

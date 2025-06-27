@@ -11,6 +11,11 @@ import androidx.compose.ui.unit.dp
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
+/**
+ * Écran principal de gestion de compte.
+ * Il affiche soit l'écran de connexion, d'inscription ou de profil
+ * en fonction de l'état interne `currentScreen`.
+ */
 @Composable
 fun AccountScreen(
     modifier: Modifier = Modifier,
@@ -32,6 +37,11 @@ fun AccountScreen(
     }
 }
 
+/**
+ * Écran de connexion utilisateur.
+ * Permet à l'utilisateur de saisir son nom d'utilisateur et mot de passe.
+ * Vérifie les informations dans Firestore et redirige si la connexion réussit.
+ */
 
 @Composable
 fun LoginScreen(
@@ -73,7 +83,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = {
+            onClick = { // verification des differents champs
                 errorMessage = "" // reset erreur
                 if (username.isBlank() || password.isBlank()) {
                     errorMessage = "Veuillez remplir tous les champs"
@@ -124,6 +134,3 @@ fun LoginScreen(
         }
     }
 }
-
-
-// Tu peux ajouter ici SignupScreen et ProfileScreen si besoin, ou les importer.

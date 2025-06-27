@@ -14,6 +14,11 @@ import androidx.compose.ui.unit.dp
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
+/**
+ * Écran d'inscription utilisateur.
+ * Permet à un nouvel utilisateur de créer un compte avec un email, un nom d'utilisateur et un mot de passe.
+ * Vérifie que l'email et le nom d'utilisateur ne sont pas déjà utilisés avant d'ajouter le compte à Firestore.
+ */
 @Composable
 fun SignupScreen(changeScreen: (String) -> Unit) {
 
@@ -69,7 +74,7 @@ fun SignupScreen(changeScreen: (String) -> Unit) {
                                                 val user = hashMapOf(
                                                     "email" to email,
                                                     "username" to username,
-                                                    "password" to password, // Utiliser un hash sécurisé en production
+                                                    "password" to password,
                                                     "admin" to false,
                                                     "expert" to false
                                                 )

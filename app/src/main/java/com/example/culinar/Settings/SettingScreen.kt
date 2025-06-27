@@ -16,7 +16,12 @@ import com.example.culinar.R
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-
+/**
+ * Écran des paramètres utilisateur.
+ * Affiche les conditions générales d'utilisation et permet aux utilisateurs non-experts
+ * d'envoyer une demande pour devenir expert. Si l'utilisateur est admin, il peut naviguer
+ * vers la gestion des demandes d'experts. Utilise Firestore pour stocker les requêtes.
+ */
 @Composable
 fun SettingScreen(
     sessionViewModel: SessionViewModel,

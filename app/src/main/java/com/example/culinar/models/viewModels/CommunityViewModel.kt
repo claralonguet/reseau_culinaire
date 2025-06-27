@@ -41,11 +41,11 @@ class CommunityViewModel : ViewModel() {
 			}
 		}
 	}
-
+	// Définit l'ID de l'utilisateur actuel
 	fun setUserId(id: String) {
 		_userId.value = id
 	}
-
+	// Rafraîchit les données des communautés (toutes, personnelle, et adhésions)
 	fun refreshCommunities() {
 		getCommunities()
 		getMyCommunity()
@@ -57,13 +57,13 @@ class CommunityViewModel : ViewModel() {
 			}
 		}
 	}
-
+	// Sélectionne une communauté et récupère ses posts
 	fun selectCommunity(community: Community) {
 		_selectedCommunity.value = community
 		Log.d("CommunityViewModel", "Community selected: ${community.id}. Fetching posts.")
 		getPosts(community.id)
 	}
-
+	// Récupère toutes les communautés depuis Firestore
 	fun getCommunities() {
 		viewModelScope.launch {
 			try {
@@ -103,7 +103,7 @@ class CommunityViewModel : ViewModel() {
 			}
 		}
 	}
-
+	// Récupère la communauté personnelle de l'expert (s'il en a une)
 	fun getMyCommunity() {
 		viewModelScope.launch {
 			try {
@@ -121,7 +121,7 @@ class CommunityViewModel : ViewModel() {
 			}
 		}
 	}
-
+	// Ajoute une nouvelle communauté (créée par l'utilisateur)
 	fun addCommunity(community: Community) {
 		viewModelScope.launch {
 			try {
@@ -151,7 +151,7 @@ class CommunityViewModel : ViewModel() {
 			}
 		}
 	}
-
+	// Récupère les membres d'une communauté
 	suspend fun getCommunityMembers(communityId: String): List<String> {
 		return try {
 			val snapshot = db.collection(COMMUNITY_FIREBASE_COLLECTION)
@@ -165,7 +165,7 @@ class CommunityViewModel : ViewModel() {
 			emptyList()
 		}
 	}
-
+	// Vérifie si l'utilisateur est membre d'une communauté
 	suspend fun checkMemberships(communitiesToScan: List<Community>) {
 		if (communitiesToScan.isEmpty()) {
 			isMember.value = mutableMapOf()
@@ -187,7 +187,7 @@ class CommunityViewModel : ViewModel() {
 		}
 		isMember.value = currentMembership
 	}
-
+	// Ajoute un utilisateur comme membre d'une communauté
 	suspend fun addMember(communityId: String, userId: String = _userId.value): Boolean {
 		return try {
 			db.collection(COMMUNITY_FIREBASE_COLLECTION)
@@ -211,7 +211,7 @@ class CommunityViewModel : ViewModel() {
 			false
 		}
 	}
-
+	// Supprime un utilisateur de la liste des membres d'une communauté
 	suspend fun removeMember(communityId: String, userId: String = _userId.value): Boolean {
 		return try {
 			db.collection(COMMUNITY_FIREBASE_COLLECTION)
@@ -235,7 +235,7 @@ class CommunityViewModel : ViewModel() {
 			false
 		}
 	}
-
+	// Récupère les posts d'une communauté depuis Firestore
 	fun getPosts(communityId: String) {
 		viewModelScope.launch {
 			try {
@@ -258,11 +258,11 @@ class CommunityViewModel : ViewModel() {
 			}
 		}
 	}
-
+	// Vérifie si l'utilisateur a aimé un post
 	fun hasLiked(post: Post): Boolean {
 		return post.likes.contains(_userId.value)
 	}
-
+	// Crée un nouveau post dans la communauté personnelle (si définie)
 	fun createPost(post: Post, communityId: String = myCommunity.value?.id ?: "") {
 		if (communityId.isEmpty()) {
 			Log.e("CommunityViewModel", "Cannot create post: communityId is empty")
@@ -303,7 +303,7 @@ class CommunityViewModel : ViewModel() {
 			}
 		}
 	}
-
+	// Ajoute un like à un post donné pour un utilisateur
 	fun likePost(post: Post, userId: String) {
 		viewModelScope.launch {
 			try {
@@ -338,7 +338,7 @@ class CommunityViewModel : ViewModel() {
 			}
 		}
 	}
-
+	// Retire un like d'un post donné pour un utilisateur
 	fun unlikePost(post: Post, userId: String) {
 		viewModelScope.launch {
 			try {
@@ -373,7 +373,7 @@ class CommunityViewModel : ViewModel() {
 			}
 		}
 	}
-
+	// Met à jour localement la liste des likes d'un post
 	private fun updateLocalPostLikes(postId: String, updatedLikes: List<String>) {
 		val updatedPosts = allPosts.value.map {
 			if (it.id == postId) it.copy(likes = updatedLikes.toMutableList()) else it
