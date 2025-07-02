@@ -1,4 +1,4 @@
-package com.example.culinar.ui.screens
+package com.example.culinar.recipesScreen
 
 
 import androidx.compose.foundation.Image
@@ -91,7 +91,7 @@ fun RecipeDetailScreen(recipe: Recipe) {
 @Composable
 fun RecipeDetailScreenPreview() {
     val fakeRecipe = Recipe(
-        id = 1,
+        firestoreId = "1",
         name = "Pâtes Carbonara",
         imageUrl = "https://via.placeholder.com/400", // Image factice pour l'aperçu
         prepTime = "25 min",

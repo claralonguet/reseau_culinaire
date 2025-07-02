@@ -1,4 +1,4 @@
-package com.example.culinar.ui.components
+package com.example.culinar.recipesScreen.components
 
 
 import androidx.compose.foundation.Image
@@ -37,13 +37,13 @@ import com.example.culinar.models.Recipe
 fun RecipeCard(
     recipe: Recipe,
     onToggleFavorite: () ->Unit,
-    onClick: (Int) -> Unit
+    onClick: (String) -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable { onClick(recipe.id) }
+            .clickable { onClick(recipe.firestoreId) }
             .height(80.dp)
     ) {
         Row(Modifier.padding(8.dp)) {
@@ -88,7 +88,7 @@ fun RecipeCard(
 fun RecipeCardPreview() {
     // Exemple d'une recette
     val recipe = Recipe(
-        id = 1,
+        firestoreId = "1",
         name = "Salade César",
         imageUrl = "https://www.mises-en-scene.fr/wp-content/uploads/2015/03/13.jpg", // Remplace par une URL d'image valide
         prepTime = "15 min",
@@ -102,10 +102,10 @@ fun RecipeCardPreview() {
 @Composable
 fun  RecipeItem(
     recipe: Recipe,
-    onClick: (Int) -> Unit
+    onClick: (String) -> Unit
 ){
     Row(modifier = Modifier.fillMaxWidth(1f)
-        .clickable { onClick(recipe.id) }
+        .clickable { onClick(recipe.firestoreId) }
         .background(
             color = MaterialTheme.colorScheme.surface,
             shape = MaterialTheme.shapes.small

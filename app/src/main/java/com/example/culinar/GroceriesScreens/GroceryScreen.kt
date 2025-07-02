@@ -1,7 +1,8 @@
 package com.example.culinar.GroceriesScreens
 
+
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -12,219 +13,391 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import com.example.culinar.R
+import com.example.culinar.models.Aliment
+import com.example.culinar.models.Screen
+import com.example.culinar.models.viewModels.GroceryViewModel
 import com.example.culinar.ui.theme.CulinarTheme
 import com.example.culinar.ui.theme.Typography
 import com.example.culinar.ui.theme.grey
+import com.example.culinar.viewmodels.SessionViewModel
 
-// Retrieve list of grocery items
-val AllGroceryItems = List(10) { index -> "item ${index + 1}" }
-var groceryItems = AllGroceryItems.filter { it.contains("1") }
+// Holds the name of the grocery item to be modified. Used globally across screens.
 var toModify = ""
 
-
+private object GroceryScreen {
+    const val LIST = 1
+    const val ADD = 2
+    const val MODIFY = 3
+    const val TO_LOGIN = 4
+}
 
 @Composable
-fun Grocery() {
-    var screenOn by remember { mutableIntStateOf(1) }
+        /**
+         * Main Grocery screen controller composable.
+         * Displays different screens based on user's login status and current interaction.
+         *
+         * @param sessionViewModel Provides user session info such as user ID.
+         * @param onNavigate Callback to trigger navigation actions (e.g., to login screen).
+         *
+         * It maintains an internal screen state:
+         * - LIST (1): Shows the grocery list.
+         * - ADD (2): Shows the add grocery item form.
+         * - MODIFY (3): Shows the modify grocery item form.
+         * - TO_LOGIN (4): Shows a prompt to log in if user is unauthenticated.
+         *
+         * The screen switches dynamically based on user actions and authentication state.
+         */
+fun Grocery(
+    sessionViewModel: SessionViewModel = viewModel(),
+    onNavigate: (String, String?) -> Unit = { _, _ -> },
+) {
+    val groceryViewModel: GroceryViewModel = viewModel()
 
-    val changeOnboardingScreen = { value : Int -> screenOn = value }
+    // Collect user ID from session; null means not logged in
+    val userId by sessionViewModel.id.collectAsState()
 
-    if (screenOn == 1) {
-        GroceryList(changeOnboardingScreen = changeOnboardingScreen)
+    // Update groceryViewModel's userId whenever userId changes
+    LaunchedEffect(userId) {
+        groceryViewModel.setUserId(userId ?: "")
+    }
 
-    } else if (screenOn == 2) {
-        GroceryAddItem(changeOnboardingScreen = changeOnboardingScreen)
+    // Screen state remembers last screen, defaults to LIST if logged in, else TO_LOGIN
+    var screenOn by rememberSaveable {
+        mutableIntStateOf(
+            if (userId != null) GroceryScreen.LIST else GroceryScreen.TO_LOGIN
+        )
+    }
 
-    } else if (screenOn == 3) {
-        GroceryModifyItem(changeOnboardingScreen = changeOnboardingScreen)
+    // Lambda to switch screens, passed down to child composables
+    val changeOnboardingScreen = { value: Int -> screenOn = value }
 
+    // Render the composable corresponding to current screen state
+    when (screenOn) {
+        GroceryScreen.LIST -> GroceryList(
+            changeOnboardingScreen = changeOnboardingScreen,
+            groceryViewModel = groceryViewModel
+        )
+        GroceryScreen.ADD -> GroceryAddItem(
+            changeOnboardingScreen = changeOnboardingScreen,
+            groceryViewModel = groceryViewModel
+        )
+        GroceryScreen.MODIFY -> GroceryModifyItem(
+            changeOnboardingScreen = changeOnboardingScreen,
+            groceryViewModel = groceryViewModel
+        )
+        GroceryScreen.TO_LOGIN -> ToLogin(onNavigate = onNavigate)
     }
 }
 
 
 @Composable
-fun GroceryList(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) -> Unit) {
-
-    var groceryItemsToDisplay by remember { mutableStateOf(groceryItems) }
-
-    // Screen content
-    Column (verticalArrangement = Arrangement.SpaceEvenly, horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier.fillMaxSize()) {
-
-
-        // Title of the subscreen
+        /**
+         * Screen shown when the user is not logged in.
+         * Displays a title bar, a description text explaining the grocery feature,
+         * and a button that navigates to the login screen with a redirect back to groceries after login.
+         *
+         * @param onNavigate Callback for navigation actions. Takes a route string and an optional parameter.
+         * @param modifier Optional Compose modifier for styling.
+         */
+fun ToLogin(
+    onNavigate: (String, String?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column (
+        modifier = modifier
+            .fillMaxSize()
+    ) {
+        // Top bar title for the grocery screen
         Row (
             verticalAlignment = Alignment.CenterVertically,
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
                 .background(color = grey)
         ) {
             Text(
-                text = "Ma liste de courses",
+                text = stringResource(R.string.grocery_list_title),
                 style = Typography.titleLarge,
                 fontSize = 30.sp,
-                modifier = modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             )
         }
 
-        Spacer(modifier = modifier.height(15.dp))
-
-        // Search bar
-        var searchText by remember { mutableStateOf("") }
-        TextField(
-            value = searchText,
-            placeholder = { Text("Rechercher un aliment", style = Typography.bodySmall) },
-            onValueChange = {
-                searchText = it
-                groceryItemsToDisplay = groceryItems.filter { it.contains(searchText) }
-                            },
-            leadingIcon = {Icon(Icons.Default.Search, contentDescription = "Rechercher")},
-            modifier = modifier.width(300.dp).height(50.dp),
-        )
-        Spacer(modifier = modifier.height(5.dp))
-        // GroceryItem add button
-        Button(
-            onClick = { changeOnboardingScreen(2) },
-            modifier = modifier.width(170.dp).height(55.dp),
-            shape = CutCornerShape(3.dp),
-            colors = ButtonColors(
-                containerColor = Color(0xFF59EA85),
-                contentColor = Color.White,
-                disabledContainerColor = Color(0xFF59EA85),
-                disabledContentColor = Color.White
-            )
+        // Main content block: description and login button
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxSize()
         ) {
-            Icon(Icons.Default.AddCircle, contentDescription = "Ajouter", tint = Color.White)
-            Spacer(modifier = modifier.width(10.dp))
-            Text(text = "Ajouter", style = Typography.labelSmall)
-        }
+            Text(
+                text = stringResource(R.string.grocery_screen_description),
+                style = MaterialTheme.typography.bodyLarge,
+                lineHeight = 50.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(10.dp)
+            )
 
-        Spacer(modifier = modifier.height(10.dp))
-        // Grocery items list
-        Column (modifier = modifier.weight(1f)) {
-            LazyColumn (modifier = modifier.fillMaxWidth()) {
-                items (groceryItemsToDisplay) { item ->
-                    GroceryItem(
-                        item = item,
-                        changeOnboardingScreen = changeOnboardingScreen,
-                        deleteItem = {
-                            groceryItems = groceryItems - item
-                            groceryItemsToDisplay = groceryItems
-                        }
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Button that triggers navigation to the Account screen with nextRoute parameter for post-login redirect
+            Button(
+                onClick = {
+                    onNavigate(
+                        "${Screen.Account.name}?nextRoute=${Screen.Groceries.name}",
+                        null
                     )
-                }
+                },
+                modifier = Modifier
+                    .widthIn(min = 260.dp)
+                    .height(80.dp),
+                shape = CutCornerShape(3.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF59EA85),
+                    contentColor = Color.White
+                )
+            ) {
+                Icon(Icons.Default.AccountCircle, contentDescription = "Log in", tint = Color.White)
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(text = stringResource(R.string.login_first_button), style = Typography.labelSmall)
             }
         }
-
     }
 }
 
 
 @Composable
-fun GroceryItem(modifier: Modifier = Modifier, item : String, changeOnboardingScreen: (Int) -> Unit, deleteItem: () -> Unit = {}) {
+        /**
+         * Displays the grocery list screen.
+         * Includes a search bar to filter grocery items by name,
+         * a button to navigate to the item addition screen,
+         * and a scrollable list of grocery items.
+         *
+         * @param modifier Optional Compose modifier for styling.
+         * @param changeOnboardingScreen Callback to change the current screen view, accepting an Int screen code.
+         * @param groceryViewModel ViewModel providing grocery items and actions.
+         */
+fun GroceryList(
+    modifier: Modifier = Modifier,
+    changeOnboardingScreen: (Int) -> Unit,
+    groceryViewModel: GroceryViewModel = viewModel(),
+) {
+    // Collect current grocery items from ViewModel as state
+    val groceryItems by groceryViewModel.groceryItems.collectAsState()
 
-    Row (
+    // Search text state for filtering items
+    var searchText by remember { mutableStateOf("") }
+
+    // Filtered list recomputed when groceryItems or searchText change
+    val groceryItemsToDisplay = remember(groceryItems, searchText) {
+        if (searchText.isBlank()) groceryItems
+        else groceryItems.filter { it.name.contains(searchText, ignoreCase = true) }
+    }
+
+    Column (
+        verticalArrangement = Arrangement.SpaceEvenly,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.fillMaxSize()
+    ) {
+        // Title bar with list screen title
+        Row (
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .background(color = grey)
+        ) {
+            Text(
+                text = stringResource(R.string.grocery_list_title),
+                style = Typography.titleLarge,
+                fontSize = 30.sp,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        Spacer(modifier = Modifier.height(15.dp))
+
+        // Search input field with leading search icon
+        TextField(
+            value = searchText,
+            placeholder = { Text(stringResource(R.string.grocery_search_placeholder), style = Typography.bodySmall) },
+            onValueChange = { searchText = it },
+            leadingIcon = {
+                Icon(Icons.Default.Search, contentDescription = stringResource(R.string.grocery_search_button))
+            },
+            modifier = Modifier
+                .width(300.dp)
+                .height(50.dp),
+        )
+
+        Spacer(modifier = Modifier.height(5.dp))
+
+        // Button to navigate to the add grocery item screen
+        Button(
+            onClick = { changeOnboardingScreen(2) },
+            modifier = Modifier
+                .width(170.dp)
+                .height(55.dp),
+            shape = CutCornerShape(3.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF59EA85),
+                contentColor = Color.White
+            )
+        ) {
+            Icon(Icons.Default.AddCircle, contentDescription = "Ajouter", tint = Color.White)
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(text = stringResource(R.string.grocery_add_button), style = Typography.labelSmall)
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Scrollable list showing filtered grocery items
+        Column(modifier = Modifier.weight(1f)) {
+            LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                items(groceryItemsToDisplay) { item ->
+                    GroceryItem(
+                        item = item,
+                        changeOnboardingScreen = changeOnboardingScreen,
+                        deleteItem = {
+                            groceryViewModel.removeItemToGroceryList(item)
+                        },
+                        onModify = {
+                            toModify = it.name
+                            changeOnboardingScreen(3)
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+
+@Composable
+        /**
+         * Displays a single grocery item as a horizontal row.
+         * Shows the item's image, name, unit, and quantity.
+         * Includes buttons to delete or modify the item.
+         *
+         * @param modifier Modifier for styling the component.
+         * @param item The Aliment data object representing the grocery item.
+         * @param changeOnboardingScreen Lambda to switch the current screen (e.g., to modify screen).
+         * @param onModify Callback invoked with the item when the modify button is clicked.
+         * @param deleteItem Callback invoked when the delete button is clicked.
+         */
+fun GroceryItem(
+    modifier: Modifier = Modifier,
+    item: Aliment,
+    changeOnboardingScreen: (Int) -> Unit,
+    onModify: (Aliment) -> Unit = {},
+    deleteItem: () -> Unit = {}
+) {
+    Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.padding(vertical = 2.dp, horizontal = 6.dp)
+        modifier = modifier
+            .padding(vertical = 2.dp, horizontal = 6.dp)
             .fillMaxWidth()
             .height(108.dp)
             .border(color = Color(0xFFAAAAAA), width = 1.dp, shape = CutCornerShape(3.dp))
     ) {
-        // Image of the item
-        Image(Icons.Default.Info,
-            contentDescription = "Aliment",
-            modifier = modifier
+        // Image preview of the grocery item
+        AsyncImage(
+            model = item.photo,
+            contentDescription = item.name,
+            modifier = Modifier
                 .width(85.dp)
                 .height(85.dp)
+                .padding(start = 5.dp)
+                .border(color = Color(0xFFAAAAAA), width = 1.dp, shape = CutCornerShape(3.dp))
         )
 
-        Spacer(modifier = modifier.weight(1f))
-        // Details on the item
-        Column (
+        Spacer(modifier = Modifier.width(20.dp))
+
+        // Item name, unit, and quantity details
+        Column(
             verticalArrangement = Arrangement.SpaceEvenly,
-            modifier = modifier.fillMaxHeight()
-                //.border(color = Color(0xFFAAAAAA), width = 1.dp, shape = CutCornerShape(3.dp))
+            modifier = Modifier.fillMaxHeight()
         ) {
-            // Name of the item
             Text(
-                text = item,
+                text = item.name,
                 style = Typography.titleMedium,
             )
-
             Row {
-                // Unit of the item
-                Text(
-                    text = "1 kg",
-                    style = Typography.bodySmall,
-                )
-
-                Spacer(modifier = modifier.width(40.dp))
-                // Quantity of the item
-                Text(
-                    text = "x 1",
-                    style = Typography.bodyLarge,
-                )
+                Text(text = item.unit, style = Typography.bodySmall)
+                Spacer(modifier = Modifier.width(40.dp))
+                Text(text = "x ${item.quantity}", style = Typography.bodyLarge)
             }
-
         }
-        Spacer(modifier = modifier.weight(2f))
 
-        // Modify and delete buttons
-        Column (
-            modifier = modifier
-                .padding(vertical = 0.dp, horizontal = 5.dp)
+        Spacer(modifier = Modifier.weight(2f))
+
+        // Action buttons: delete and modify
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 5.dp)
                 .height(100.dp)
-                //.border(color = Color(0xFFAAAAAA), width = 1.dp, shape = CutCornerShape(3.dp))
-
         ) {
-
-            // Delete button
+            // Delete button with red background
             TextButton(
-                onClick = {
-                    deleteItem()
-                },
-                modifier = modifier.width(65.dp).height(48.dp).padding(vertical = 0.dp),
+                onClick = deleteItem,
+                modifier = Modifier
+                    .width(65.dp)
+                    .height(48.dp),
                 shape = CutCornerShape(3.dp),
-                colors = ButtonColors(
+                colors = ButtonDefaults.textButtonColors(
                     containerColor = Color(0xFFE91E63),
                     contentColor = Color.White,
                     disabledContainerColor = Color(0xFFE91E63),
@@ -235,28 +408,29 @@ fun GroceryItem(modifier: Modifier = Modifier, item : String, changeOnboardingSc
                     Icons.Default.Delete,
                     contentDescription = "Supprimer",
                     tint = Color.White,
-                    modifier = modifier.height(45.dp).width(45.dp)
+                    modifier = Modifier
+                        .height(45.dp)
+                        .width(45.dp)
                 )
             }
 
-            Spacer(modifier = modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Modify button
+            // Modify button outlined in blue
             TextButton(
                 onClick = {
-                    changeOnboardingScreen(3)
-                    toModify = item
-                          },
-                modifier = modifier.width(65.dp).height(35.dp)
+                    onModify(item)              // Pass the current item for modification and navigate to the modification screen
+                },
+                modifier = Modifier
+                    .width(65.dp)
+                    .height(35.dp)
                     .border(color = Color(0xFF3F51B5), width = 2.dp, shape = CutCornerShape(3.dp)),
-                // shape = CutCornerShape(3.dp),
-                colors = ButtonColors(
+                colors = ButtonDefaults.textButtonColors(
                     containerColor = Color(0x002196F3),
                     contentColor = Color(0xFF2196F3),
                     disabledContainerColor = Color(0xFF2196F3),
                     disabledContentColor = Color.White
                 )
-
             ) {
                 Icon(
                     Icons.Default.Edit,
@@ -266,33 +440,73 @@ fun GroceryItem(modifier: Modifier = Modifier, item : String, changeOnboardingSc
             }
         }
     }
-
 }
 
+
+
+
 @Composable
-fun GroceryAddItem(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) -> Unit, toModify : String = "") {
+        /**
+         * Screen to add a new grocery item or modify an existing one.
+         * - If [toModify] is non-empty, pre-fills fields for the item to modify.
+         * - Shows a dropdown of predefined food items (excluding those already in the grocery list) when adding a new item.
+         * - Allows editing of name (when adding), unit (editable only for custom items), and quantity.
+         * - Handles updating or adding items through the [groceryViewModel].
+         *
+         * @param modifier Modifier for styling the composable.
+         * @param changeOnboardingScreen Lambda to switch between screens, e.g., back to list after adding/modifying.
+         * @param toModify Name of the grocery item to modify; empty string if adding a new item.
+         * @param groceryViewModel ViewModel managing grocery data and operations.
+         */
+fun GroceryAddItem(
+    modifier: Modifier = Modifier,
+    changeOnboardingScreen: (Int) -> Unit,
+    toModify: String = "",
+    groceryViewModel: GroceryViewModel = viewModel()
+) {
+    val allFoodItems: List<Aliment> = groceryViewModel.allFoodItems
+    val groceryItems: List<Aliment> by groceryViewModel.groceryItems.collectAsState()
 
+    // The item currently being modified, if any
+    val itemToModify by remember(groceryItems, toModify) {
+        derivedStateOf { groceryItems.find { it.name == toModify } ?: Aliment() }
+    }
 
-    // Screen content
-    Column (
-        //verticalArrangement = Arrangement.SpaceEvenly,
+    var nameText by remember { mutableStateOf(toModify) }  // Name input text
+    var selectedItem by remember { mutableStateOf(Aliment("")) }  // Selected item from dropdown or new
+    var expanded by remember { mutableStateOf(false) }  // Dropdown menu expanded state
+    var unit by remember { mutableStateOf("unité") }  // Unit input text, default to "unité"
+    var quantityText by remember { mutableStateOf((itemToModify.quantity ?: 1).toString()) }  // Quantity input text
+
+    // When the name changes, update selectedItem and unit accordingly
+    LaunchedEffect(nameText) {
+        selectedItem = selectedItem.copy(name = nameText)
+        if (allFoodItems.none { it.name == nameText }) {
+            unit = "unité"  // Reset unit for new custom items
+        } else {
+            val predefinedItem = allFoodItems.find { it.name == nameText }
+            if (predefinedItem != null) {
+                unit = predefinedItem.unit
+                selectedItem = selectedItem.copy(unit = predefinedItem.unit)
+            }
+        }
+    }
+
+    Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxSize()
     ) {
-
-        var nameText by remember { mutableStateOf(toModify) }
-
         // Screen title and options
         Row (
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .height(80.dp)
-                .background(color = Color(0xFFE5E3E3))
+                .background(color = grey)
         ) {
             // Return button
-            Button(
+            TextButton(
                 onClick = {changeOnboardingScreen(1)},
-                modifier = modifier.width(80.dp).height(100.dp),
                 shape = CutCornerShape(3.dp),
                 colors = ButtonColors(
                     containerColor = Color(0x0059EA85),
@@ -302,15 +516,17 @@ fun GroceryAddItem(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) 
                 )
             ) {
                 Icon(
-                    Icons.Default.Close,
+                    Icons.AutoMirrored.Default.KeyboardArrowLeft,
                     contentDescription = "Cancel",
                     tint = Color.Red,
-                    modifier = modifier.height(70.dp).width(70.dp)
+                    modifier = modifier
+                        .height(100.dp)
+                        .width(60.dp)
                 )
 
             }
 
-            Spacer(modifier = modifier.weight(1f))
+            Spacer(modifier = modifier.width(15.dp))
 
             // Title of the subscreen
             Text(
@@ -324,230 +540,174 @@ fun GroceryAddItem(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) 
 
                 modifier = modifier
                     .height(50.dp)
-                    .background(color = Color(0xFFE5E3E3))
+                    .background(color = grey)
             )
 
-            Spacer(modifier = modifier.weight(1f))
-
-            // Add button
-            Button(
-                onClick = {
-                    val newItem = AllGroceryItems.find{ it.contains(nameText) }
-                    if (newItem != null && newItem !in groceryItems)
-                        groceryItems = groceryItems + newItem
-                    else
-                        groceryItems = groceryItems + nameText
-
-                    changeOnboardingScreen(1)
-                },
-                modifier = modifier.width(80.dp).height(100.dp),
-                shape = CutCornerShape(3.dp),
-                colors = ButtonColors(
-                    containerColor = Color(0x0059EA85),
-                    contentColor = Color.White,
-                    disabledContainerColor = Color(0xFF59EA85),
-                    disabledContentColor = Color.White
-                )
-            ) {
-                Icon(
-                    Icons.Default.Check,
-                    contentDescription = "Ajouter",
-                    tint = Color(0xFF59EA85),
-                    modifier = modifier.height(70.dp).width(70.dp)
-                )
-                Spacer(modifier = modifier.width(10.dp))
-                Text(text = "Add", fontSize = 18.sp, letterSpacing = 3.sp)
-            }
+            Spacer(modifier = modifier.weight(5f))
         }
 
-        Spacer(modifier = modifier.height(90.dp))
-
-        // Grocery item input form
-        Column (
-            modifier = modifier.fillMaxHeight(),
-            verticalArrangement = Arrangement.SpaceAround,
+        Column(
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxHeight()
         ) {
-            // Name of the food item
+            // Name input with dropdown for predefined items when adding new
             Row {
-                Text(
-                    text = "Nom: ",
-                    fontSize = 20.sp,
-                    fontFamily = FontFamily.Serif,
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 50.sp,
-                    modifier = modifier.padding(start = 10.dp)
-                )
-                Spacer(modifier = modifier.weight(1f))
-                var expanded by remember { mutableStateOf(false) }
                 TextField(
-                    value = if (toModify != "") toModify else nameText,
-                    onValueChange = { nameText = it },
-                    placeholder = { Text("Nom de l'aliment") },
-                    enabled = if (toModify != "") false else true,
-                    modifier = modifier
-                        .width(if (toModify != "") 200.dp else 160.dp)
-                        .height(50.dp)
-                        .border(
-                            color = Color(0xFFAAAAAA),
-                            width = 0.dp,
-                            shape = CutCornerShape(3.dp)
-                        ),
+                    value = if (toModify != "") itemToModify.name else nameText,
+                    onValueChange = {
+                        if (toModify == "") nameText = it
+                    },
+                    label = { Text(stringResource(R.string.grocery_item_name_label), fontSize = 15.sp) },
+                    enabled = toModify == "",
+                    singleLine = true,
+                    modifier = Modifier.width(if (toModify != "") 280.dp else 240.dp).height(60.dp),
                 )
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    offset = DpOffset(x = 131.dp, y = 0.dp),
-                    modifier = modifier
-                        .width(200.dp)
-                        .height(300.dp)
-                        .border(
-                            color = Color(0xFFAAAAAA),
-                            width = 0.dp,
-                            shape = CutCornerShape(3.dp)
-                        )
-                ) {
-
-                    DropdownMenuItem(
-                        text = { Text("Choisissez un aliment") },
-                        onClick = { nameText = "Choisissez un aliment" }
-                    )
-                    for (item in AllGroceryItems - groceryItems) {
-                        DropdownMenuItem(
-                            text = { Text(text = item) },
-                            onClick = {
-                                nameText = item
-                                expanded = false
-                            }
-                        )
-                    }
-                }
-
-                // Expand dropdown menu button
                 if (toModify == "") {
                     TextButton(
                         onClick = { expanded = !expanded },
-                        modifier = modifier.width(40.dp).height(50.dp),
+                        modifier = Modifier.width(40.dp).height(60.dp),
                         shape = CutCornerShape(3.dp),
-                        border = BorderStroke(width = 1.dp, color = Color(0xFF17211A)),
-                        colors = ButtonColors(
+                        border = BorderStroke(1.dp, Color(0xFF939292)),
+                        colors = ButtonDefaults.textButtonColors(
                             containerColor = Color(0x0059EA85),
-                            contentColor = Color.White,
-                            disabledContainerColor = Color(0xFF59EA85),
-                            disabledContentColor = Color.White
+                            contentColor = Color.White
                         )
                     ) {
                         Icon(
                             Icons.Default.ArrowDropDown,
-                            contentDescription = "Create new food",
+                            contentDescription = "Select food",
                             tint = Color(0xFF142119),
-                            modifier = modifier
-                                .height(45.dp)
-                                .width(45.dp)
-
+                            modifier = Modifier.size(45.dp)
                         )
-
+                    }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.width(240.dp).heightIn(max = 300.dp)
+                    ) {
+                        val defaultLabel = stringResource(R.string.grocery_dropdown_menu_default)
+                        DropdownMenuItem(
+                            text = { Text(defaultLabel) },
+                            onClick = {
+                                nameText = defaultLabel
+                                expanded = false
+                            }
+                        )
+                        for (item in allFoodItems) {
+                            if (groceryItems.none { it.name == item.name }) {
+                                DropdownMenuItem(
+                                    text = { Text(item.name) },
+                                    onClick = {
+                                        nameText = item.name
+                                        selectedItem = item.copy(quantity = 1)
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
                     }
                 }
-                // Spacer(modifier = modifier.width(5.dp))
-
-                // Create new food button
-                Button(
-                    onClick = {},
-                    modifier = modifier.width(80.dp).height(50.dp),
-                    shape = CutCornerShape(3.dp),
-                    //border = BorderStroke(width = 1.dp, color = Color(0xFF59EA85)),
-                    colors = ButtonColors(
-                        containerColor = Color(0x0059EA85),
-                        contentColor = Color.White,
-                        disabledContainerColor = Color(0xFF59EA85),
-                        disabledContentColor = Color.White
-                    )
-                ) {
-                    Icon(
-                        Icons.Default.AddCircle,
-                        contentDescription = "Create new food",
-                        tint = Color(0xFF59EA85),
-                        modifier = modifier
-                            .height(45.dp)
-                            .width(45.dp)
-
-                    )
-
-                }
-
             }
 
-            // Quantity unit
-            Row {
+            // Unit input, editable only for custom items when adding, or for modify mode it updates the ViewModel directly
+            TextField(
+                value = if (toModify != "") itemToModify.unit else unit,
+                onValueChange = {
+                    if (toModify != "") {
+                        // Update unit immediately in modify mode
+                        groceryViewModel.modifyItemToGroceryList(itemToModify.copy(unit = it))
+                    } else {
+                        unit = it
+                        selectedItem = selectedItem.copy(unit = it)
+                    }
+                },
+                label = { Text(stringResource(R.string.grocery_item_unit_label), fontSize = 15.sp) },
+                singleLine = true,
+                enabled = allFoodItems.none { it.name == nameText } && toModify == "",
+                modifier = Modifier.width(280.dp).height(60.dp),
+            )
+
+            // Quantity input, allowing only digits; updates ViewModel in modify mode or local state when adding
+            TextField(
+                value = quantityText,
+                onValueChange = {
+                    if (it.isDigitsOnly()) {
+                        quantityText = if (it.isEmpty()) "1" else it
+                        val quantityInt = quantityText.toIntOrNull() ?: 1
+                        if (toModify != "") {
+                            groceryViewModel.modifyItemToGroceryList(itemToModify.copy(quantity = quantityInt))
+                        } else {
+                            selectedItem = selectedItem.copy(quantity = quantityInt)
+                        }
+                    }
+                },
+                label = { Text(stringResource(R.string.grocery_item_quantity_label), fontSize = 15.sp) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                modifier = Modifier.width(280.dp).height(60.dp),
+            )
+
+            Spacer(Modifier.height(20.dp))
+
+            // Add or Modify button, performs appropriate ViewModel action and returns to list
+            Button(
+                onClick = {
+                    if (toModify == "") {
+                        if (selectedItem.name.isNotBlank() && selectedItem !in groceryItems) {
+                            groceryViewModel.addItemToGroceryList(selectedItem)
+                        }
+                    } else {
+                        groceryViewModel.modifyItemToGroceryList(itemToModify)
+                    }
+                    changeOnboardingScreen(1) // Back to grocery list screen
+                },
+                modifier = Modifier.width(150.dp).height(50.dp),
+                shape = CutCornerShape(3.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF59EA85),
+                    contentColor = Color.White
+                )
+            ) {
                 Text(
-                    text = "Unité: ",
-                    fontSize = 20.sp,
-                    fontFamily = FontFamily.Serif,
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 50.sp,
-                    modifier = modifier.padding(start = 10.dp)
-                )
-                Spacer(modifier = modifier.width(55.dp))
-
-                TextField(
-                    value = AllGroceryItems.find{ it.contains(nameText) } ?: "",
-                    enabled = false,
-                    onValueChange = { },
-                    modifier = modifier
-                        .width(220.dp)
-                        .height(50.dp)
-                        .padding(end = 20.dp)
-                        .border(
-                            color = Color(0xFFAAAAAA),
-                            width = 0.dp,
-                            shape = CutCornerShape(3.dp)
-                        ),
+                    text = if (toModify == "") stringResource(R.string.grocery_item_add_button) else stringResource(R.string.grocery_item_modify_button),
+                    fontSize = 18.sp,
+                    letterSpacing = 3.sp
                 )
             }
-
-            // Quantity input
-            Row {
-                Text(
-                    text = "Quantité: ",
-                    fontSize = 20.sp,
-                    fontFamily = FontFamily.Serif,
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 50.sp,
-                    modifier = modifier.padding(start = 10.dp)
-                )
-                Spacer(modifier = modifier.width(20.dp))
-                var value by remember { mutableStateOf(toModify) }
-                TextField(
-                    value = value,
-                    onValueChange = { if(it.isDigitsOnly()) value = it },
-                    placeholder = { Text("Quantité de l'aliment") },
-                    modifier = modifier
-                        .width(220.dp)
-                        .height(50.dp)
-                        .padding(end = 20.dp)
-                        .border(
-                            color = Color(0xFFAAAAAA),
-                            width = 0.dp,
-                            shape = CutCornerShape(3.dp)
-                        ),
-                )
-
-            }
-
-
         }
-
     }
 }
 
 
+
+/**
+ * Screen composable for modifying an existing grocery item.
+ *
+ * This screen delegates the UI and logic to [GroceryAddItem], passing the
+ * global variable [toModify] as the item to be edited.
+ *
+ * @param modifier Optional Modifier to apply to the root layout.
+ * @param changeOnboardingScreen Callback to change the onboarding screen step.
+ * @param groceryViewModel ViewModel managing grocery items and related state.
+ */
 @Composable
-fun GroceryModifyItem(modifier: Modifier = Modifier, changeOnboardingScreen: (Int) -> Unit) {
-    GroceryAddItem(modifier = modifier, changeOnboardingScreen = changeOnboardingScreen, toModify = toModify)
+fun GroceryModifyItem(
+    modifier: Modifier = Modifier,
+    changeOnboardingScreen: (Int) -> Unit,
+    groceryViewModel: GroceryViewModel = viewModel()
+) {
+    GroceryAddItem(
+        modifier = modifier,
+        changeOnboardingScreen = changeOnboardingScreen,
+        toModify = toModify,
+        groceryViewModel = groceryViewModel
+    )
 }
+
+
+
+
 
 
 @Preview(showBackground = true)
@@ -555,5 +715,13 @@ fun GroceryModifyItem(modifier: Modifier = Modifier, changeOnboardingScreen: (In
 fun GroceryPreview() {
     CulinarTheme {
         Grocery()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun GroceryAddItemPreview() {
+    CulinarTheme {
+        GroceryAddItem(changeOnboardingScreen = {})
     }
 }

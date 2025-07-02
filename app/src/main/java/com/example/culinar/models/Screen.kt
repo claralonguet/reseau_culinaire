@@ -8,6 +8,8 @@ enum class Screen {
     Groceries,
     Recipes,
     Community,
+    Settings,
+    PendingExpertRequests,
 
     // Secondary screens
     // ... Home
@@ -22,5 +24,24 @@ enum class Screen {
     RecipeList,
     RecipeDetail,
 
+    // ... Community
+    CreateCommunity,
+    ListCommunities,
+    MyCommunity,
+    Feed,
+    CreatePost,
+    PostFeedRecipe,
+    PublishPostRecipe,
+
 }
 
+
+val communityRelatedScreens = setOf(
+    Screen.Community.name,
+    Screen.CreateCommunity.name,
+    Screen.ListCommunities.name,
+    Screen.MyCommunity.name,
+    Screen.Feed.name,
+    Screen.CreatePost.name,
+
+)
